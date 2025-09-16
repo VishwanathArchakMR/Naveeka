@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 enum AppEnv { dev, staging, prod }
 
 /// Central app configuration: base URLs, feature flags, and service keys.
-/// Values can be supplied via --dart-define or defaulted per flavor. [4]
+/// Values can be supplied via --dart-define or defaulted per flavor.
 class AppConfig {
   final AppEnv env;
 
@@ -81,23 +81,30 @@ class AppConfig {
 
   // ---------------- Constructors from dart-define ----------------
 
-  /// Build from dart-define using const fromEnvironment for AOT platforms. [4][11]
+  /// Build from dart-define using const fromEnvironment for AOT platforms.
   /// Keys: APP_ENV, API_BASE_URL, CDN_BASE_URL, ANALYTICS_ENABLED, CRASH_ENABLED, OFFLINE_DEFAULT,
   /// MAPS_API_KEY, SENTRY_DSN, APP_VERSION, BUILD_NUMBER.
   static AppConfig fromEnv() {
-    final envStr = const String.fromEnvironment('APP_ENV', defaultValue: 'dev');
+    // Read env string at compile time where provided
+    const envStr = String.fromEnvironment('APP_ENV', defaultValue: 'dev');
     final env = _parseEnv(envStr);
 
-    // Base URLs with per-env sensible defaults
-    final apiBaseUrl = const String.fromEnvironment('API_BASE_URL',
-        defaultValue: _defaultApiBaseUrlFor(env));
-    final cdnBaseUrl = const String.fromEnvironment('CDN_BASE_URL',
-        defaultValue: _defaultCdnBaseUrlFor(env));
+    // Read base URLs from environment (const), then apply runtime fallback if empty
+    const apiBaseFromEnv = String.fromEnvironment('API_BASE_URL', defaultValue: '');
+    final apiBaseUrl =
+        apiBaseFromEnv.isNotEmpty ? apiBaseFromEnv : _defaultApiBaseUrlFor(env);
 
-    // Flags
-    final analyticsEnabled = const bool.fromEnvironment('ANALYTICS_ENABLED', defaultValue: !kDebugMode);
-    final crashEnabled = const bool.fromEnvironment('CRASH_ENABLED', defaultValue: !kDebugMode);
-    final offlineDefault = const bool.fromEnvironment('OFFLINE_DEFAULT', defaultValue: false);
+    const cdnBaseFromEnv = String.fromEnvironment('CDN_BASE_URL', defaultValue: '');
+    final cdnBaseUrl =
+        cdnBaseFromEnv.isNotEmpty ? cdnBaseFromEnv : _defaultCdnBaseUrlFor(env);
+
+    // Flags (const reads from environment)
+    const analyticsEnabledConst =
+        bool.fromEnvironment('ANALYTICS_ENABLED', defaultValue: !kDebugMode);
+    const crashEnabledConst =
+        bool.fromEnvironment('CRASH_ENABLED', defaultValue: !kDebugMode);
+    const offlineDefaultConst =
+        bool.fromEnvironment('OFFLINE_DEFAULT', defaultValue: false);
 
     // Keys (empty default means "feature off" until set)
     const mapsKey = String.fromEnvironment('MAPS_API_KEY', defaultValue: '');
@@ -111,9 +118,9 @@ class AppConfig {
       env: env,
       apiBaseUrl: apiBaseUrl,
       cdnBaseUrl: cdnBaseUrl,
-      analyticsEnabled: analyticsEnabled,
-      crashReportingEnabled: crashEnabled,
-      offlineModeDefault: offlineDefault,
+      analyticsEnabled: analyticsEnabledConst,
+      crashReportingEnabled: crashEnabledConst,
+      offlineModeDefault: offlineDefaultConst,
       mapsApiKey: mapsKey,
       sentryDsn: sentryDsn,
       appVersion: appVer,
