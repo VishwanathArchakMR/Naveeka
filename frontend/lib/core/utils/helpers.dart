@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'dart:math' as math;
+import 'package:flutter/foundation.dart' show VoidCallback;
 
 /// --------------- Safe parse ---------------
 
@@ -76,7 +77,7 @@ Map<K, V> mergeMaps<K, V>(Map<K, V> a, Map<K, V> b, {bool override = true}) {
 }
 
 /// --------------- Debounce & Throttle (callback-based) ---------------
-/// These are intentionally dependency-free; use RxDart/stream_transform if you need stream transformers. [1][2]
+/// These are intentionally dependency-free; use RxDart/stream_transform if you need stream transformers.
 
 class Debouncer {
   Debouncer({this.delay = const Duration(milliseconds: 300)});
@@ -104,7 +105,7 @@ class Throttler {
   DateTime? _last;
   Timer? _trailingTimer;
 
-  /// Leading-edge throttle with optional trailing execution if calls arrive during the interval. [5]
+  /// Leading-edge throttle with optional trailing execution if calls arrive during the interval.
   void call(VoidCallback action, {bool trailing = true}) {
     final now = DateTime.now();
     if (_last == null || now.difference(_last!) >= interval) {
@@ -128,7 +129,7 @@ class Throttler {
 }
 
 /// --------------- Retry with exponential backoff ---------------
-/// Lightweight retry utility without extra packages; for more control, consider a dedicated backoff package. [9][12]
+/// Lightweight retry utility without extra packages; for more control, consider a dedicated backoff package.
 
 typedef AsyncTask<T> = Future<T> Function();
 typedef RetryIf = bool Function(Object error);

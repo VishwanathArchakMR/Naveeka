@@ -1,7 +1,5 @@
 // lib/core/utils/deep_links.dart
 
-import 'package:flutter/foundation.dart';
-
 import '../../navigation/route_names.dart';
 
 /// Result of parsing an inbound deep link into a logical route target.

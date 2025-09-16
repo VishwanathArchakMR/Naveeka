@@ -14,7 +14,7 @@ class AnalyticsEvent {
   String toString() => 'AnalyticsEvent($name, $params)';
 }
 
-/// Interface for analytics backends (Firebase, Segment, Amplitude, Sentry, etc.). [2]
+/// Interface for analytics backends (Firebase, Segment, Amplitude, Sentry, etc.).
 abstract class AnalyticsBackend {
   Future<void> init() async {}
   Future<void> setUserId(String? userId) async {}
@@ -27,10 +27,27 @@ abstract class AnalyticsBackend {
   Future<void> dispose() async {}
 }
 
-/// A simple console backend for development and as a safe default. [3]
+/// A simple console backend for development and as a safe default.
 class ConsoleAnalyticsBackend implements AnalyticsBackend {
   final bool enabled;
   const ConsoleAnalyticsBackend({this.enabled = true});
+
+  @override
+  Future<void> init() async {
+    // no-op for console backend
+  }
+
+  @override
+  Future<void> setUserId(String? userId) async {
+    if (!enabled) return;
+    debugPrint('[analytics:user] id=${userId ?? "(null)"}');
+  }
+
+  @override
+  Future<void> setUserProperty(String key, String value) async {
+    if (!enabled) return;
+    debugPrint('[analytics:userprop] $key=$value');
+  }
 
   @override
   Future<void> logEvent(String name, {Map<String, Object?> params = const {}}) async {
@@ -55,9 +72,19 @@ class ConsoleAnalyticsBackend implements AnalyticsBackend {
     if (!enabled) return;
     debugPrint('[analytics:time:end] $name ${params.isEmpty ? '' : params}');
   }
+
+  @override
+  Future<void> flush() async {
+    // no-op for console backend
+  }
+
+  @override
+  Future<void> dispose() async {
+    // no-op for console backend
+  }
 }
 
-/// Fan-out backend that forwards to multiple child backends (e.g., Firebase + Segment). [2]
+/// Fan-out backend that forwards to multiple child backends (e.g., Firebase + Segment).
 class MultiAnalyticsBackend implements AnalyticsBackend {
   final List<AnalyticsBackend> children;
   MultiAnalyticsBackend(this.children);
@@ -126,7 +153,7 @@ class MultiAnalyticsBackend implements AnalyticsBackend {
   }
 }
 
-/// Singleton, backend-agnostic analytics facade used across the app. [3]
+/// Singleton, backend-agnostic analytics facade used across the app.
 class Analytics {
   Analytics._internal();
   static final Analytics _instance = Analytics._internal();
@@ -139,7 +166,7 @@ class Analytics {
   // For timeEventStart/timeEventEnd
   final Map<String, DateTime> _timers = {};
 
-  /// Configure the backend(s) at app bootstrap (e.g., MultiAnalyticsBackend([...])). [2]
+  /// Configure the backend(s) at app bootstrap (e.g., MultiAnalyticsBackend([...])).
   void configure(AnalyticsBackend backend) {
     _backend = backend;
   }
@@ -171,20 +198,20 @@ class Analytics {
     await _backend.logEvent(name, params: params);
   }
 
-  /// Screen tracking helper; integrate with your Navigator/GoRouter observer callback. [12]
+  /// Screen tracking helper; integrate with your Navigator/GoRouter observer callback.
   Future<void> screen(String screenName, {Map<String, Object?> params = const {}}) async {
     if (!isEnabled) return;
     await _backend.logScreen(screenName, params: params);
   }
 
-  /// Start timing an event; pairs with end(name). [3]
+  /// Start timing an event; pairs with end(name).
   Future<void> timeStart(String name, {Map<String, Object?> params = const {}}) async {
     if (!isEnabled) return;
     _timers[name] = DateTime.now();
     await _backend.timeEventStart(name, params: params);
   }
 
-  /// End timing; durationMs is attached to params automatically. [3]
+  /// End timing; durationMs is attached to params automatically.
   Future<void> timeEnd(String name, {Map<String, Object?> params = const {}}) async {
     if (!isEnabled) return;
     final start = _timers.remove(name);
@@ -202,7 +229,7 @@ class Analytics {
 }
 
 /// Screen tracking adapter for the existing navigation observer.
-/// Call this from AppNavigationObserver.trackScreenView callback. [12]
+/// Call this from AppNavigationObserver.trackScreenView callback.
 Future<void> trackScreenView(String screenName, Map<String, String>? params) {
   return Analytics.instance.screen(
     screenName,
