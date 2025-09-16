@@ -4,7 +4,7 @@ const express = require('express');
 const router = express.Router();
 
 // Auth middleware (adjust the path/name if different in your project)
-const { requireAuth } = require('../middlewares/auth');
+const { requireAuth } = require('../middleware/auth');
 
 // Controller (ensure these handlers exist in controllers/activitiesController.js)
 const activitiesController = require('../controllers/activitiesController');

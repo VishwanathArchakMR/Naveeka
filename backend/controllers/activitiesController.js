@@ -1,6 +1,6 @@
 const Activity = require('../models/Activity');
 const Booking = require('../models/booking/Booking');
-const Review = require('../models/Review');
+const Review = require('../models/review');
 const { validationResult } = require('express-validator');
 const { StatusCodes } = require('http-status-codes');
 const geoService = require('../services/geoService');

@@ -29,7 +29,7 @@ const uploadRoutes = require('./routes/uploadRoutes');
 const regionRoutes = require('./routes/regionRoutes');
 
 // New domain routes aligned with services
-const activityRoutes = require('./routes/activityRoutes');           // /api/activities
+const activityRoutes = require('./routes/activitiesRoutes');           // /api/activities
 const airportRoutes = require('./routes/airportRoutes');             // /api/airports
 const restaurantRoutes = require('./routes/restaurantRoutes');       // /api/restaurants
 const hotelRoutes = require('./routes/hotelRoutes');                 // /api/hotels

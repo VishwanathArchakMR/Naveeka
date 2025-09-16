@@ -8,18 +8,13 @@
     "start": "node server.js",
     "start:prod": "cross-env NODE_ENV=production node server.js",
     "dev": "cross-env NODE_ENV=development nodemon server.js",
-
     "test": "jest --runInBand",
     "test:watch": "jest --watch",
     "lint": "echo \"Add ESLint config or replace this with: eslint --ext .js ./\"",
-
     "seed": "node scripts/seedData.js",
-
     "seed:admin": "node scripts/seed_admin.js",
-
     "seed:regions": "node scripts/seed_regions.js",
     "seed:regions:fresh": "node scripts/seed_regions.js --clear",
-
     "seed:activities": "node scripts/seed_activities.js",
     "seed:airports": "node scripts/seed_airports.js",
     "seed:bus-stops": "node scripts/seed_bus_stops.js",
@@ -33,7 +28,6 @@
     "seed:trails": "node scripts/seed_trails.js",
     "seed:train-stations": "node scripts/seed_train_stations.js",
     "seed:trains": "node scripts/seed_trains.js",
-
     "seed:reset:activities": "node scripts/seed_activities.js --reset",
     "seed:reset:airports": "node scripts/seed_airports.js --reset",
     "seed:reset:bus-stops": "node scripts/seed_bus_stops.js --reset",
@@ -47,7 +41,6 @@
     "seed:reset:trails": "node scripts/seed_trails.js --reset",
     "seed:reset:train-stations": "node scripts/seed_train_stations.js --reset",
     "seed:reset:trains": "node scripts/seed_trains.js --reset",
-
     "seed:demo": "npm-run-all -s seed:regions seed:locations seed:airports seed:activities seed:restaurants seed:hotels seed:trails seed:bus-stops seed:buses seed:train-stations seed:trains seed:flights"
   },
   "dependencies": {
