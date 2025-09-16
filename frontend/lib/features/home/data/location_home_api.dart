@@ -57,9 +57,9 @@ class LocationHomeApi {
 
       // Unpack each ApiResult, collecting partial errors but not failing the whole bundle. [21]
       final errors = <String>[];
-      List<Map<String, dynamic>> asList(dynamic v) => v is List ? List<Map<String, dynamic>>.from(v) : const [];
 
-      List<Map<String, dynamic>> _okOrEmpty(ApiResult<List<Map<String, dynamic>>> r, String key) {
+      List<Map<String, dynamic>> okOrEmpty(
+          ApiResult<List<Map<String, dynamic>>> r, String key) {
         return r.fold(
           onSuccess: (list) => list,
           onError: (e) {
@@ -71,18 +71,21 @@ class LocationHomeApi {
 
       final nearbyPlacesRes = futures as ApiResult<List<Map<String, dynamic>>>;
       final nearbyHotelsRes = futures as ApiResult<List<Map<String, dynamic>>>;
-      final nearbyRestaurantsRes = futures as ApiResult<List<Map<String, dynamic>>>;
-      final trendingPlacesRes = futures as ApiResult<List<Map<String, dynamic>>>;
+      final nearbyRestaurantsRes =
+          futures as ApiResult<List<Map<String, dynamic>>>;
+      final trendingPlacesRes =
+          futures as ApiResult<List<Map<String, dynamic>>>;
       final topHotelsRes = futures as ApiResult<List<Map<String, dynamic>>>;
       final whatsNewRes = futures as ApiResult<List<Map<String, dynamic>>>;
 
       final payload = <String, dynamic>{
-        'nearbyPlaces': _okOrEmpty(nearbyPlacesRes, 'nearbyPlaces'),
-        'nearbyHotels': _okOrEmpty(nearbyHotelsRes, 'nearbyHotels'),
-        'nearbyRestaurants': _okOrEmpty(nearbyRestaurantsRes, 'nearbyRestaurants'),
-        'trendingPlaces': _okOrEmpty(trendingPlacesRes, 'trendingPlaces'),
-        'topHotels': _okOrEmpty(topHotelsRes, 'topHotels'),
-        'whatsNew': _okOrEmpty(whatsNewRes, 'whatsNew'),
+        'nearbyPlaces': okOrEmpty(nearbyPlacesRes, 'nearbyPlaces'),
+        'nearbyHotels': okOrEmpty(nearbyHotelsRes, 'nearbyHotels'),
+        'nearbyRestaurants':
+            okOrEmpty(nearbyRestaurantsRes, 'nearbyRestaurants'),
+        'trendingPlaces': okOrEmpty(trendingPlacesRes, 'trendingPlaces'),
+        'topHotels': okOrEmpty(topHotelsRes, 'topHotels'),
+        'whatsNew': okOrEmpty(whatsNewRes, 'whatsNew'),
         if (errors.isNotEmpty) 'errors': errors,
       };
 
@@ -105,7 +108,8 @@ class LocationHomeApi {
 
       final errors = <String>[];
 
-      List<Map<String, dynamic>> _okOrEmpty(ApiResult<List<Map<String, dynamic>>> r, String key) {
+      List<Map<String, dynamic>> okOrEmpty(
+          ApiResult<List<Map<String, dynamic>>> r, String key) {
         return r.fold(
           onSuccess: (list) => list,
           onError: (e) {
@@ -120,9 +124,9 @@ class LocationHomeApi {
       final newRes = futures as ApiResult<List<Map<String, dynamic>>>;
 
       final payload = <String, dynamic>{
-        'exploreByRegion': _okOrEmpty(exploreRes, 'exploreByRegion'),
-        'trendingPlaces': _okOrEmpty(trendingRes, 'trendingPlaces'),
-        'whatsNew': _okOrEmpty(newRes, 'whatsNew'),
+        'exploreByRegion': okOrEmpty(exploreRes, 'exploreByRegion'),
+        'trendingPlaces': okOrEmpty(trendingRes, 'trendingPlaces'),
+        'whatsNew': okOrEmpty(newRes, 'whatsNew'),
         if (errors.isNotEmpty) 'errors': errors,
       };
 

@@ -30,10 +30,13 @@ class CabsApi {
         'drop_lat': dropLat,
         'drop_lng': dropLng,
         if (whenIso != null && whenIso.isNotEmpty) 'when': whenIso,
-        if (vehicles != null && vehicles.isNotEmpty) 'vehicles': vehicles.join(','), // csv array [3]
-        if (providers != null && providers.isNotEmpty) 'providers': providers.join(','), // csv array [3]
+        if (vehicles != null && vehicles.isNotEmpty)
+          'vehicles': vehicles.join(','), // csv array [3]
+        if (providers != null && providers.isNotEmpty)
+          'providers': providers.join(','), // csv array [3]
       };
-      final res = await _dio.get(AppConstants.apiCabsPriceEstimates, queryParameters: qp);
+      final res = await _dio.get('${AppConstants.apiCabs}/estimates/price',
+          queryParameters: qp);
       return _asList(res.data);
     });
   } // Uses Dio queryParameters and CSV-encoded arrays for broad REST compatibility [5][1].
@@ -49,9 +52,11 @@ class CabsApi {
       final qp = <String, dynamic>{
         'pickup_lat': pickupLat,
         'pickup_lng': pickupLng,
-        if (providers != null && providers.isNotEmpty) 'providers': providers.join(','), // csv [3]
+        if (providers != null && providers.isNotEmpty)
+          'providers': providers.join(','), // csv [3]
       };
-      final res = await _dio.get(AppConstants.apiCabsTimeEstimates, queryParameters: qp);
+      final res = await _dio.get('${AppConstants.apiCabs}/estimates/time',
+          queryParameters: qp);
       return _asList(res.data);
     });
   } // Simple GET with geo params for ETA listing [11].
@@ -75,7 +80,7 @@ class CabsApi {
         if (whenIso != null && whenIso.isNotEmpty) 'when': whenIso,
         if (extras != null && extras.isNotEmpty) 'extras': extras,
       };
-      final res = await _dio.post(AppConstants.apiCabsQuotes, data: body);
+      final res = await _dio.post('${AppConstants.apiCabs}/quotes', data: body);
       return Map<String, dynamic>.from(res.data as Map);
     });
   } // Mirrors ride-hailing quote->fareId pattern for upfront fares prior to booking [7].
@@ -95,7 +100,7 @@ class CabsApi {
         'payment': payment,
         if (notes != null && notes.isNotEmpty) 'notes': notes,
       };
-      final res = await _dio.post(AppConstants.apiCabsBook, data: body);
+      final res = await _dio.post('${AppConstants.apiCabs}/book', data: body);
       return Map<String, dynamic>.from(res.data as Map);
     });
   } // POST booking relies on Dio interceptors for Authorization header and errors [2].
@@ -109,7 +114,9 @@ class CabsApi {
     return ApiResult.guardFuture(() async {
       final res = await _dio.post(
         '${AppConstants.apiCabs}/$bookingId/cancel',
-        data: <String, dynamic>{if (reason != null && reason.isNotEmpty) 'reason': reason},
+        data: <String, dynamic>{
+          if (reason != null && reason.isNotEmpty) 'reason': reason
+        },
       );
       return Map<String, dynamic>.from(res.data as Map);
     });
@@ -146,9 +153,11 @@ class CabsApi {
         'lat': lat,
         'lng': lng,
         'radius_km': radiusKm,
-        if (providers != null && providers.isNotEmpty) 'providers': providers.join(','), // csv [3]
+        if (providers != null && providers.isNotEmpty)
+          'providers': providers.join(','), // csv [3]
       };
-      final res = await _dio.get(AppConstants.apiCabsNearby, queryParameters: qp);
+      final res =
+          await _dio.get('${AppConstants.apiCabs}/nearby', queryParameters: qp);
       return _asList(res.data);
     });
   } // Nearby visual overlay source for the map, using Dio GET queryParameters [11][2].

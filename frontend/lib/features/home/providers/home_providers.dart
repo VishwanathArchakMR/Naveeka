@@ -3,7 +3,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/config/constants.dart';
-import '../../../core/errors/app_exception.dart';
 import '../../../core/network/api_result.dart';
 import '../../../core/storage/location_cache.dart';
 import '../data/home_api.dart';
@@ -35,8 +34,8 @@ class GeoParams {
 }
 
 /// Location-based bundle: nearby places/hotels/restaurants, trending, top hotels, what's new. [FutureProvider.family] [6]
-final nearHomeBundleProvider =
-    FutureProvider.autoDispose.family<Map<String, dynamic>, GeoParams>((ref, p) async {
+final nearHomeBundleProvider = FutureProvider.autoDispose
+    .family<Map<String, dynamic>, GeoParams>((ref, p) async {
   final api = ref.read(locationHomeApiProvider);
   final res = await api.fetchNearBundle(
     lat: p.lat,
@@ -52,10 +51,11 @@ final nearHomeBundleProvider =
 });
 
 /// Region-focused bundle for when GPS is unavailable (explore region + trending + what's new). [FutureProvider.family] [6]
-final regionHomeBundleProvider =
-    FutureProvider.autoDispose.family<Map<String, dynamic>, String>((ref, region) async {
+final regionHomeBundleProvider = FutureProvider.autoDispose
+    .family<Map<String, dynamic>, String>((ref, region) async {
   final api = ref.read(locationHomeApiProvider);
-  final res = await api.fetchRegionBundle(region: region, limit: AppConstants.pageSize);
+  final res =
+      await api.fetchRegionBundle(region: region, limit: AppConstants.pageSize);
   return res.fold(
     onSuccess: (data) => data,
     onError: (e) => throw e,
@@ -63,8 +63,8 @@ final regionHomeBundleProvider =
 });
 
 /// Nearby places list with geo filters (independent list usage). [FutureProvider.family] [6]
-final nearbyPlacesProvider =
-    FutureProvider.autoDispose.family<List<Map<String, dynamic>>, GeoParams>((ref, p) async {
+final nearbyPlacesProvider = FutureProvider.autoDispose
+    .family<List<Map<String, dynamic>>, GeoParams>((ref, p) async {
   final api = ref.read(homeApiProvider);
   final res = await api.nearbyPlaces(
     lat: p.lat,
@@ -80,8 +80,8 @@ final nearbyPlacesProvider =
 });
 
 /// Nearby hotels list. [FutureProvider.family] [6]
-final nearbyHotelsProvider =
-    FutureProvider.autoDispose.family<List<Map<String, dynamic>>, GeoParams>((ref, p) async {
+final nearbyHotelsProvider = FutureProvider.autoDispose
+    .family<List<Map<String, dynamic>>, GeoParams>((ref, p) async {
   final api = ref.read(homeApiProvider);
   final res = await api.nearbyHotels(
     lat: p.lat,
@@ -96,8 +96,8 @@ final nearbyHotelsProvider =
 });
 
 /// Nearby restaurants list. [FutureProvider.family] [6]
-final nearbyRestaurantsProvider =
-    FutureProvider.autoDispose.family<List<Map<String, dynamic>>, GeoParams>((ref, p) async {
+final nearbyRestaurantsProvider = FutureProvider.autoDispose
+    .family<List<Map<String, dynamic>>, GeoParams>((ref, p) async {
   final api = ref.read(homeApiProvider);
   final res = await api.nearbyRestaurants(
     lat: p.lat,
@@ -116,7 +116,8 @@ class TrendingParams {
   final double? lat;
   final double? lng;
   final int limit;
-  const TrendingParams({this.lat, this.lng, this.limit = AppConstants.pageSize});
+  const TrendingParams(
+      {this.lat, this.lng, this.limit = AppConstants.pageSize});
 }
 
 final trendingPlacesProvider = FutureProvider.autoDispose
@@ -130,7 +131,8 @@ final trendingPlacesProvider = FutureProvider.autoDispose
 });
 
 /// What's new (recently added places). [FutureProvider] [12]
-final whatsNewProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
+final whatsNewProvider =
+    FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
   final api = ref.read(homeApiProvider);
   final res = await api.whatsNew(limit: AppConstants.pageSize);
   return res.fold(
@@ -140,10 +142,11 @@ final whatsNewProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>(
 });
 
 /// Explore by region (for category tabs/filters). [FutureProvider.family] [6]
-final exploreByRegionProvider =
-    FutureProvider.autoDispose.family<List<Map<String, dynamic>>, String>((ref, region) async {
+final exploreByRegionProvider = FutureProvider.autoDispose
+    .family<List<Map<String, dynamic>>, String>((ref, region) async {
   final api = ref.read(homeApiProvider);
-  final res = await api.exploreByRegion(region: region, limit: AppConstants.pageSize);
+  final res =
+      await api.exploreByRegion(region: region, limit: AppConstants.pageSize);
   return res.fold(
     onSuccess: (list) => list,
     onError: (e) => throw e,

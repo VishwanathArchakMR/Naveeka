@@ -19,21 +19,29 @@ class ApiError implements Exception {
 /// Functional result type with fold for onSuccess/onError ergonomics.
 abstract class Result<T> {
   const Result();
-  R fold<R>({required R Function(T data) onSuccess, required R Function(ApiError e) onError});
+  R fold<R>(
+      {required R Function(T data) onSuccess,
+      required R Function(ApiError e) onError});
 }
 
 class Ok<T> extends Result<T> {
   const Ok(this.data);
   final T data;
   @override
-  R fold<R>({required R Function(T data) onSuccess, required R Function(ApiError e) onError}) => onSuccess(data);
+  R fold<R>(
+          {required R Function(T data) onSuccess,
+          required R Function(ApiError e) onError}) =>
+      onSuccess(data);
 }
 
 class Err<T> extends Result<T> {
   const Err(this.error);
   final ApiError error;
   @override
-  R fold<R>({required R Function(T data) onSuccess, required R Function(ApiError e) onError}) => onError(error);
+  R fold<R>(
+          {required R Function(T data) onSuccess,
+          required R Function(ApiError e) onError}) =>
+      onError(error);
 }
 
 /// OpenAI-compatible Chat + helpers (plan/suggest/moderate).
@@ -66,7 +74,8 @@ class NaveeAiApi {
     };
   }
 
-  Uri _u(String path) => Uri.parse('${baseUrl.replaceAll(RegExp(r"/$"), "")}$path');
+  Uri _u(String path) =>
+      Uri.parse('${baseUrl.replaceAll(RegExp(r"/$"), "")}$path');
 
   // ------------------------
   // Core: Chat Completions
@@ -91,11 +100,14 @@ class NaveeAiApi {
       };
 
       final res = await _client
-          .post(_u('/chat/completions'), headers: _headers(), body: jsonEncode(body))
-          .timeout(timeout); // Use http with application/json headers and parse JSON per cookbook guidance [6][7]
+          .post(_u('/chat/completions'),
+              headers: _headers(), body: jsonEncode(body))
+          .timeout(
+              timeout); // Use http with application/json headers and parse JSON per cookbook guidance [6][7]
 
       if (res.statusCode < 200 || res.statusCode >= 300) {
-        return Err<Map<String, dynamic>>(MapError.fromResponse(res).toApiError<Map<String, dynamic>>());
+        return Err<Map<String, dynamic>>(
+            MapError.fromResponse(res).toApiError());
       }
       final data = jsonDecode(res.body) as Map<String, dynamic>;
       return Ok(data);
@@ -123,12 +135,14 @@ class NaveeAiApi {
     int adults = 2,
     int children = 0,
     String? style, // e.g., "family", "romantic", "budget", "luxury"
-    List<String> interests = const <String>[], // e.g., ["beaches","museums","food"]
+    List<String> interests =
+        const <String>[], // e.g., ["beaches","museums","food"]
     String? currency, // format budget-related outputs
     String? language, // preferred language for text
     String? model,
   }) async {
-    final sys = 'You are Navee, a travel AI that outputs STRICT JSON with no extra text.'; // System role per chat API roles [5]
+    const sys =
+        'You are Navee, a travel AI that outputs STRICT JSON with no extra text.'; // System role per chat API roles [5]
     final user = '''
 Build a city itinerary with the following fields:
 {
@@ -161,7 +175,8 @@ Constraints:
         }
         final json = _extractJson(content);
         if (json == null) {
-          return Err<Map<String, dynamic>>(ApiError('Failed to parse plan JSON'));
+          return Err<Map<String, dynamic>>(
+              ApiError('Failed to parse plan JSON'));
         }
         return Ok(json);
       },
@@ -177,7 +192,8 @@ Constraints:
     int maxSuggestions = 5,
     String? model,
   }) async {
-    final sys = 'You are Navee, outputting STRICT JSON arrays only.'; // System instruction to constrain output format [5]
+    const sys =
+        'You are Navee, outputting STRICT JSON arrays only.'; // System instruction to constrain output format [5]
     final user = '''
 Suggest up to $maxSuggestions high-level itinerary ideas for $destination.
 Schema:
@@ -207,7 +223,8 @@ Only return JSON array with objects following the schema; no comments.
         if (json is List) {
           return Ok(List<Map<String, dynamic>>.from(json));
         }
-        return Err<List<Map<String, dynamic>>>(ApiError('Unexpected suggestions format'));
+        return Err<List<Map<String, dynamic>>>(
+            ApiError('Unexpected suggestions format'));
       },
       onError: (e) => Err<List<Map<String, dynamic>>>(e),
     );
@@ -218,7 +235,8 @@ Only return JSON array with objects following the schema; no comments.
   // ------------------------
 
   /// Optional moderation endpoint compatibility; returns raw provider payload.
-  Future<Result<Map<String, dynamic>>> moderate({required String input, String? model}) async {
+  Future<Result<Map<String, dynamic>>> moderate(
+      {required String input, String? model}) async {
     try {
       final body = {
         if (model != null) 'model': model,
@@ -226,10 +244,12 @@ Only return JSON array with objects following the schema; no comments.
       };
       final res = await _client
           .post(_u('/moderations'), headers: _headers(), body: jsonEncode(body))
-          .timeout(timeout); // JSON Content-Type is the standard for POST request bodies conveying JSON payloads [16][13]
+          .timeout(
+              timeout); // JSON Content-Type is the standard for POST request bodies conveying JSON payloads [16][13]
 
       if (res.statusCode < 200 || res.statusCode >= 300) {
-        return Err<Map<String, dynamic>>(MapError.fromResponse(res).toApiError<Map<String, dynamic>>());
+        return Err<Map<String, dynamic>>(
+            MapError.fromResponse(res).toApiError());
       }
       final data = jsonDecode(res.body) as Map<String, dynamic>;
       return Ok(data);
@@ -303,5 +323,5 @@ class MapError {
     return MapError(status: res.statusCode, message: msg, body: res.body);
   }
 
-  Err<T> toApiError<T>() => Err<T>(ApiError(message, status: status));
+  ApiError toApiError() => ApiError(message, status: status);
 }

@@ -36,19 +36,24 @@ class FlightsApi {
         'from': from,
         'to': to,
         'date': date,
-        if (returnDate != null && returnDate.isNotEmpty) 'returnDate': returnDate,
+        if (returnDate != null && returnDate.isNotEmpty)
+          'returnDate': returnDate,
         'adults': adults,
         if (children > 0) 'children': children,
         if (infants > 0) 'infants': infants,
         'cabin': cabin,
-        if (carriers != null && carriers.isNotEmpty) 'carriers': carriers.join(','), // csv arrays for broad REST compatibility
+        if (carriers != null && carriers.isNotEmpty)
+          'carriers':
+              carriers.join(','), // csv arrays for broad REST compatibility
         if (excludeCarriers != null && excludeCarriers.isNotEmpty)
-          'excludeCarriers': excludeCarriers.join(','), // csv arrays for broad REST compatibility
+          'excludeCarriers': excludeCarriers
+              .join(','), // csv arrays for broad REST compatibility
         if (sort != null && sort.isNotEmpty) 'sort': sort,
         'page': page,
         'limit': limit,
       };
-      final res = await _dio.get(AppConstants.apiFlightsSearch, queryParameters: qp);
+      final res = await _dio.get('${AppConstants.apiFlights}/search',
+          queryParameters: qp);
       return Map<String, dynamic>.from(res.data as Map);
     });
   } // Encodes arrays with commas and uses Dio queryParameters as recommended for GET filters [2][5].
@@ -69,10 +74,12 @@ class FlightsApi {
         'pax': pax,
         'cabin': cabin,
         if (carriers != null && carriers.isNotEmpty) 'carriers': carriers,
-        if (excludeCarriers != null && excludeCarriers.isNotEmpty) 'excludeCarriers': excludeCarriers,
+        if (excludeCarriers != null && excludeCarriers.isNotEmpty)
+          'excludeCarriers': excludeCarriers,
         if (sort != null && sort.isNotEmpty) 'sort': sort,
       };
-      final res = await _dio.post('${AppConstants.apiFlightsSearch}/multi', data: body);
+      final res = await _dio.post('${AppConstants.apiFlights}/search/multi',
+          data: body);
       return Map<String, dynamic>.from(res.data as Map);
     });
   } // Multi-city is typically POST with structured legs and pax details following flight-offer search conventions [7].
@@ -82,10 +89,12 @@ class FlightsApi {
   /// Verify and price selected flight offers prior to booking (locks fare & returns pricing breakdown). [10]
   /// POST /api/flights/offers/price { "offers":[...], "pax":{...}, "ancillaries":{...} }
   Future<ApiResult<Map<String, dynamic>>> priceOffers({
-    required Map<String, dynamic> payload, // offers + pax (+ optional ancillaries)
+    required Map<String, dynamic>
+        payload, // offers + pax (+ optional ancillaries)
   }) {
     return ApiResult.guardFuture(() async {
-      final res = await _dio.post(AppConstants.apiFlightsOffersPrice, data: payload);
+      final res = await _dio.post('${AppConstants.apiFlights}/offers/price',
+          data: payload);
       return Map<String, dynamic>.from(res.data as Map);
     });
   } // Price verification is a POST step in most flight booking flows to confirm total and rules prior to order creation [10].
@@ -127,7 +136,8 @@ class FlightsApi {
     required Map<String, dynamic> payload,
   }) {
     return ApiResult.guardFuture(() async {
-      final res = await _dio.post(AppConstants.apiFlightsOrders, data: payload);
+      final res =
+          await _dio.post('${AppConstants.apiFlights}/orders', data: payload);
       return Map<String, dynamic>.from(res.data as Map);
     });
   } // Booking creates PNR/ticketing confirmation and returns order references for status/receipt pages [10].
@@ -136,7 +146,8 @@ class FlightsApi {
   /// GET /api/flights/orders/:id/status
   Future<ApiResult<Map<String, dynamic>>> orderStatus(String orderId) {
     return ApiResult.guardFuture(() async {
-      final res = await _dio.get('${AppConstants.apiFlightsOrders}/$orderId/status');
+      final res =
+          await _dio.get('${AppConstants.apiFlights}/orders/$orderId/status');
       return Map<String, dynamic>.from(res.data as Map);
     });
   } // Enables polling or on-demand status checks after redirect/payment flows [10].
@@ -148,8 +159,12 @@ class FlightsApi {
     String? reason,
   }) {
     return ApiResult.guardFuture(() async {
-      final body = <String, dynamic>{if (reason != null && reason.isNotEmpty) 'reason': reason};
-      final res = await _dio.post('${AppConstants.apiFlightsOrders}/$orderId/cancel', data: body);
+      final body = <String, dynamic>{
+        if (reason != null && reason.isNotEmpty) 'reason': reason
+      };
+      final res = await _dio.post(
+          '${AppConstants.apiFlights}/orders/$orderId/cancel',
+          data: body);
       return Map<String, dynamic>.from(res.data as Map);
     });
   } // Standard cancellation endpoint encapsulating provider/GDS specifics in backend [10].

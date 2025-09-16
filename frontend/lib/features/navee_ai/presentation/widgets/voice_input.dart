@@ -11,9 +11,9 @@ class VoiceInputButton extends StatelessWidget {
   const VoiceInputButton({
     super.key,
     this.label = 'Voice',
-    this.onFinal,        // void Function(String text)
-    this.onPartial,      // void Function(String text)
-    this.initialLocale,  // e.g. "en_US"
+    this.onFinal, // void Function(String text)
+    this.onPartial, // void Function(String text)
+    this.initialLocale, // e.g. "en_US"
     this.tooltip = 'Speak your prompt',
     this.icon = Icons.mic_none_rounded,
   });
@@ -37,7 +37,10 @@ class VoiceInputButton extends StatelessWidget {
       icon: Icon(icon),
       label: Text(label),
     );
-    return Tooltip(message: tooltip, child: btn); // Tooltip provides an accessible label for the input action. [21]
+    return Tooltip(
+        message: tooltip,
+        child:
+            btn); // Tooltip provides an accessible label for the input action. [21]
   }
 }
 
@@ -114,7 +117,8 @@ class _VoiceInputSheetState extends State<VoiceInputSheet> {
 
   Future<void> _bootstrap() async {
     // Request mic permission before initializing speech engine.
-    final mic = await Permission.microphone.request(); // permission_handler requests mic access on Android/iOS with consistent API. [9][17]
+    final mic = await Permission.microphone
+        .request(); // permission_handler requests mic access on Android/iOS with consistent API. [9][17]
     if (!mic.isGranted) {
       setState(() {
         _initializing = false;
@@ -142,13 +146,15 @@ class _VoiceInputSheetState extends State<VoiceInputSheet> {
         locales = const [];
       }
 
+      final sysLocale = await _speech.systemLocale();
       setState(() {
         _available = ok;
         _initializing = false;
         _locales = locales;
         // Pick initial locale: provided, device default from plugin, else first available.
         _localeId = widget.initialLocale ??
-            (_speech.systemLocale()?.localeId ?? (locales.isNotEmpty ? locales.first.localeId : null));
+            (sysLocale?.localeId ??
+                (locales.isNotEmpty ? locales.first.localeId : null));
       });
     } catch (e) {
       setState(() {
@@ -177,7 +183,8 @@ class _VoiceInputSheetState extends State<VoiceInputSheet> {
         listenMode: stt.ListenMode.confirmation,
         partialResults: true,
         localeId: _localeId,
-        onSoundLevelChange: (level) => setState(() => _level = level.clamp(0, 60)), // UI meter from plugin sound level callback. [1]
+        onSoundLevelChange: (level) => setState(() => _level = level.clamp(
+            0, 60)), // UI meter from plugin sound level callback. [1]
       ); // Call listen with onResult and optional localeId/partialResults for real-time transcription. [1]
       setState(() => _listening = true);
     } catch (e) {
@@ -231,7 +238,9 @@ class _VoiceInputSheetState extends State<VoiceInputSheet> {
     final canListen = _available && !_initializing;
     final statusText = _initializing
         ? 'Initializing…'
-        : (!_available ? (_error ?? 'Speech unavailable') : (_listening ? 'Listening…' : 'Ready'));
+        : (!_available
+            ? (_error ?? 'Speech unavailable')
+            : (_listening ? 'Listening…' : 'Ready'));
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
@@ -242,16 +251,21 @@ class _VoiceInputSheetState extends State<VoiceInputSheet> {
           Row(
             children: [
               const Expanded(
-                child: Text('Voice input', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+                child: Text('Voice input',
+                    style:
+                        TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
               ),
-              IconButton(onPressed: () => Navigator.of(context).maybePop(), icon: const Icon(Icons.close)),
+              IconButton(
+                  onPressed: () => Navigator.of(context).maybePop(),
+                  icon: const Icon(Icons.close)),
             ],
           ),
 
           // Status and locale
           Row(
             children: [
-              Icon(_listening ? Icons.mic : Icons.mic_none, color: _listening ? Colors.red : Colors.black54),
+              Icon(_listening ? Icons.mic : Icons.mic_none,
+                  color: _listening ? Colors.red : Colors.black54),
               const SizedBox(width: 6),
               Text(statusText),
               const Spacer(),
@@ -306,7 +320,8 @@ class _VoiceInputSheetState extends State<VoiceInputSheet> {
             children: [
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: !_listening ? (canListen ? _start : null) : _cancel,
+                  onPressed:
+                      !_listening ? (canListen ? _start : null) : _cancel,
                   icon: Icon(!_listening ? Icons.mic : Icons.close),
                   label: Text(!_listening ? 'Start' : 'Cancel'),
                 ),

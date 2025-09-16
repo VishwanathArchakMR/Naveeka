@@ -4,7 +4,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
+// import 'package:flutter_markdown/flutter_markdown.dart';
 
 enum BubbleRole { user, assistant, system }
 
@@ -37,9 +37,7 @@ class MessageBubble extends StatelessWidget {
     final bg = _isUser
         ? theme.colorScheme.primaryContainer
         : theme.colorScheme.surfaceContainerHighest;
-    final fg = _isUser
-        ? theme.colorScheme.onPrimaryContainer
-        : Colors.black87;
+    final fg = _isUser ? theme.colorScheme.onPrimaryContainer : Colors.black87;
 
     final bubble = ConstrainedBox(
       constraints: BoxConstraints(maxWidth: maxWidth),
@@ -177,12 +175,10 @@ class _ContentView extends StatelessWidget {
           // fall through to markdown
         }
       }
-      return MarkdownBody(
-        data: s,
-        selectable: true,
-        styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context))
-            .copyWith(p: TextStyle(color: fg)),
-      ); // MarkdownBody with selectable: true enables text selection for better UX when copying content. [1][3]
+      return SelectableText(
+        s,
+        style: TextStyle(color: fg),
+      ); // Use SelectableText when markdown package is unavailable.
     }
 
     // Fallback
@@ -244,8 +240,7 @@ class _MetaRow extends StatelessWidget {
 
     return Row(
       children: [
-        if (ts != null)
-          Text(ts, style: TextStyle(color: muted, fontSize: 11)),
+        if (ts != null) Text(ts, style: TextStyle(color: muted, fontSize: 11)),
         const Spacer(),
         Tooltip(
           message: 'Copy',
@@ -292,7 +287,8 @@ class _MetaRow extends StatelessWidget {
 }
 
 class BubbleAction {
-  const BubbleAction({required this.icon, required this.label, required this.onPressed});
+  const BubbleAction(
+      {required this.icon, required this.label, required this.onPressed});
   final IconData icon;
   final String label;
   final VoidCallback onPressed;

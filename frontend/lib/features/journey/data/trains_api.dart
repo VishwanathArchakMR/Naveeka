@@ -33,15 +33,18 @@ class TrainsApi {
         'from': from,
         'to': to,
         'date': date,
-        if (classes != null && classes.isNotEmpty) 'classes': classes.join(','), // csv arrays
+        if (classes != null && classes.isNotEmpty)
+          'classes': classes.join(','), // csv arrays
         if (quota != null && quota.isNotEmpty) 'quota': quota,
-        if (operators != null && operators.isNotEmpty) 'operators': operators.join(','), // csv arrays
+        if (operators != null && operators.isNotEmpty)
+          'operators': operators.join(','), // csv arrays
         if (flexible != null) 'flexible': flexible,
         if (sort != null && sort.isNotEmpty) 'sort': sort,
         'page': page,
         'limit': limit,
       };
-      final res = await _dio.get(AppConstants.apiTrainsSearch, queryParameters: qp);
+      final res = await _dio.get('${AppConstants.apiTrains}/search',
+          queryParameters: qp);
       return Map<String, dynamic>.from(res.data as Map);
     });
   } // Uses Dio queryParameters and CSV for arrays to keep REST URLs interoperable with most servers [8][5][4].
@@ -134,7 +137,8 @@ class TrainsApi {
         if (children > 0) 'children': children,
         if (seniors > 0) 'seniors': seniors,
       };
-      final res = await _dio.get('${AppConstants.apiTrains}/$idOrNumber/fares', queryParameters: qp);
+      final res = await _dio.get('${AppConstants.apiTrains}/$idOrNumber/fares',
+          queryParameters: qp);
       return Map<String, dynamic>.from(res.data as Map);
     });
   } // Fare retrieval separates price logic from availability check for clearer UX steps [8].
@@ -148,7 +152,8 @@ class TrainsApi {
     required Map<String, dynamic> payload,
   }) {
     return ApiResult.guardFuture(() async {
-      final res = await _dio.post('${AppConstants.apiTrains}/$idOrNumber/book', data: payload);
+      final res = await _dio.post('${AppConstants.apiTrains}/$idOrNumber/book',
+          data: payload);
       return Map<String, dynamic>.from(res.data as Map);
     });
   } // Booking uses POST JSON body and relies on interceptors for Authorization headers [2].
@@ -160,8 +165,9 @@ class TrainsApi {
     Map<String, dynamic>? payload,
   }) {
     return ApiResult.guardFuture(() async {
-      final res =
-          await _dio.post('${AppConstants.apiTrains}/bookings/$pnr/cancel', data: payload ?? const {});
+      final res = await _dio.post(
+          '${AppConstants.apiTrains}/bookings/$pnr/cancel',
+          data: payload ?? const {});
       return Map<String, dynamic>.from(res.data as Map);
     });
   } // POST is used to carry metadata and partial cancel selections in body [8].

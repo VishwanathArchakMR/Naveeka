@@ -19,6 +19,7 @@ class AppConstants {
   static const String apiPlaces = '$apiV1/places';
   static const String apiWishlist = '$apiV1/wishlist';
   static const String apiBookings = '$apiV1/bookings';
+  static const String apiJourneys = '$apiV1/journeys';
   static const String apiHotels = '$apiV1/hotels';
   static const String apiRestaurants = '$apiV1/restaurants';
   static const String apiActivities = '$apiV1/activities';
@@ -138,5 +139,6 @@ class ApiPath {
 
   // ----- Bookings -----
   static String bookings() => _join(AppConstants.apiBookings);
-  static String bookingById(String id) => _join('${AppConstants.apiBookings}/$id');
+  static String bookingById(String id) =>
+      _join('${AppConstants.apiBookings}/$id');
 }

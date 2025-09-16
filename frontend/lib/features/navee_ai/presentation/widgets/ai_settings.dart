@@ -73,7 +73,11 @@ class AiSettingsSheet extends StatefulWidget {
   static Future<AiSettings?> show(
     BuildContext context, {
     required AiSettings initial,
-    List<String> availableModels = const ['gpt-4o-mini', 'gpt-4o', 'gpt-4.1-mini'],
+    List<String> availableModels = const [
+      'gpt-4o-mini',
+      'gpt-4o',
+      'gpt-4.1-mini'
+    ],
     String title = 'AI settings',
   }) {
     return showModalBottomSheet<AiSettings>(
@@ -122,7 +126,9 @@ class _AiSettingsSheetState extends State<AiSettingsSheet> {
     _apiKeyCtrl = TextEditingController(text: widget.initial.apiKey);
     _customModelCtrl = TextEditingController();
     _maxTokensCtrl = TextEditingController(
-      text: widget.initial.maxTokens != null ? widget.initial.maxTokens.toString() : '',
+      text: widget.initial.maxTokens != null
+          ? widget.initial.maxTokens.toString()
+          : '',
     );
 
     _model = widget.initial.model;
@@ -166,7 +172,9 @@ class _AiSettingsSheetState extends State<AiSettingsSheet> {
     final model = _useCustomModel ? _customModelCtrl.text.trim() : _model;
     final maxTok = int.tryParse(_maxTokensCtrl.text.trim());
     final out = AiSettings(
-      baseUrl: _baseUrlCtrl.text.trim().replaceAll(RegExp(r'/*$'), ''), // strip trailing '/'
+      baseUrl: _baseUrlCtrl.text
+          .trim()
+          .replaceAll(RegExp(r'/*$'), ''), // strip trailing '/'
       apiKey: _apiKeyCtrl.text.trim(),
       model: model,
       temperature: _temperature,
@@ -198,10 +206,12 @@ class _AiSettingsSheetState extends State<AiSettingsSheet> {
                     Expanded(
                       child: Text(
                         widget.title,
-                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w700, fontSize: 16),
                       ),
                     ),
-                    TextButton(onPressed: _resetDefaults, child: const Text('Reset')),
+                    TextButton(
+                        onPressed: _resetDefaults, child: const Text('Reset')),
                     IconButton(
                       onPressed: () => Navigator.of(context).maybePop(),
                       icon: const Icon(Icons.close),
@@ -221,7 +231,9 @@ class _AiSettingsSheetState extends State<AiSettingsSheet> {
                   validator: (v) {
                     final s = (v ?? '').trim();
                     if (s.isEmpty) return 'Enter base URL';
-                    if (!s.startsWith('http')) return 'URL must start with http/https';
+                    if (!s.startsWith('http')) {
+                      return 'URL must start with http/https';
+                    }
                     return null;
                   },
                 ), // Base URL is required and validated using a TextFormField validator inside a Form per Flutter cookbook patterns [10][13]
@@ -236,8 +248,11 @@ class _AiSettingsSheetState extends State<AiSettingsSheet> {
                     prefixIcon: const Icon(Icons.vpn_key_outlined),
                     suffixIcon: IconButton(
                       tooltip: _showApiKey ? 'Hide' : 'Show',
-                      icon: Icon(_showApiKey ? Icons.visibility_off : Icons.visibility),
-                      onPressed: () => setState(() => _showApiKey = !_showApiKey),
+                      icon: Icon(_showApiKey
+                          ? Icons.visibility_off
+                          : Icons.visibility),
+                      onPressed: () =>
+                          setState(() => _showApiKey = !_showApiKey),
                     ),
                   ),
                   obscureText: !_showApiKey,
@@ -255,9 +270,10 @@ class _AiSettingsSheetState extends State<AiSettingsSheet> {
                   children: [
                     Expanded(
                       child: DropdownButtonFormField<String>(
-                        value: _useCustomModel ? null : _model,
+                        initialValue: _useCustomModel ? null : _model,
                         items: widget.availableModels
-                            .map((m) => DropdownMenuItem(value: m, child: Text(m)))
+                            .map((m) =>
+                                DropdownMenuItem(value: m, child: Text(m)))
                             .toList(growable: false),
                         onChanged: (v) {
                           setState(() {
@@ -273,7 +289,8 @@ class _AiSettingsSheetState extends State<AiSettingsSheet> {
                     ),
                     const SizedBox(width: 8),
                     OutlinedButton.icon(
-                      onPressed: () => setState(() => _useCustomModel = !_useCustomModel),
+                      onPressed: () =>
+                          setState(() => _useCustomModel = !_useCustomModel),
                       icon: const Icon(Icons.edit_outlined),
                       label: Text(_useCustomModel ? 'Built‑in' : 'Custom'),
                     ),
@@ -305,7 +322,8 @@ class _AiSettingsSheetState extends State<AiSettingsSheet> {
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.thermostat_outlined, size: 18, color: Colors.black54),
+                        const Icon(Icons.thermostat_outlined,
+                            size: 18, color: Colors.black54),
                         const SizedBox(width: 6),
                         Text('Temperature: ${_temperature.toStringAsFixed(2)}'),
                       ],
@@ -346,13 +364,15 @@ class _AiSettingsSheetState extends State<AiSettingsSheet> {
                   value: _jsonOnly,
                   onChanged: (v) => setState(() => _jsonOnly = v),
                   title: const Text('Expect JSON only'),
-                  subtitle: const Text('Ask the model to reply strictly with JSON'),
+                  subtitle:
+                      const Text('Ask the model to reply strictly with JSON'),
                 ),
                 SwitchListTile(
                   value: _stripFences,
                   onChanged: (v) => setState(() => _stripFences = v),
-                  title: const Text('Strip ```
-                  subtitle: const Text('Remove Markdown code fences before JSON parsing'),
+                  title: const Text('Strip code fences'),
+                  subtitle: const Text(
+                      'Remove Markdown code fences before JSON parsing'),
                 ),
                 SwitchListTile(
                   value: _useModeration,

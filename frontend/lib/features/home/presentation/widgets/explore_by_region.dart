@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../navigation/route_names.dart';
+import 'package:naveeka/navigation/route_names.dart';
 
 class ExploreByRegionSection extends StatelessWidget {
   final List<Map<String, dynamic>> regions;

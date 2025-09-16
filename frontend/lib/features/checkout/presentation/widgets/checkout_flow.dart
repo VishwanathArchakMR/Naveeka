@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 
-import '../../../../core/config/constants.dart';
 
 class CheckoutFlow extends StatefulWidget {
   const CheckoutFlow({

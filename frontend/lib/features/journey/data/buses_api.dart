@@ -33,9 +33,12 @@ class BusesApi {
         'from': fromCode,
         'to': toCode,
         'date': date,
-        if (returnDate != null && returnDate.isNotEmpty) 'returnDate': returnDate,
-        if (operators != null && operators.isNotEmpty) 'operators': operators.join(','), // csv array
-        if (classes != null && classes.isNotEmpty) 'classes': classes.join(','), // csv array
+        if (returnDate != null && returnDate.isNotEmpty)
+          'returnDate': returnDate,
+        if (operators != null && operators.isNotEmpty)
+          'operators': operators.join(','), // csv array
+        if (classes != null && classes.isNotEmpty)
+          'classes': classes.join(','), // csv array
         if (q != null && q.isNotEmpty) 'q': q,
         if (minPrice != null) 'min_price': minPrice,
         if (maxPrice != null) 'max_price': maxPrice,
@@ -43,7 +46,8 @@ class BusesApi {
         'page': page,
         'limit': limit,
       };
-      final res = await _dio.get(AppConstants.apiBusesSearch, queryParameters: qp);
+      final res = await _dio.get('${AppConstants.apiBuses}/search',
+          queryParameters: qp);
       return Map<String, dynamic>.from(res.data as Map);
     });
   }
@@ -87,10 +91,13 @@ class BusesApi {
         'date': date,
         'seats': seats.join(','), // csv array
         'passengers': passengers,
-        if (boardingPointId != null && boardingPointId.isNotEmpty) 'boarding': boardingPointId,
-        if (droppingPointId != null && droppingPointId.isNotEmpty) 'dropping': droppingPointId,
+        if (boardingPointId != null && boardingPointId.isNotEmpty)
+          'boarding': boardingPointId,
+        if (droppingPointId != null && droppingPointId.isNotEmpty)
+          'dropping': droppingPointId,
       };
-      final res = await _dio.get('${AppConstants.apiBuses}/$id/fares', queryParameters: qp);
+      final res = await _dio.get('${AppConstants.apiBuses}/$id/fares',
+          queryParameters: qp);
       return Map<String, dynamic>.from(res.data as Map);
     });
   }
@@ -103,7 +110,8 @@ class BusesApi {
     required Map<String, dynamic> payload,
   }) {
     return ApiResult.guardFuture(() async {
-      final res = await _dio.post('${AppConstants.apiBuses}/$id/book', data: payload);
+      final res =
+          await _dio.post('${AppConstants.apiBuses}/$id/book', data: payload);
       return Map<String, dynamic>.from(res.data as Map);
     });
   }
@@ -115,8 +123,12 @@ class BusesApi {
     String? reason,
   }) {
     return ApiResult.guardFuture(() async {
-      final body = <String, dynamic>{'pnr': pnr, if (reason != null && reason.isNotEmpty) 'reason': reason};
-      final res = await _dio.post('${AppConstants.apiBuses}/cancel', data: body);
+      final body = <String, dynamic>{
+        'pnr': pnr,
+        if (reason != null && reason.isNotEmpty) 'reason': reason
+      };
+      final res =
+          await _dio.post('${AppConstants.apiBuses}/cancel', data: body);
       return Map<String, dynamic>.from(res.data as Map);
     });
   }

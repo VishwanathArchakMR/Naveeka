@@ -33,7 +33,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    
+
     // Initialize location service
     WidgetsBinding.instance.addPostFrameCallback((_) {
       LocationService.instance.getCurrentLocation();
@@ -75,9 +75,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               floating: false,
               pinned: true,
               elevation: _isScrolled ? 1 : 0,
-              backgroundColor: _isScrolled 
-                ? Theme.of(context).scaffoldBackgroundColor
-                : Colors.transparent,
+              backgroundColor: _isScrolled
+                  ? Theme.of(context).scaffoldBackgroundColor
+                  : Colors.transparent,
               flexibleSpace: FlexibleSpaceBar(
                 background: Container(
                   decoration: BoxDecoration(
@@ -114,7 +114,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 delegate: SliverChildListDelegate([
                   // Hero Section
                   const HeroSection(),
-                  
+
                   const SizedBox(height: 16),
 
                   // Search Bar
@@ -248,7 +248,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   List<Place> _extractNearbyRestaurants(Map<String, dynamic> homeData) {
-    final restaurantsData = homeData['nearbyRestaurants'] as List<dynamic>? ?? [];
+    final restaurantsData =
+        homeData['nearbyRestaurants'] as List<dynamic>? ?? [];
     return restaurantsData
         .cast<Map<String, dynamic>>()
         .map((data) => Place.fromJson(data))
@@ -287,26 +288,23 @@ class HomeFallbackContent extends StatelessWidget {
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              gradient: AppThemes.naveekaGradient,
-              borderRadius: BorderRadius.circular(16),
-            ),
+            decoration: AppThemes.naveekaGradientCard,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Welcome to Naveeka',
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Discover amazing places and plan your perfect journey',
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Colors.white.withValues(alpha: 0.9),
-                  ),
+                        color: Colors.white.withValues(alpha: 0.9),
+                      ),
                 ),
               ],
             ),
