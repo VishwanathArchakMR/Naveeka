@@ -2,8 +2,9 @@
 
 import 'dart:async';
 
-import '../utils/location_utils.dart';
+import '../../models/coordinates.dart'; // Use the shared Coordinates model [no code asset path change needed]
 import '../storage/local_storage.dart';
+import '../utils/location_utils.dart';
 
 /// Lightweight snapshot used for caching last-known location without
 /// depending on service-layer types.
@@ -35,8 +36,8 @@ class LocationSnapshot {
       latitude: (json['latitude'] as num?)?.toDouble() ?? 0.0,
       longitude: (json['longitude'] as num?)?.toDouble() ?? 0.0,
       accuracy: (json['accuracy'] as num?)?.toDouble(),
-      timestamp: DateTime.tryParse(json['timestamp'] as String? ?? '') ??
-          DateTime.now(),
+      timestamp:
+          DateTime.tryParse(json['timestamp'] as String? ?? '') ?? DateTime.now(),
       address: json['address'] as String?,
     );
   }
@@ -73,10 +74,10 @@ class LocationCache {
   Future<void> saveLast(LocationSnapshot snapshot) async {
     // Clamp to WGS84 and round to reduce noise in cache churn.
     final clamped = LocationUtils.clampToWgs84(
-      (LocationUtils.round(
+      LocationUtils.round(
         Coordinates(latitude: snapshot.latitude, longitude: snapshot.longitude),
         fractionDigits: 6,
-      )),
+      ),
     );
     final normalized = LocationSnapshot(
       latitude: clamped.latitude,
@@ -160,11 +161,4 @@ class LocationCache {
   Future<void> dispose() async {
     await _changes.close();
   }
-}
-
-/// Minimal coordinate model to avoid importing models layer here.
-class Coordinates {
-  final double latitude;
-  final double longitude;
-  const Coordinates({required this.latitude, required this.longitude});
 }
