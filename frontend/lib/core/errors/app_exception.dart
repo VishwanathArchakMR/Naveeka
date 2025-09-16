@@ -3,7 +3,7 @@
 import 'package:dio/dio.dart';
 
 /// A unified application exception carrying a user-safe message, an optional
-/// HTTP status code, raw details, and the originating cause when available. [2]
+/// HTTP status code, raw details, and the originating cause when available.
 class AppException implements Exception {
   final String message;           // developer/log-friendly message
   final String safeMessage;       // user-facing message for UI
@@ -24,7 +24,7 @@ class AppException implements Exception {
   @override
   String toString() => 'AppException($statusCode): $message';
 
-  /// Create from a backend JSON error body (e.g., { message, details }). [9]
+  /// Create from a backend JSON error body (e.g., { message, details }).
   factory AppException.fromJson(
     Map<String, dynamic> json, {
     int? status,
@@ -42,7 +42,7 @@ class AppException implements Exception {
     );
   }
 
-  /// Map a DioException to AppException with HTTP status and safe message. [2]
+  /// Map a DioException to AppException with HTTP status and safe message.
   factory AppException.fromDioException(DioException e) {
     final res = e.response;
     final status = res?.statusCode;
@@ -63,8 +63,8 @@ class AppException implements Exception {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
-        return AppException.network('Request timed out',
-            cause: e, stackTrace: e.stackTrace);
+        // FIX: use positional parameters instead of undefined named ones
+        return AppException.network('Request timed out', e, e.stackTrace);
       case DioExceptionType.badResponse:
         return AppException(
           message: 'HTTP $status',
@@ -89,8 +89,8 @@ class AppException implements Exception {
           stackTrace: e.stackTrace,
         );
       case DioExceptionType.connectionError:
-        return AppException.network('Network connection error',
-            cause: e, stackTrace: e.stackTrace);
+        // FIX: use positional parameters instead of undefined named ones
+        return AppException.network('Network connection error', e, e.stackTrace);
       case DioExceptionType.unknown:
         return AppException(
           message: e.message ?? 'Unknown network error',
@@ -165,7 +165,7 @@ class AppException implements Exception {
   }
 
   static String _safeByStatus(int? status, {required String fallback}) {
-    // Provide user-safe defaults for common HTTP statuses. [6][9]
+    // Provide user-safe defaults for common HTTP statuses.
     switch (status) {
       case 400:
         return 'Invalid request. Please verify and try again.';
