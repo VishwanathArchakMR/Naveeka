@@ -1,0 +1,167 @@
+{
+        "version": 1,
+        "generatedAt": "2025-09-14T13:32:00Z",
+        "stations": [
+          {
+            "id": "stn_ndls",
+            "station_code": "NDLS",
+            "name": "New Delhi Railway Station",
+            "city": "New Delhi",
+            "zone": "DL-C",
+            "tz": "Asia/Kolkata",
+            "location": {
+              "coordinates": { "lat": 28.6430, "lng": 77.2197 },
+              "geo": "geo:28.6430,77.2197"
+            },
+            "platforms": 16,
+            "wheelchair_boarding": 1,
+            "sheltered": true,
+            "lighting": true,
+            "amenities": ["restrooms","food_court","waiting_room","wifi","parking","prepaid_taxi"],
+            "lines": ["ln_ndls_bct","ln_ndls_hwh","ln_ndls_sbc"],
+            "createdAt": "2025-08-01T06:30:00Z",
+            "updatedAt": "2025-09-10T09:35:00Z"
+          },
+          {
+            "id": "stn_cstmt",
+            "station_code": "CSMT",
+            "name": "Chhatrapati Shivaji Maharaj Terminus",
+            "city": "Mumbai",
+            "zone": "MH-MUM-S",
+            "tz": "Asia/Kolkata",
+            "location": {
+              "coordinates": { "lat": 18.9402, "lng": 72.8355 },
+              "geo": "geo:18.9402,72.8355"
+            },
+            "platforms": 18,
+            "wheelchair_boarding": 1,
+            "sheltered": true,
+            "lighting": true,
+            "amenities": ["restrooms","food_court","waiting_room","wifi","heritage_site","metro_link"],
+            "lines": ["ln_cstmt_pune","ln_cstmt_hwh","ln_cstmt_ndls"],
+            "createdAt": "2025-08-01T06:40:00Z",
+            "updatedAt": "2025-09-08T11:10:00Z"
+          },
+          {
+            "id": "stn_bct",
+            "station_code": "BCT",
+            "name": "Mumbai Central",
+            "city": "Mumbai",
+            "zone": "MH-MUM-W",
+            "tz": "Asia/Kolkata",
+            "location": {
+              "coordinates": { "lat": 18.9696, "lng": 72.8194 },
+              "geo": "geo:18.9696,72.8194"
+            },
+            "platforms": 9,
+            "wheelchair_boarding": 1,
+            "sheltered": true,
+            "lighting": true,
+            "amenities": ["restrooms","food_court","waiting_room","wifi"],
+            "lines": ["ln_bct_ndls","ln_bct_adi"],
+            "createdAt": "2025-08-02T07:00:00Z",
+            "updatedAt": "2025-09-07T10:20:00Z"
+          },
+          {
+            "id": "stn_mas",
+            "station_code": "MAS",
+            "name": "MGR Chennai Central",
+            "city": "Chennai",
+            "zone": "TN-CHE",
+            "tz": "Asia/Kolkata",
+            "location": {
+              "coordinates": { "lat": 13.0822, "lng": 80.2750 },
+              "geo": "geo:13.0822,80.2750"
+            },
+            "platforms": 15,
+            "wheelchair_boarding": 1,
+            "sheltered": true,
+            "lighting": true,
+            "amenities": ["restrooms","food_court","waiting_room","wifi","metro_link"],
+            "lines": ["ln_mas_sbc","ln_mas_hwh","ln_mas_ndls"],
+            "createdAt": "2025-08-05T05:50:00Z",
+            "updatedAt": "2025-09-02T09:00:00Z"
+          },
+          {
+            "id": "stn_sbc",
+            "station_code": "SBC",
+            "name": "KSR Bengaluru City Jn",
+            "city": "Bengaluru",
+            "zone": "KA-BLR",
+            "tz": "Asia/Kolkata",
+            "location": {
+              "coordinates": { "lat": 12.9783, "lng": 77.5706 },
+              "geo": "geo:12.9783,77.5706"
+            },
+            "platforms": 10,
+            "wheelchair_boarding": 1,
+            "sheltered": true,
+            "lighting": true,
+            "amenities": ["restrooms","food_court","waiting_room","wifi","metro_link"],
+            "lines": ["ln_sbc_mas","ln_sbc_ndls","ln_sbc_pune"],
+            "createdAt": "2025-07-25T05:15:00Z",
+            "updatedAt": "2025-09-05T08:45:00Z"
+          },
+          {
+            "id": "stn_hwh",
+            "station_code": "HWH",
+            "name": "Howrah Junction",
+            "city": "Kolkata",
+            "zone": "WB-HWH",
+            "tz": "Asia/Kolkata",
+            "location": {
+              "coordinates": { "lat": 22.5855, "lng": 88.3460 },
+              "geo": "geo:22.5855,88.3460"
+            },
+            "platforms": 23,
+            "wheelchair_boarding": 1,
+            "sheltered": true,
+            "lighting": true,
+            "amenities": ["restrooms","food_court","waiting_room","wifi","ferry_link"],
+            "lines": ["ln_hwh_ndls","ln_hwh_cstmt","ln_hwh_mas"],
+            "createdAt": "2025-08-06T06:05:00Z",
+            "updatedAt": "2025-09-01T10:40:00Z"
+          },
+          {
+            "id": "stn_sc",
+            "station_code": "SC",
+            "name": "Secunderabad Junction",
+            "city": "Hyderabad",
+            "zone": "TS-HYD",
+            "tz": "Asia/Kolkata",
+            "location": {
+              "coordinates": { "lat": 17.4399, "lng": 78.4983 },
+              "geo": "geo:17.4399,78.4983"
+            },
+            "platforms": 10,
+            "wheelchair_boarding": 1,
+            "sheltered": true,
+            "lighting": true,
+            "amenities": ["restrooms","food_court","waiting_room","wifi","mmts_link"],
+            "lines": ["ln_sc_ndls","ln_sc_mas","ln_sc_pune"],
+            "createdAt": "2025-08-08T07:10:00Z",
+            "updatedAt": "2025-08-30T12:20:00Z"
+          },
+          {
+            "id": "stn_pune",
+            "station_code": "PUNE",
+            "name": "Pune Junction",
+            "city": "Pune",
+            "zone": "MH-PUN",
+            "tz": "Asia/Kolkata",
+            "location": {
+              "coordinates": { "lat": 18.5286, "lng": 73.8740 },
+              "geo": "geo:18.5286,73.8740"
+            },
+            "platforms": 6,
+            "wheelchair_boarding": 1,
+            "sheltered": true,
+            "lighting": true,
+            "amenities": ["restrooms","food_court","waiting_room","wifi"],
+            "lines": ["ln_pune_bct","ln_pune_sc","ln_pune_ndls"],
+            "createdAt": "2025-08-10T07:25:00Z",
+            "updatedAt": "2025-09-04T12:05:00Z"
+          }
+        ]
+      }
+      

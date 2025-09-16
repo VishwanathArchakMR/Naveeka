@@ -1,0 +1,84 @@
+{
+        "version": 1,
+        "generatedAt": "2025-09-14T12:50:00Z",
+        "countries": [
+          {
+            "code": "IN",
+            "name": "India",
+            "capital": "New Delhi",
+            "region": "Asia",
+            "subregion": "Southern Asia",
+            "coordinates": { "lat": 20.5937, "lng": 78.9629 },
+            "geo": "geo:20.5937,78.9629",
+            "tz": ["Asia/Kolkata"],
+            "currency": { "code": "INR", "name": "Indian Rupee", "symbol": "₹" },
+            "languages": [
+              { "code": "hi", "name": "Hindi" },
+              { "code": "en", "name": "English" }
+            ],
+            "calling": "+91",
+            "flagEmoji": "🇮🇳",
+            "bbox": { "west": 68.1766, "south": 6.5546, "east": 97.4026, "north": 35.6745 },
+            "updatedAt": "2025-09-01T10:00:00Z"
+          },
+          {
+            "code": "AE",
+            "name": "United Arab Emirates",
+            "capital": "Abu Dhabi",
+            "region": "Asia",
+            "subregion": "Western Asia",
+            "coordinates": { "lat": 23.4241, "lng": 53.8478 },
+            "geo": "geo:23.4241,53.8478",
+            "tz": ["Asia/Dubai"],
+            "currency": { "code": "AED", "name": "UAE Dirham", "symbol": "د.إ" },
+            "languages": [
+              { "code": "ar", "name": "Arabic" },
+              { "code": "en", "name": "English" }
+            ],
+            "calling": "+971",
+            "flagEmoji": "🇦🇪",
+            "bbox": { "west": 51.5795, "south": 22.6315, "east": 56.3967, "north": 26.0555 },
+            "updatedAt": "2025-09-01T10:00:00Z"
+          },
+          {
+            "code": "SG",
+            "name": "Singapore",
+            "capital": "Singapore",
+            "region": "Asia",
+            "subregion": "South-Eastern Asia",
+            "coordinates": { "lat": 1.3521, "lng": 103.8198 },
+            "geo": "geo:1.3521,103.8198",
+            "tz": ["Asia/Singapore"],
+            "currency": { "code": "SGD", "name": "Singapore Dollar", "symbol": "S$" },
+            "languages": [
+              { "code": "en", "name": "English" },
+              { "code": "zh", "name": "Chinese" },
+              { "code": "ms", "name": "Malay" },
+              { "code": "ta", "name": "Tamil" }
+            ],
+            "calling": "+65",
+            "flagEmoji": "🇸🇬",
+            "bbox": { "west": 103.605, "south": 1.1305, "east": 104.085, "north": 1.4700 },
+            "updatedAt": "2025-09-01T10:00:00Z"
+          },
+          {
+            "code": "GB",
+            "name": "United Kingdom",
+            "capital": "London",
+            "region": "Europe",
+            "subregion": "Northern Europe",
+            "coordinates": { "lat": 55.3781, "lng": -3.4360 },
+            "geo": "geo:55.3781,-3.4360",
+            "tz": ["Europe/London"],
+            "currency": { "code": "GBP", "name": "Pound Sterling", "symbol": "£" },
+            "languages": [
+              { "code": "en", "name": "English" }
+            ],
+            "calling": "+44",
+            "flagEmoji": "🇬🇧",
+            "bbox": { "west": -8.6494, "south": 49.9096, "east": 1.7629, "north": 60.8456 },
+            "updatedAt": "2025-09-01T10:00:00Z"
+          }
+        ]
+      }
+      

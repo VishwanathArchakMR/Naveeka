@@ -1,0 +1,241 @@
+{
+        "version": 1,
+        "generatedAt": "2025-09-14T13:24:00Z",
+        "preferences": {
+          "defaults": {
+            "pace": "balanced",
+            "budgetPerDay": { "currency": "INR", "min": 2500, "max": 9000 },
+            "transport": { "modes": ["walk","bus","taxi"], "avoid": ["long_transfers"], "maxWalk_km": 2.0 },
+            "food": { "vegPreferred": true, "spiceLevel": "medium", "streetFoodOk": true },
+            "accessibility": { "wheelchair": false, "petFriendly": false, "familyFriendly": true },
+            "quietHours": { "start": "22:00", "end": "07:00", "tz": "Asia/Kolkata" },
+            "timeWindows": {
+              "breakfast": { "start": "07:30", "end": "09:00" },
+              "lunch": { "start": "12:30", "end": "14:00" },
+              "dinner": { "start": "19:30", "end": "21:30" },
+              "sunrise": { "start": "05:30", "end": "06:30" },
+              "sunset": { "start": "17:45", "end": "18:45" }
+            }
+          },
+          "personas": [
+            {
+              "id": "prs_peaceful_family",
+              "label": "Peaceful Family",
+              "overrides": {
+                "pace": "relaxed",
+                "transport": { "modes": ["walk","taxi"], "maxWalk_km": 1.2 },
+                "accessibility": { "wheelchair": true, "familyFriendly": true }
+              }
+            },
+            {
+              "id": "prs_adventure_duo",
+              "label": "Adventure Duo",
+              "overrides": {
+                "pace": "active",
+                "transport": { "modes": ["walk","bus","metro"], "maxWalk_km": 3.5 },
+                "food": { "vegPreferred": false, "spiceLevel": "high" }
+              }
+            }
+          ]
+        },
+        "templates": [
+          {
+            "id": "tpl_mumbai_weekend",
+            "title": "Mumbai Weekend Highlights",
+            "city": "Mumbai",
+            "days": [
+              {
+                "dateHint": "2025-10-05",
+                "items": [
+                  {
+                    "type": "flight",
+                    "refId": "flt_AI665_DEL_BOM_2025-10-05",
+                    "from": { "iata": "DEL", "geo": "geo:28.5562,77.1000" },
+                    "to": { "iata": "BOM", "geo": "geo:19.0896,72.8656" },
+                    "start": "2025-10-05T09:30:00+05:30",
+                    "end": "2025-10-05T11:45:00+05:30"
+                  },
+                  {
+                    "type": "hotel_checkin",
+                    "hotelRefId": "htl_mumbai_bayfront",
+                    "roomRefId": "rm_bf_sea_king",
+                    "start": "2025-10-05T15:00:00+05:30",
+                    "nights": 1
+                  },
+                  {
+                    "type": "activity",
+                    "title": "Heritage Walk",
+                    "refId": "act_mumbai_heritage_walk",
+                    "start": "2025-10-05T16:30:00+05:30",
+                    "end": "2025-10-05T18:30:00+05:30",
+                    "meetingPoint": { "label": "Kala Ghoda", "geo": "geo:18.9275,72.8327" }
+                  }
+                ]
+              },
+              {
+                "dateHint": "2025-10-06",
+                "items": [
+                  {
+                    "type": "place_visit",
+                    "refId": "plc_mumbai_marine_drive",
+                    "start": "2025-10-06T08:30:00+05:30",
+                    "end": "2025-10-06T09:30:00+05:30",
+                    "notes": "Morning stroll along the seaface"
+                  },
+                  {
+                    "type": "bus",
+                    "routeRefId": "rt_mum_bkc_express",
+                    "fromStopRefId": "stop_mum_dadar_tt",
+                    "toStopRefId": "stop_mum_csmt_fountain",
+                    "start": "2025-10-06T10:15:00+05:30",
+                    "end": "2025-10-06T10:55:00+05:30"
+                  },
+                  {
+                    "type": "hotel_checkout",
+                    "hotelRefId": "htl_mumbai_bayfront",
+                    "time": "2025-10-06T12:00:00+05:30"
+                  }
+                ]
+              }
+            ],
+            "suggestedPersona": "prs_peaceful_family",
+            "budgetHint": { "currency": "INR", "total": 19050 }
+          },
+          {
+            "id": "tpl_agra_sunrise",
+            "title": "Agra Sunrise & Heritage",
+            "city": "Agra",
+            "days": [
+              {
+                "dateHint": "2025-10-06",
+                "items": [
+                  {
+                    "type": "hotel_checkin",
+                    "hotelRefId": "htl_agra_marble_vista",
+                    "roomRefId": "rm_mv_dl_king",
+                    "start": "2025-10-05T18:00:00+05:30",
+                    "nights": 1
+                  },
+                  {
+                    "type": "walk",
+                    "from": { "label": "Hotel", "geo": "geo:27.1708,78.0418" },
+                    "to": { "label": "Taj East Gate", "geo": "geo:27.1751,78.0421" },
+                    "start": "2025-10-06T05:45:00+05:30",
+                    "end": "2025-10-06T06:00:00+05:30"
+                  },
+                  {
+                    "type": "activity",
+                    "refId": "act_taj_mahal_sunrise",
+                    "start": "2025-10-06T06:05:00+05:30",
+                    "end": "2025-10-06T07:35:00+05:30",
+                    "meetingPoint": { "label": "Taj East Gate", "geo": "geo:27.1751,78.0421" }
+                  },
+                  {
+                    "type": "place_visit",
+                    "refId": "plc_taj_mahal",
+                    "start": "2025-10-06T07:40:00+05:30",
+                    "end": "2025-10-06T09:00:00+05:30",
+                    "notes": "Photos from the gardens"
+                  },
+                  {
+                    "type": "hotel_checkout",
+                    "hotelRefId": "htl_agra_marble_vista",
+                    "time": "2025-10-06T11:00:00+05:30"
+                  }
+                ]
+              }
+            ],
+            "suggestedPersona": "prs_peaceful_family",
+            "budgetHint": { "currency": "INR", "total": 6000 }
+          },
+          {
+            "id": "tpl_alleppey_backwaters",
+            "title": "Alleppey Backwaters Afternoon",
+            "city": "Alappuzha",
+            "days": [
+              {
+                "dateHint": "2025-11-02",
+                "items": [
+                  {
+                    "type": "place_visit",
+                    "refId": "plc_backwaters_finishing_point",
+                    "start": "2025-11-02T11:00:00+05:30",
+                    "end": "2025-11-02T11:45:00+05:30"
+                  },
+                  {
+                    "type": "activity",
+                    "refId": "act_backwaters_houseboat",
+                    "start": "2025-11-02T12:00:00+05:30",
+                    "end": "2025-11-02T16:00:00+05:30",
+                    "meetingPoint": { "label": "Finishing Point Jetty", "geo": "geo:9.4981,76.3388" }
+                  }
+                ]
+              }
+            ],
+            "suggestedPersona": "prs_peaceful_family",
+            "budgetHint": { "currency": "INR", "total": 7200 }
+          }
+        ],
+        "constraints": {
+          "blackouts": [
+            {
+              "id": "blk_fri_taj",
+              "label": "Taj Mahal closed on Fridays",
+              "appliesTo": ["plc_taj_mahal","act_taj_mahal_sunrise"],
+              "rule": { "weekday": "fri" },
+              "note": "Plan sunrise another day"
+            }
+          ],
+          "holidays": [
+            { "id": "hol_diwali_2025", "label": "Diwali", "date": "2025-10-20", "tz": "Asia/Kolkata" }
+          ],
+          "weatherHints": [
+            { "city": "Mumbai", "season": "monsoon", "months": ["06","07","08","09"], "tip": "Carry umbrella; allow buffer time" }
+          ]
+        },
+        "budgets": [
+          {
+            "id": "bdg_mumbai_weekend_avg",
+            "label": "Mumbai Weekend (Avg)",
+            "currency": "INR",
+            "perDay": { "min": 3500, "max": 9000 },
+            "categories": [
+              { "name": "food", "min": 600, "max": 1800 },
+              { "name": "local_transport", "min": 200, "max": 800 },
+              { "name": "attractions", "min": 0, "max": 1200 },
+              { "name": "misc", "min": 200, "max": 600 }
+            ]
+          }
+        ],
+        "packing": {
+          "lists": [
+            {
+              "id": "pkg_monsoon_city",
+              "label": "Monsoon City Essentials",
+              "items": [
+                { "name": "Compact Umbrella", "qty": 1 },
+                { "name": "Quick-dry Footwear", "qty": 1 },
+                { "name": "Power Bank", "qty": 1 },
+                { "name": "Reusable Water Bottle", "qty": 1 }
+              ]
+            },
+            {
+              "id": "pkg_sunrise_visit",
+              "label": "Sunrise Visit",
+              "items": [
+                { "name": "Light Jacket", "qty": 1 },
+                { "name": "Camera/Phone", "qty": 1 },
+                { "name": "Tickets/ID", "qty": 1 }
+              ]
+            }
+          ]
+        },
+        "routingDefaults": {
+          "avoid": ["tolls_if_possible","long_transfers"],
+          "prefer": ["scenic","walk_shortcuts"],
+          "maxWalk_km": 2.5,
+          "transfers": { "maxCount": 2, "minBuffer_min": 8 }
+        },
+        "lastUpdated": "2025-09-14T13:24:00Z"
+      }
+      

@@ -1,0 +1,264 @@
+{
+        "version": 1,
+        "generatedAt": "2025-09-14T13:00:00Z",
+        "agency": {
+          "id": "agency_naveeka_transit",
+          "name": "Naveeka Transit",
+          "tz": "Asia/Kolkata"
+        },
+        "buses": [
+          {
+            "id": "veh_dl_air_001",
+            "fleetNo": "DL-AIR-001",
+            "licensePlate": "DL1PC1234",
+            "descriptor": {
+              "vehicle_id": "veh_dl_air_001",
+              "label": "Airport Express 001",
+              "model": "Volvo 9400 B8R"
+            },
+            "type": "AC",
+            "powertrain": "diesel",
+            "capacity": { "seated": 45, "standing": 20, "wheelchair": 1, "bike": 0 },
+            "features": ["low_floor", "ramp", "cctv", "wifi", "usb_power", "air_conditioned"],
+            "assigned": {
+              "route_id": "rt_dl_airport_1",
+              "block_id": "blk_dl_air_01",
+              "start_time": "2025-10-05T05:45:00+05:30"
+            },
+            "telemetry": {
+              "lastKnown": {
+                "coordinates": { "lat": 28.5611, "lng": 77.1180 },
+                "bearing_deg": 140,
+                "speed_mps": 10.5,
+                "timestamp": "2025-09-14T12:58:10Z"
+              },
+              "next_stop_id": "stop_del_igl_metro_gate_2",
+              "occupancy": "many_seats_available"
+            },
+            "maintenance": {
+              "odo_km": 182340,
+              "service_due_km": 184000,
+              "status": "ok"
+            },
+            "createdAt": "2025-08-01T06:00:00Z",
+            "updatedAt": "2025-09-10T09:30:00Z"
+          },
+          {
+            "id": "veh_dl_ring_101",
+            "fleetNo": "DL-RNG-101",
+            "licensePlate": "DL1PC5678",
+            "descriptor": {
+              "vehicle_id": "veh_dl_ring_101",
+              "label": "Ring Road 101",
+              "model": "Tata Starbus Ultra"
+            },
+            "type": "non_ac",
+            "powertrain": "cng",
+            "capacity": { "seated": 36, "standing": 28, "wheelchair": 1, "bike": 0 },
+            "features": ["low_floor", "ramp", "cctv", "stop_announcement"],
+            "assigned": {
+              "route_id": "rt_dl_ring_1",
+              "block_id": "blk_dl_ring_a",
+              "start_time": "2025-10-05T06:10:00+05:30"
+            },
+            "telemetry": {
+              "lastKnown": {
+                "coordinates": { "lat": 28.6695, "lng": 77.2243 },
+                "bearing_deg": 210,
+                "speed_mps": 6.2,
+                "timestamp": "2025-09-14T12:58:25Z"
+              },
+              "next_stop_id": "stop_del_kashmere_gate",
+              "occupancy": "few_seats_available"
+            },
+            "maintenance": {
+              "odo_km": 96420,
+              "service_due_km": 98000,
+              "status": "ok"
+            },
+            "createdAt": "2025-08-01T06:05:00Z",
+            "updatedAt": "2025-09-08T11:00:00Z"
+          },
+          {
+            "id": "veh_blr_air_501",
+            "fleetNo": "KA-BLR-AB1",
+            "licensePlate": "KA01AB1234",
+            "descriptor": {
+              "vehicle_id": "veh_blr_air_501",
+              "label": "BLR Airport Volvo 501",
+              "model": "Volvo 8400 Hybrid"
+            },
+            "type": "AC",
+            "powertrain": "hybrid",
+            "capacity": { "seated": 44, "standing": 18, "wheelchair": 1, "bike": 0 },
+            "features": ["low_floor", "ramp", "cctv", "wifi", "usb_power", "air_conditioned"],
+            "assigned": {
+              "route_id": "rt_blr_airport_volvo",
+              "block_id": "blk_blr_air_b",
+              "start_time": "2025-10-05T05:30:00+05:30"
+            },
+            "telemetry": {
+              "lastKnown": {
+                "coordinates": { "lat": 13.2065, "lng": 77.6901 },
+                "bearing_deg": 185,
+                "speed_mps": 12.1,
+                "timestamp": "2025-09-14T12:58:40Z"
+              },
+              "next_stop_id": "stop_blr_kia_term_2_bay_c",
+              "occupancy": "standing_room_only"
+            },
+            "maintenance": {
+              "odo_km": 140230,
+              "service_due_km": 142000,
+              "status": "ok"
+            },
+            "createdAt": "2025-07-26T06:00:00Z",
+            "updatedAt": "2025-09-05T08:55:00Z"
+          },
+          {
+            "id": "veh_blr_ring_500",
+            "fleetNo": "KA-BLR-R500",
+            "licensePlate": "KA01CD9876",
+            "descriptor": {
+              "vehicle_id": "veh_blr_ring_500",
+              "label": "BLR Ring 500",
+              "model": "Ashok Leyland BS6"
+            },
+            "type": "non_ac",
+            "powertrain": "diesel",
+            "capacity": { "seated": 38, "standing": 30, "wheelchair": 1, "bike": 0 },
+            "features": ["cctv", "stop_announcement"],
+            "assigned": {
+              "route_id": "rt_blr_ring_500",
+              "block_id": "blk_blr_ring_a",
+              "start_time": "2025-10-05T06:00:00+05:30"
+            },
+            "telemetry": {
+              "lastKnown": {
+                "coordinates": { "lat": 12.9852, "lng": 77.5701 },
+                "bearing_deg": 95,
+                "speed_mps": 5.5,
+                "timestamp": "2025-09-14T12:58:55Z"
+              },
+              "next_stop_id": "stop_blr_kempegowda_term",
+              "occupancy": "few_seats_available"
+            },
+            "maintenance": {
+              "odo_km": 55210,
+              "service_due_km": 60000,
+              "status": "ok"
+            },
+            "createdAt": "2025-07-25T05:10:00Z",
+            "updatedAt": "2025-09-05T08:45:00Z"
+          },
+          {
+            "id": "veh_mum_bkc_021",
+            "fleetNo": "MH-MUM-BKC21",
+            "licensePlate": "MH01EF4567",
+            "descriptor": {
+              "vehicle_id": "veh_mum_bkc_021",
+              "label": "BKC Express 021",
+              "model": "Tata LP 912"
+            },
+            "type": "AC",
+            "powertrain": "cng",
+            "capacity": { "seated": 34, "standing": 26, "wheelchair": 1, "bike": 0 },
+            "features": ["low_floor", "ramp", "cctv", "air_conditioned"],
+            "assigned": {
+              "route_id": "rt_mum_bkc_express",
+              "block_id": "blk_mum_bkc_a",
+              "start_time": "2025-10-05T07:20:00+05:30"
+            },
+            "telemetry": {
+              "lastKnown": {
+                "coordinates": { "lat": 19.0615, "lng": 72.8520 },
+                "bearing_deg": 125,
+                "speed_mps": 7.8,
+                "timestamp": "2025-09-14T12:59:10Z"
+              },
+              "next_stop_id": "stop_mum_dadar_tt",
+              "occupancy": "many_seats_available"
+            },
+            "maintenance": {
+              "odo_km": 76200,
+              "service_due_km": 82000,
+              "status": "ok"
+            },
+            "createdAt": "2025-07-30T07:25:00Z",
+            "updatedAt": "2025-09-04T12:05:00Z"
+          },
+          {
+            "id": "veh_cok_fk_015",
+            "fleetNo": "KL-COK-FK15",
+            "licensePlate": "KL07GH1235",
+            "descriptor": {
+              "vehicle_id": "veh_cok_fk_015",
+              "label": "Fort Kochi Feeder 015",
+              "model": "Eicher Pro 3009"
+            },
+            "type": "non_ac",
+            "powertrain": "diesel",
+            "capacity": { "seated": 28, "standing": 22, "wheelchair": 1, "bike": 0 },
+            "features": ["cctv", "stop_announcement"],
+            "assigned": {
+              "route_id": "rt_cok_fort_kochi",
+              "block_id": "blk_cok_fk_a",
+              "start_time": "2025-10-05T08:00:00+05:30"
+            },
+            "telemetry": {
+              "lastKnown": {
+                "coordinates": { "lat": 9.9700, "lng": 76.2820 },
+                "bearing_deg": 185,
+                "speed_mps": 4.2,
+                "timestamp": "2025-09-14T12:59:25Z"
+              },
+              "next_stop_id": "stop_cok_mg_road",
+              "occupancy": "many_seats_available"
+            },
+            "maintenance": {
+              "odo_km": 43210,
+              "service_due_km": 48000,
+              "status": "ok"
+            },
+            "createdAt": "2025-08-06T06:05:00Z",
+            "updatedAt": "2025-09-01T10:40:00Z"
+          },
+          {
+            "id": "veh_goa_air_007",
+            "fleetNo": "GA-GOA-AIR7",
+            "licensePlate": "GA03JK7890",
+            "descriptor": {
+              "vehicle_id": "veh_goa_air_007",
+              "label": "Goa Airport Shuttle 007",
+              "model": "Volvo 9400XL"
+            },
+            "type": "AC",
+            "powertrain": "diesel",
+            "capacity": { "seated": 43, "standing": 18, "wheelchair": 1, "bike": 0 },
+            "features": ["low_floor", "ramp", "cctv", "wifi", "air_conditioned"],
+            "assigned": {
+              "route_id": "rt_goa_airport_shuttle",
+              "block_id": "blk_goa_air_a",
+              "start_time": "2025-10-05T06:40:00+05:30"
+            },
+            "telemetry": {
+              "lastKnown": {
+                "coordinates": { "lat": 15.5051, "lng": 73.8301 },
+                "bearing_deg": 25,
+                "speed_mps": 9.7,
+                "timestamp": "2025-09-14T12:59:40Z"
+              },
+              "next_stop_id": "stop_goa_panaji_bus_stand",
+              "occupancy": "few_seats_available"
+            },
+            "maintenance": {
+              "odo_km": 100420,
+              "service_due_km": 102000,
+              "status": "ok"
+            },
+            "createdAt": "2025-08-08T07:10:00Z",
+            "updatedAt": "2025-08-30T12:20:00Z"
+          }
+        ]
+      }
+      

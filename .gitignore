@@ -1,0 +1,156 @@
+# =========================================
+# Root .gitignore for Naveeka (Flutter + Node.js monorepo)
+# =========================================
+
+# -------------------------
+# OS & Editor junk
+# -------------------------
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+*.log
+*.swp
+*.tmp
+*.class
+*.pyc
+
+# VS Code (allow sharable settings if needed)
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+
+# IntelliJ / Android Studio
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# -------------------------
+# Environment & secrets
+# -------------------------
+# Never commit real env files; keep .env.example for docs
+.env
+.env.*
+!.env.example
+
+# Firebase / Google services (store via secrets/CI)
+**/google-services.json
+**/GoogleService-Info.plist
+
+# -------------------------
+# Flutter / Dart (frontend/)
+# -------------------------
+**/.dart_tool/
+**/.packages
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.metadata
+**/build/
+**/.pub-cache/
+**/pubspec.lock
+
+# Generated code & symbolication
+**/*.g.dart
+**/*.freezed.dart
+**/doc/api/
+app.*.symbols
+app.*.map.json
+
+# iOS (Flutter)
+**/ios/Pods/
+**/ios/Podfile.lock
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/Flutter/App.framework
+**/ios/Flutter/Generated.xcconfig
+**/ios/Runner/GeneratedPluginRegistrant.*
+**/ios/Runner.xcodeproj/project.xcworkspace/
+**/ios/Runner.xcodeproj/xcuserdata/
+**/ios/Runner.xcworkspace/xcuserdata/
+**/ios/build/
+**/ios/Flutter/.last_build_id
+
+# Android (Flutter)
+**/android/.gradle/
+**/android/local.properties
+**/android/app/build/
+**/android/build/
+**/android/app/debug
+**/android/app/profile
+**/android/app/release
+**/android/key.properties
+**/android/app/*.keystore
+**/android/app/*.jks
+**/android/app/outputs/
+**/android/app/intermediates/
+**/android/captures/
+
+# Web / Desktop (if enabled)
+**/web/.dart_tool/
+**/web/build/
+**/linux/build/
+**/windows/build/
+**/macos/build/
+**/macos/Pods/
+**/macos/Podfile.lock
+**/macos/Flutter/ephemeral/
+**/ios/Flutter/ephemeral/
+
+# -------------------------
+# Node.js / Backend (backend/)
+# -------------------------
+backend/node_modules/
+backend/.env
+backend/.env.*
+!backend/.env.example
+backend/.npmrc
+backend/.pnpm-store
+backend/coverage/
+backend/dist/
+backend/tmp/
+backend/.cache/
+backend/logs/
+backend/*.log
+backend/npm-debug.log*
+backend/yarn-debug.log*
+backend/yarn-error.log*
+backend/pids/
+backend/*.pid
+backend/*.seed
+backend/*.tgz
+
+# Common Node patterns (monorepo safety)
+**/node_modules/
+**/.pnp
+**/.pnp.js
+**/.parcel-cache
+**/.cache
+**/.next
+**/out
+**/.nuxt
+**/dist/
+
+# Upload temp folders (if any local storage used)
+backend/uploads/
+backend/tmp_uploads/
+
+# -------------------------
+# Misc tools & migrations
+# -------------------------
+.migrate/
+.melos_tool/
+melos_tool/
+.migration_backup/
+.migrate_working_dir/
+.history/
+.svn/
+.swiftpm/
+.swift-version
+
+# -------------------------
+# Coverage
+# -------------------------
+coverage/

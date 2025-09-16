@@ -1,0 +1,81 @@
+{
+        "version": 1,
+        "generatedAt": "2025-09-14T13:28:00Z",
+        "ui": {
+          "themeMode": "system",
+          "language": "en",
+          "region": "IN",
+          "currency": "INR",
+          "textScale": 1.0,
+          "highContrast": false,
+          "reduceMotion": false
+        },
+        "notifications": {
+          "enabled": true,
+          "categories": {
+            "bookings": true,
+            "priceAlerts": true,
+            "tripReminders": true,
+            "promotions": false
+          },
+          "quietHours": { "start": "22:00", "end": "07:00", "tz": "Asia/Kolkata" }
+        },
+        "privacy": {
+          "analytics": true,
+          "crashReports": true,
+          "personalizedAds": false
+        },
+        "accessibility": {
+          "boldText": false,
+          "largeContent": false,
+          "screenReaderHints": true
+        },
+        "maps": {
+          "units": "metric",
+          "liveTraffic": true,
+          "defaultLayer": "standard",
+          "showTransit": true
+        },
+        "data": {
+          "imageQuality": "auto",
+          "cache": {
+            "maxMb": 256,
+            "ttl": {
+              "flights_min": 30,
+              "places_min": 1440,
+              "hotels_min": 720
+            }
+          }
+        },
+        "payments": {
+          "defaultCurrency": "INR",
+          "roundPrices": false,
+          "showFeesBreakdown": true
+        },
+        "security": {
+          "biometrics": true,
+          "requireAuthForPurchases": true
+        },
+        "featureFlags": [
+          { "id": "m3_navigation_bar", "enabled": true },
+          { "id": "lottie_optimized_player", "enabled": true, "rollout": 1.0 },
+          {
+            "id": "ai_voice_entrypoint",
+            "enabled": true,
+            "rollout": 0.5,
+            "timeWindow": {
+              "start": "2025-10-01T00:00:00+05:30",
+              "end": "2025-12-31T23:59:59+05:30"
+            }
+          }
+        ],
+        "experiments": [
+          { "id": "home_hero_variant", "variants": ["A", "B"], "allocation": { "A": 0.5, "B": 0.5 } }
+        ],
+        "legal": {
+          "termsVersion": "2025-08-01",
+          "privacyVersion": "2025-08-01"
+        },
+        "lastUpdated": "2025-09-14T13:28:00Z"
+      }
+      

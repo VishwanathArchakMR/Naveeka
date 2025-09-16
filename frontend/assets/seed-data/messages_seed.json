@@ -1,0 +1,150 @@
+{
+        "version": 1,
+        "generatedAt": "2025-09-14T13:18:00Z",
+        "threads": [
+          {
+            "id": "th_usr_aj_1029_support",
+            "subject": "Booking AI665: seats & baggage",
+            "participants": [
+              { "id": "usr_aj_1029", "role": "user" },
+              { "id": "agent_support_01", "role": "agent", "displayName": "Naveeka Support" }
+            ],
+            "lastUpdated": "2025-09-10T08:22:30Z",
+            "messages": [
+              {
+                "id": "msg_0001",
+                "threadId": "th_usr_aj_1029_support",
+                "senderId": "usr_aj_1029",
+                "role": "user",
+                "type": "text",
+                "body": "Hi, can you confirm baggage for booking H7Q9TZ and window seats if possible?",
+                "meta": { "related": [{ "type": "booking", "refId": "bk_0001_flt_del_bom" }] },
+                "deliveredAt": "2025-09-10T08:20:05Z",
+                "readBy": [
+                  { "userId": "agent_support_01", "at": "2025-09-10T08:20:30Z" }
+                ],
+                "createdAt": "2025-09-10T08:20:00Z",
+                "updatedAt": "2025-09-10T08:20:00Z"
+              },
+              {
+                "id": "msg_0002",
+                "threadId": "th_usr_aj_1029_support",
+                "senderId": "agent_support_01",
+                "role": "agent",
+                "type": "text",
+                "body": "Hello! Your allowance is 7 kg cabin + 15 kg checked per passenger. Seats 18A/18B already assigned window + middle.",
+                "meta": { "related": [{ "type": "flight", "refId": "flt_AI665_DEL_BOM_2025-10-05" }] },
+                "deliveredAt": "2025-09-10T08:21:05Z",
+                "readBy": [
+                  { "userId": "usr_aj_1029", "at": "2025-09-10T08:21:40Z" }
+                ],
+                "createdAt": "2025-09-10T08:21:00Z",
+                "updatedAt": "2025-09-10T08:21:00Z"
+              },
+              {
+                "id": "msg_0003",
+                "threadId": "th_usr_aj_1029_support",
+                "senderId": "agent_support_01",
+                "role": "agent",
+                "type": "attachment",
+                "body": "Boarding info and terminal map attached.",
+                "attachments": [
+                  { "kind": "image", "path": "assets/images/airports/bom_t2_map.png", "alt": "BOM T2 Map" },
+                  { "kind": "lottie", "path": "assets/animations/heart_animation.json", "usage": "ack" }
+                ],
+                "deliveredAt": "2025-09-10T08:22:10Z",
+                "readBy": [
+                  { "userId": "usr_aj_1029", "at": "2025-09-10T08:22:30Z" }
+                ],
+                "createdAt": "2025-09-10T08:22:05Z",
+                "updatedAt": "2025-09-10T08:22:05Z"
+              }
+            ]
+          },
+          {
+            "id": "th_usr_rs_2031_planner",
+            "subject": "Agra sunrise plan",
+            "participants": [
+              { "id": "usr_rs_2031", "role": "user" },
+              { "id": "usr_meera_2005", "role": "user" }
+            ],
+            "lastUpdated": "2025-09-11T10:38:30Z",
+            "messages": [
+              {
+                "id": "msg_0101",
+                "threadId": "th_usr_rs_2031_planner",
+                "senderId": "usr_rs_2031",
+                "role": "user",
+                "type": "text",
+                "body": "Booked Taj sunrise for 6:05 AM. Meet at East Gate at 5:55?",
+                "meta": { "related": [{ "type": "activity", "refId": "act_taj_mahal_sunrise" }] },
+                "deliveredAt": "2025-09-11T10:36:05Z",
+                "readBy": [
+                  { "userId": "usr_meera_2005", "at": "2025-09-11T10:36:20Z" }
+                ],
+                "createdAt": "2025-09-11T10:36:00Z",
+                "updatedAt": "2025-09-11T10:36:00Z"
+              },
+              {
+                "id": "msg_0102",
+                "threadId": "th_usr_rs_2031_planner",
+                "senderId": "usr_meera_2005",
+                "role": "user",
+                "type": "text",
+                "body": "Perfect. Let’s walk from the hotel and avoid queues.",
+                "meta": { "related": [{ "type": "hotel", "refId": "htl_agra_marble_vista" }] },
+                "deliveredAt": "2025-09-11T10:37:05Z",
+                "readBy": [
+                  { "userId": "usr_rs_2031", "at": "2025-09-11T10:37:30Z" }
+                ],
+                "createdAt": "2025-09-11T10:37:00Z",
+                "updatedAt": "2025-09-11T10:37:00Z"
+              },
+              {
+                "id": "msg_0103",
+                "threadId": "th_usr_rs_2031_planner",
+                "senderId": "usr_rs_2031",
+                "role": "user",
+                "type": "location",
+                "body": "Meeting point pin",
+                "attachments": [
+                  { "kind": "geo", "uri": "geo:27.1751,78.0421", "label": "Taj East Gate" }
+                ],
+                "deliveredAt": "2025-09-11T10:38:05Z",
+                "readBy": [
+                  { "userId": "usr_meera_2005", "at": "2025-09-11T10:38:30Z" }
+                ],
+                "createdAt": "2025-09-11T10:38:00Z",
+                "updatedAt": "2025-09-11T10:38:00Z"
+              }
+            ]
+          },
+          {
+            "id": "th_usr_am_9182_ops",
+            "subject": "Itinerary change: 6E2331",
+            "participants": [
+              { "id": "usr_am_9182", "role": "user" },
+              { "id": "ops_notifier", "role": "system", "displayName": "Ops Updates" }
+            ],
+            "lastUpdated": "2025-09-09T07:23:20Z",
+            "messages": [
+              {
+                "id": "msg_0201",
+                "threadId": "th_usr_am_9182_ops",
+                "senderId": "ops_notifier",
+                "role": "system",
+                "type": "update",
+                "body": "Flight 6E2331 schedule reconfirmed. No changes to departure/arrival.",
+                "meta": { "related": [{ "type": "flight", "refId": "flt_6E2331_DEL_BOM_2025-10-22" }] },
+                "deliveredAt": "2025-09-09T07:23:05Z",
+                "readBy": [
+                  { "userId": "usr_am_9182", "at": "2025-09-09T07:23:20Z" }
+                ],
+                "createdAt": "2025-09-09T07:23:00Z",
+                "updatedAt": "2025-09-09T07:23:00Z"
+              }
+            ]
+          }
+        ]
+      }
+      

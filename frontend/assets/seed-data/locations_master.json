@@ -1,0 +1,89 @@
+{
+        "version": 1,
+        "generatedAt": "2025-09-14T13:36:00Z",
+        "index": {
+          "airports": ["air_del","air_bom","air_blr","air_hyd","air_maa","air_ccu","air_goi","air_gox","air_cok","air_dxb","air_sin","air_lhr"],
+          "train_stations": ["stn_ndls","stn_cstmt","stn_bct","stn_mas","stn_sbc","stn_hwh","stn_sc","stn_pune"],
+          "bus_stops": ["stop_del_kashmere_gate","stop_del_aiims","stop_del_igl_metro_gate_2","stop_blr_kempegowda_term","stop_blr_kia_term_2_bay_c","stop_mum_dadar_tt","stop_mum_csmt_fountain","stop_ccu_dumdum","stop_cok_mg_road","stop_goa_panaji_bus_stand"],
+          "places": ["plc_taj_mahal","plc_meenakshi_temple","plc_backwaters_finishing_point","plc_varanasi_dashashwamedh_ghat","plc_mumbai_marine_drive","plc_jaipur_hawa_mahal","plc_bengaluru_lalbagh"],
+          "hotels": ["htl_mumbai_bayfront","htl_agra_marble_vista","htl_rishikesh_riverbend","htl_alappuzha_backwater_lodge","htl_jaipur_pink_pearl","htl_varanasi_ghatview","htl_goa_shores"],
+          "restaurants": ["rst_mumbai_chowpatty_bites","rst_agra_shahi_thali","rst_rishikesh_ganga_cafe","rst_jaipur_kachori_house","rst_bengaluru_green_garden"],
+          "activities": ["act_taj_mahal_sunrise","act_rishikesh_rafting","act_backwaters_houseboat","act_meenakshi_temple","act_western_ghats_trek","act_jaipur_food_walk","act_varanasi_aarti","act_mumbai_heritage_walk"],
+          "trails": ["trl_mumbai_marine_walk","trl_rishikesh_river_cliff","trl_alleppey_backwater_bank","trl_western_ghats_ridge"]
+        },
+        "geojson": {
+          "type": "FeatureCollection",
+          "features": [
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [77.1000,28.5562] }, "properties": { "id": "air_del", "type": "airport", "name": "Indira Gandhi International Airport", "tz": "Asia/Kolkata", "geo": "geo:28.5562,77.1000", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [72.8656,19.0896] }, "properties": { "id": "air_bom", "type": "airport", "name": "Chhatrapati Shivaji Maharaj International Airport", "tz": "Asia/Kolkata", "geo": "geo:19.0896,72.8656", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [77.7066,13.1986] }, "properties": { "id": "air_blr", "type": "airport", "name": "Kempegowda International Airport", "tz": "Asia/Kolkata", "geo": "geo:13.1986,77.7066", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [78.4294,17.2403] }, "properties": { "id": "air_hyd", "type": "airport", "name": "Rajiv Gandhi International Airport", "tz": "Asia/Kolkata", "geo": "geo:17.2403,78.4294", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [80.1709,12.9941] }, "properties": { "id": "air_maa", "type": "airport", "name": "Chennai International Airport", "tz": "Asia/Kolkata", "geo": "geo:12.9941,80.1709", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [88.4467,22.6547] }, "properties": { "id": "air_ccu", "type": "airport", "name": "Kolkata International Airport", "tz": "Asia/Kolkata", "geo": "geo:22.6547,88.4467", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [73.8317,15.3800] }, "properties": { "id": "air_goi", "type": "airport", "name": "Dabolim Airport", "tz": "Asia/Kolkata", "geo": "geo:15.3800,73.8317", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [73.8284,15.7404] }, "properties": { "id": "air_gox", "type": "airport", "name": "Manohar International Airport (Mopa)", "tz": "Asia/Kolkata", "geo": "geo:15.7404,73.8284", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [76.4019,10.1520] }, "properties": { "id": "air_cok", "type": "airport", "name": "Cochin International Airport", "tz": "Asia/Kolkata", "geo": "geo:10.1520,76.4019", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [55.3657,25.2532] }, "properties": { "id": "air_dxb", "type": "airport", "name": "Dubai International Airport", "tz": "Asia/Dubai", "geo": "geo:25.2532,55.3657", "country": "AE" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [103.9915,1.3644] }, "properties": { "id": "air_sin", "type": "airport", "name": "Singapore Changi Airport", "tz": "Asia/Singapore", "geo": "geo:1.3644,103.9915", "country": "SG" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [-0.4543,51.4700] }, "properties": { "id": "air_lhr", "type": "airport", "name": "London Heathrow Airport", "tz": "Europe/London", "geo": "geo:51.4700,-0.4543", "country": "GB" } },
+      
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [77.2197,28.6430] }, "properties": { "id": "stn_ndls", "type": "train_station", "name": "New Delhi Railway Station", "tz": "Asia/Kolkata", "geo": "geo:28.6430,77.2197", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [72.8355,18.9402] }, "properties": { "id": "stn_cstmt", "type": "train_station", "name": "Chhatrapati Shivaji Maharaj Terminus", "tz": "Asia/Kolkata", "geo": "geo:18.9402,72.8355", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [72.8194,18.9696] }, "properties": { "id": "stn_bct", "type": "train_station", "name": "Mumbai Central", "tz": "Asia/Kolkata", "geo": "geo:18.9696,72.8194", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [80.2750,13.0822] }, "properties": { "id": "stn_mas", "type": "train_station", "name": "MGR Chennai Central", "tz": "Asia/Kolkata", "geo": "geo:13.0822,80.2750", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [77.5706,12.9783] }, "properties": { "id": "stn_sbc", "type": "train_station", "name": "KSR Bengaluru City Jn", "tz": "Asia/Kolkata", "geo": "geo:12.9783,77.5706", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [88.3460,22.5855] }, "properties": { "id": "stn_hwh", "type": "train_station", "name": "Howrah Junction", "tz": "Asia/Kolkata", "geo": "geo:22.5855,88.3460", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [78.4983,17.4399] }, "properties": { "id": "stn_sc", "type": "train_station", "name": "Secunderabad Junction", "tz": "Asia/Kolkata", "geo": "geo:17.4399,78.4983", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [73.8740,18.5286] }, "properties": { "id": "stn_pune", "type": "train_station", "name": "Pune Junction", "tz": "Asia/Kolkata", "geo": "geo:18.5286,73.8740", "country": "IN" } },
+      
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [77.2286,28.6676] }, "properties": { "id": "stop_del_kashmere_gate", "type": "bus_stop", "name": "Kashmere Gate ISBT", "tz": "Asia/Kolkata", "geo": "geo:28.6676,77.2286", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [77.2100,28.5672] }, "properties": { "id": "stop_del_aiims", "type": "bus_stop", "name": "AIIMS Bus Stop", "tz": "Asia/Kolkata", "geo": "geo:28.5672,77.2100", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [77.1000,28.5562] }, "properties": { "id": "stop_del_igl_metro_gate_2", "type": "bus_stop", "name": "IGI Airport T3 (Metro Gate 2)", "tz": "Asia/Kolkata", "geo": "geo:28.5562,77.1000", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [77.5723,12.9789] }, "properties": { "id": "stop_blr_kempegowda_term", "type": "bus_stop", "name": "Kempegowda Bus Station", "tz": "Asia/Kolkata", "geo": "geo:12.9789,77.5723", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [77.7066,13.1986] }, "properties": { "id": "stop_blr_kia_term_2_bay_c", "type": "bus_stop", "name": "KIA Terminal 2 – Bay C", "tz": "Asia/Kolkata", "geo": "geo:13.1986,77.7066", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [72.8526,19.0176] }, "properties": { "id": "stop_mum_dadar_tt", "type": "bus_stop", "name": "Dadar TT Circle", "tz": "Asia/Kolkata", "geo": "geo:19.0176,72.8526", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [72.8357,18.9402] }, "properties": { "id": "stop_mum_csmt_fountain", "type": "bus_stop", "name": "CSMT Fountain", "tz": "Asia/Kolkata", "geo": "geo:18.9402,72.8357", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [88.3940,22.6220] }, "properties": { "id": "stop_ccu_dumdum", "type": "bus_stop", "name": "Dum Dum Junction", "tz": "Asia/Kolkata", "geo": "geo:22.6220,88.3940", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [76.2820,9.9674] }, "properties": { "id": "stop_cok_mg_road", "type": "bus_stop", "name": "MG Road (Kochi)", "tz": "Asia/Kolkata", "geo": "geo:9.9674,76.2820", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [73.8278,15.4989] }, "properties": { "id": "stop_goa_panaji_bus_stand", "type": "bus_stop", "name": "Panaji Bus Stand", "tz": "Asia/Kolkata", "geo": "geo:15.4989,73.8278", "country": "IN" } },
+      
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [78.0421,27.1751] }, "properties": { "id": "plc_taj_mahal", "type": "place", "name": "Taj Mahal", "geo": "geo:27.1751,78.0421", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [78.1193,9.9195] }, "properties": { "id": "plc_meenakshi_temple", "type": "place", "name": "Meenakshi Amman Temple", "geo": "geo:9.9195,78.1193", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [76.3388,9.4981] }, "properties": { "id": "plc_backwaters_finishing_point", "type": "place", "name": "Alleppey Finishing Point", "geo": "geo:9.4981,76.3388", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [83.0104,25.3069] }, "properties": { "id": "plc_varanasi_dashashwamedh_ghat", "type": "place", "name": "Dashashwamedh Ghat", "geo": "geo:25.3069,83.0104", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [72.8238,18.9432] }, "properties": { "id": "plc_mumbai_marine_drive", "type": "place", "name": "Marine Drive", "geo": "geo:18.9432,72.8238", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [75.8267,26.9239] }, "properties": { "id": "plc_jaipur_hawa_mahal", "type": "place", "name": "Hawa Mahal", "geo": "geo:26.9239,75.8267", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [77.5848,12.9507] }, "properties": { "id": "plc_bengaluru_lalbagh", "type": "place", "name": "Lalbagh Botanical Garden", "geo": "geo:12.9507,77.5848", "country": "IN" } },
+      
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [72.8260,18.9330] }, "properties": { "id": "htl_mumbai_bayfront", "type": "hotel", "name": "Bayfront Mumbai", "geo": "geo:18.9330,72.8260", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [78.0418,27.1708] }, "properties": { "id": "htl_agra_marble_vista", "type": "hotel", "name": "Marble Vista Agra", "geo": "geo:27.1708,78.0418", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [78.3010,30.1060] }, "properties": { "id": "htl_rishikesh_riverbend", "type": "hotel", "name": "Riverbend Retreat Rishikesh", "geo": "geo:30.1060,78.3010", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [76.3431,9.4988] }, "properties": { "id": "htl_alappuzha_backwater_lodge", "type": "hotel", "name": "Backwater Lodge Alleppey", "geo": "geo:9.4988,76.3431", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [75.8260,26.9230] }, "properties": { "id": "htl_jaipur_pink_pearl", "type": "hotel", "name": "Pink Pearl Jaipur", "geo": "geo:26.9230,75.8260", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [83.0109,25.3074] }, "properties": { "id": "htl_varanasi_ghatview", "type": "hotel", "name": "Ghat View Varanasi", "geo": "geo:25.3074,83.0109", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [73.8080,15.4920] }, "properties": { "id": "htl_goa_shores", "type": "hotel", "name": "Goa Shores Resort", "geo": "geo:15.4920,73.8080", "country": "IN" } },
+      
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [72.8230,18.9445] }, "properties": { "id": "rst_mumbai_chowpatty_bites", "type": "restaurant", "name": "Chowpatty Bites", "geo": "geo:18.9445,72.8230", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [78.0412,27.1728] }, "properties": { "id": "rst_agra_shahi_thali", "type": "restaurant", "name": "Shahi Thali Agra", "geo": "geo:27.1728,78.0412", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [78.3205,30.1201] }, "properties": { "id": "rst_rishikesh_ganga_cafe", "type": "restaurant", "name": "Ganga View Cafe", "geo": "geo:30.1201,78.3205", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [75.8269,26.9245] }, "properties": { "id": "rst_jaipur_kachori_house", "type": "restaurant", "name": "Badi Choupad Kachori House", "geo": "geo:26.9245,75.8269", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [77.5859,12.9518] }, "properties": { "id": "rst_bengaluru_green_garden", "type": "restaurant", "name": "The Green Garden", "geo": "geo:12.9518,77.5859", "country": "IN" } },
+      
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [78.0421,27.1751] }, "properties": { "id": "act_taj_mahal_sunrise", "type": "activity", "name": "Taj Mahal Sunrise", "geo": "geo:27.1751,78.0421", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [78.2676,30.0869] }, "properties": { "id": "act_rishikesh_rafting", "type": "activity", "name": "Rishikesh River Rafting", "geo": "geo:30.0869,78.2676", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [76.3388,9.4981] }, "properties": { "id": "act_backwaters_houseboat", "type": "activity", "name": "Alleppey Backwaters Houseboat", "geo": "geo:9.4981,76.3388", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [78.1193,9.9195] }, "properties": { "id": "act_meenakshi_temple", "type": "activity", "name": "Meenakshi Amman Temple", "geo": "geo:9.9195,78.1193", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [77.0600,10.1260] }, "properties": { "id": "act_western_ghats_trek", "type": "activity", "name": "Western Ghats Ridge Trek", "geo": "geo:10.1260,77.0600", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [75.8267,26.9239] }, "properties": { "id": "act_jaipur_food_walk", "type": "activity", "name": "Jaipur Pink City Food Walk", "geo": "geo:26.9239,75.8267", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [83.0104,25.3069] }, "properties": { "id": "act_varanasi_aarti", "type": "activity", "name": "Varanasi Ganga Aarti", "geo": "geo:25.3069,83.0104", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [72.8327,18.9275] }, "properties": { "id": "act_mumbai_heritage_walk", "type": "activity", "name": "Mumbai Heritage Walk", "geo": "geo:18.9275,72.8327", "country": "IN" } },
+      
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [72.8205,18.9259] }, "properties": { "id": "trl_mumbai_marine_walk", "type": "trail", "name": "Marine Drive Seaface Walk", "geo": "geo:18.9259,72.8205", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [78.3175,30.1245] }, "properties": { "id": "trl_rishikesh_river_cliff", "type": "trail", "name": "Rishikesh River Cliff Trail", "geo": "geo:30.1245,78.3175", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [76.3388,9.4981] }, "properties": { "id": "trl_alleppey_backwater_bank", "type": "trail", "name": "Alleppey Backwater Bank Trail", "geo": "geo:9.4981,76.3388", "country": "IN" } },
+            { "type": "Feature", "geometry": { "type": "Point", "coordinates": [77.0600,10.1200] }, "properties": { "id": "trl_western_ghats_ridge", "type": "trail", "name": "Western Ghats Ridge Loop", "geo": "geo:10.1200,77.0600", "country": "IN" } }
+          ]
+        },
+        "lastUpdated": "2025-09-14T13:36:00Z"
+      }
+      

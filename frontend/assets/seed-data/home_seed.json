@@ -1,0 +1,121 @@
+{
+        "version": 1,
+        "generatedAt": "2025-09-14T13:12:00Z",
+        "hero": {
+          "title": "Discover India Now",
+          "subtitle": "Heritage, nature, food and more",
+          "cta": { "label": "Plan a trip", "route": "/planner" },
+          "banner": {
+            "image": "assets/images/banners/hero_india.jpg",
+            "alt": "Sunrise over Taj Mahal",
+            "overlayLottie": "assets/animations/map_loading.json"
+          }
+        },
+        "quickActions": [
+          { "id": "qa_flights", "label": "Flights", "icon": "i_flight_takeoff", "route": "/flights", "accent": "primary" },
+          { "id": "qa_trains",  "label": "Trains",  "icon": "i_train",          "route": "/trains",  "accent": "tertiary" },
+          { "id": "qa_buses",   "label": "Buses",   "icon": "i_directions_bus", "route": "/buses",   "accent": "secondary" },
+          { "id": "qa_stays",   "label": "Stays",   "icon": "i_hotel",          "route": "/stays",   "accent": "neutral" }
+        ],
+        "sections": [
+          {
+            "id": "sec_featured_heritage",
+            "title": "Featured Heritage",
+            "emotionKind": "heritage",
+            "layout": "carousel_card",
+            "items": [
+              { "type": "activity", "refId": "act_taj_mahal_sunrise" },
+              { "type": "activity", "refId": "act_meenakshi_temple" },
+              { "type": "activity", "refId": "act_mumbai_heritage_walk" }
+            ]
+          },
+          {
+            "id": "sec_trending",
+            "title": "Trending Now",
+            "layout": "grid_card",
+            "items": [
+              { "type": "activity", "refId": "act_jaipur_food_walk" },
+              { "type": "activity", "refId": "act_varanasi_aarti" },
+              { "type": "activity", "refId": "act_backwaters_houseboat" },
+              { "type": "activity", "refId": "act_western_ghats_trek" }
+            ]
+          },
+          {
+            "id": "sec_airports_popular",
+            "title": "Popular Airports",
+            "layout": "chips_row",
+            "items": [
+              { "type": "airport", "refId": "air_del" },
+              { "type": "airport", "refId": "air_bom" },
+              { "type": "airport", "refId": "air_blr" },
+              { "type": "airport", "refId": "air_dxb" },
+              { "type": "airport", "refId": "air_sin" }
+            ]
+          },
+          {
+            "id": "sec_flight_deals",
+            "title": "Flight Deals",
+            "layout": "tickets_list",
+            "items": [
+              { "type": "flight", "refId": "flt_AI665_DEL_BOM_2025-10-05", "badge": "Saver" },
+              { "type": "flight", "refId": "flt_6E2124_BOM_DEL_2025-10-18", "badge": "Saver" },
+              { "type": "flight", "refId": "flt_UK981_DEL_DXB_2025-11-03", "badge": "Flexi" }
+            ]
+          },
+          {
+            "id": "sec_nearby_bus",
+            "title": "Nearby Bus Stops",
+            "layout": "list_dense",
+            "items": [
+              { "type": "stop", "refId": "stop_del_kashmere_gate" },
+              { "type": "stop", "refId": "stop_del_aiims" },
+              { "type": "stop", "refId": "stop_mum_dadar_tt" }
+            ]
+          },
+          {
+            "id": "sec_inspiration",
+            "title": "Inspiration by Mood",
+            "layout": "chips_pills",
+            "items": [
+              { "type": "emotion", "refId": "peaceful",  "label": "Peaceful" },
+              { "type": "emotion", "refId": "adventure", "label": "Adventure" },
+              { "type": "emotion", "refId": "spiritual", "label": "Spiritual" },
+              { "type": "emotion", "refId": "nature",    "label": "Nature" },
+              { "type": "emotion", "refId": "heritage",  "label": "Heritage" },
+              { "type": "emotion", "refId": "stay",      "label": "Stays" }
+            ]
+          }
+        ],
+        "suggestions": {
+          "forYou": [
+            { "type": "activity", "refId": "act_taj_mahal_sunrise", "reason": "popular_nearby" },
+            { "type": "activity", "refId": "act_jaipur_food_walk",  "reason": "similar_to_favorites" },
+            { "type": "activity", "refId": "act_western_ghats_trek","reason": "seasonal" }
+          ],
+          "keepExploring": [
+            { "type": "airport", "refId": "air_gox" },
+            { "type": "airport", "refId": "air_maa" },
+            { "type": "stop",    "refId": "stop_goa_panaji_bus_stand" }
+          ]
+        },
+        "banners": [
+          {
+            "id": "bnr_voice_search",
+            "title": "Try Voice Search",
+            "subtitle": "Say “Find sunrise spots near Agra”",
+            "style": "tonal",
+            "lottie": "assets/animations/voice_animation.json",
+            "route": "/search/voice"
+          },
+          {
+            "id": "bnr_live_location",
+            "title": "Live Location",
+            "subtitle": "Enable to see buses around",
+            "style": "elevated",
+            "lottie": "assets/animations/location_pulse.json",
+            "route": "/permissions/location"
+          }
+        ],
+        "lastUpdated": "2025-09-14T13:12:00Z"
+      }
+      

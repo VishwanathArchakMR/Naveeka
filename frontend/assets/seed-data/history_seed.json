@@ -1,0 +1,165 @@
+{
+        "version": 1,
+        "generatedAt": "2025-09-14T13:10:00Z",
+        "history": [
+          {
+            "id": "hist_0001",
+            "userId": "usr_aj_1029",
+            "event": "view",
+            "target": { "type": "activity", "refId": "act_taj_mahal_sunrise" },
+            "context": {
+              "source": "home_recommendation",
+              "device": { "platform": "android", "appVersion": "1.0.0" }
+            },
+            "occurredAt": "2025-09-10T08:16:00Z",
+            "createdAt": "2025-09-10T08:16:00Z",
+            "updatedAt": "2025-09-10T08:16:00Z"
+          },
+          {
+            "id": "hist_0002",
+            "userId": "usr_aj_1029",
+            "event": "search",
+            "query": "flights del to bom",
+            "filters": { "date": "2025-10-05", "adults": 2 },
+            "occurredAt": "2025-09-10T08:16:30Z",
+            "createdAt": "2025-09-10T08:16:30Z",
+            "updatedAt": "2025-09-10T08:16:30Z"
+          },
+          {
+            "id": "hist_0003",
+            "userId": "usr_aj_1029",
+            "event": "view",
+            "target": { "type": "airport", "refId": "air_del" },
+            "context": { "source": "search_results" },
+            "occurredAt": "2025-09-10T08:17:00Z",
+            "createdAt": "2025-09-10T08:17:00Z",
+            "updatedAt": "2025-09-10T08:17:00Z"
+          },
+          {
+            "id": "hist_0004",
+            "userId": "usr_aj_1029",
+            "event": "book_start",
+            "target": { "type": "flight", "refId": "flt_AI665_DEL_BOM_2025-10-05" },
+            "occurredAt": "2025-09-10T08:18:00Z",
+            "createdAt": "2025-09-10T08:18:00Z",
+            "updatedAt": "2025-09-10T08:18:00Z"
+          },
+          {
+            "id": "hist_0005",
+            "userId": "usr_aj_1029",
+            "event": "book_confirm",
+            "target": { "type": "booking", "refId": "bk_0001_flt_del_bom" },
+            "payment": { "currency": "INR", "amount": 8650 },
+            "occurredAt": "2025-09-10T08:19:30Z",
+            "createdAt": "2025-09-10T08:19:30Z",
+            "updatedAt": "2025-09-10T08:19:30Z"
+          },
+      
+          {
+            "id": "hist_0006",
+            "userId": "usr_rs_2031",
+            "event": "view",
+            "target": { "type": "activity", "refId": "act_backwaters_houseboat" },
+            "context": { "source": "collection_peaceful" },
+            "occurredAt": "2025-09-11T10:31:00Z",
+            "createdAt": "2025-09-11T10:31:00Z",
+            "updatedAt": "2025-09-11T10:31:00Z"
+          },
+          {
+            "id": "hist_0007",
+            "userId": "usr_rs_2031",
+            "event": "favorite_add",
+            "target": { "type": "activity", "refId": "act_backwaters_houseboat" },
+            "occurredAt": "2025-09-11T10:35:00Z",
+            "createdAt": "2025-09-11T10:35:00Z",
+            "updatedAt": "2025-09-11T10:35:00Z"
+          },
+          {
+            "id": "hist_0008",
+            "userId": "usr_rs_2031",
+            "event": "book_confirm",
+            "target": { "type": "booking", "refId": "bk_0003_act_backwaters" },
+            "payment": { "currency": "INR", "amount": 7200 },
+            "occurredAt": "2025-09-12T09:06:00Z",
+            "createdAt": "2025-09-12T09:06:00Z",
+            "updatedAt": "2025-09-12T09:06:00Z"
+          },
+      
+          {
+            "id": "hist_0009",
+            "userId": "usr_vk_4412",
+            "event": "navigate",
+            "target": { "type": "stop", "refId": "stop_cok_mg_road" },
+            "route": {
+              "mode": "bus",
+              "polylineRef": "rt_cok_metro_feeder",
+              "origin": { "label": "Lulu Mall", "geo": "geo:10.0270,76.3083" },
+              "destination": { "label": "MG Road (Kochi)", "geo": "geo:9.9674,76.2820" }
+            },
+            "occurredAt": "2025-09-12T09:12:30Z",
+            "createdAt": "2025-09-12T09:12:30Z",
+            "updatedAt": "2025-09-12T09:12:30Z"
+          },
+      
+          {
+            "id": "hist_0010",
+            "userId": "usr_am_9182",
+            "event": "view",
+            "target": { "type": "activity", "refId": "act_mumbai_heritage_walk" },
+            "context": { "source": "search_results" },
+            "occurredAt": "2025-09-09T07:21:00Z",
+            "createdAt": "2025-09-09T07:21:00Z",
+            "updatedAt": "2025-09-09T07:21:00Z"
+          },
+          {
+            "id": "hist_0011",
+            "userId": "usr_am_9182",
+            "event": "book_start",
+            "target": { "type": "flight", "refId": "flt_6E2124_BOM_DEL_2025-10-18" },
+            "occurredAt": "2025-09-09T07:21:30Z",
+            "createdAt": "2025-09-09T07:21:30Z",
+            "updatedAt": "2025-09-09T07:21:30Z"
+          },
+          {
+            "id": "hist_0012",
+            "userId": "usr_am_9182",
+            "event": "book_confirm",
+            "target": { "type": "booking", "refId": "bk_0004_flt_bom_del_roundtrip" },
+            "payment": { "currency": "INR", "amount": 15240 },
+            "occurredAt": "2025-09-09T07:22:10Z",
+            "createdAt": "2025-09-09T07:22:10Z",
+            "updatedAt": "2025-09-09T07:22:10Z"
+          },
+      
+          {
+            "id": "hist_0013",
+            "userId": "usr_demo_0001",
+            "event": "view",
+            "target": { "type": "activity", "refId": "act_varanasi_aarti" },
+            "context": { "source": "collection_spiritual" },
+            "occurredAt": "2025-09-08T18:36:00Z",
+            "createdAt": "2025-09-08T18:36:00Z",
+            "updatedAt": "2025-09-08T18:36:00Z"
+          },
+          {
+            "id": "hist_0014",
+            "userId": "usr_demo_0001",
+            "event": "share",
+            "target": { "type": "activity", "refId": "act_jaipur_food_walk" },
+            "context": { "channel": "whatsapp" },
+            "occurredAt": "2025-09-08T18:41:30Z",
+            "createdAt": "2025-09-08T18:41:30Z",
+            "updatedAt": "2025-09-08T18:41:30Z"
+          },
+          {
+            "id": "hist_0015",
+            "userId": "usr_demo_0001",
+            "event": "favorite_add",
+            "target": { "type": "airport", "refId": "air_gox" },
+            "occurredAt": "2025-09-08T18:43:30Z",
+            "createdAt": "2025-09-08T18:43:30Z",
+            "updatedAt": "2025-09-08T18:43:30Z"
+          }
+        ]
+      }
+      

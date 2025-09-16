@@ -1,0 +1,259 @@
+{
+        "version": 1,
+        "generatedAt": "2025-09-14T12:46:00Z",
+        "airports": [
+          {
+            "id": "air_del",
+            "iata": "DEL",
+            "icao": "VIDP",
+            "name": "Indira Gandhi International Airport",
+            "city": "New Delhi",
+            "country": "India",
+            "isoCountry": "IN",
+            "tz": "Asia/Kolkata",
+            "location": {
+              "coordinates": { "lat": 28.5562, "lng": 77.1000, "alt_ft": 777 },
+              "geo": "geo:28.5562,77.1000"
+            },
+            "contacts": {
+              "phone": "+91-124-4797300",
+              "website": "https://www.newdelhiairport.in"
+            },
+            "stats": { "terminals": 3, "runways": 3 },
+            "createdAt": "2025-08-01T06:00:00Z",
+            "updatedAt": "2025-09-10T09:30:00Z"
+          },
+          {
+            "id": "air_bom",
+            "iata": "BOM",
+            "icao": "VABB",
+            "name": "Chhatrapati Shivaji Maharaj International Airport",
+            "city": "Mumbai",
+            "country": "India",
+            "isoCountry": "IN",
+            "tz": "Asia/Kolkata",
+            "location": {
+              "coordinates": { "lat": 19.0896, "lng": 72.8656, "alt_ft": 39 },
+              "geo": "geo:19.0896,72.8656"
+            },
+            "contacts": {
+              "phone": "+91-22-66851010",
+              "website": "https://www.csmia.adaniairports.com"
+            },
+            "stats": { "terminals": 2, "runways": 2 },
+            "createdAt": "2025-07-22T05:45:00Z",
+            "updatedAt": "2025-09-03T10:10:00Z"
+          },
+          {
+            "id": "air_blr",
+            "iata": "BLR",
+            "icao": "VOBL",
+            "name": "Kempegowda International Airport",
+            "city": "Bengaluru",
+            "country": "India",
+            "isoCountry": "IN",
+            "tz": "Asia/Kolkata",
+            "location": {
+              "coordinates": { "lat": 13.1986, "lng": 77.7066, "alt_ft": 3000 },
+              "geo": "geo:13.1986,77.7066"
+            },
+            "contacts": {
+              "phone": "+91-80-22012001",
+              "website": "https://www.bengaluruairport.com"
+            },
+            "stats": { "terminals": 2, "runways": 2 },
+            "createdAt": "2025-07-10T07:30:00Z",
+            "updatedAt": "2025-08-30T11:20:00Z"
+          },
+          {
+            "id": "air_hyd",
+            "iata": "HYD",
+            "icao": "VOHS",
+            "name": "Rajiv Gandhi International Airport",
+            "city": "Hyderabad",
+            "country": "India",
+            "isoCountry": "IN",
+            "tz": "Asia/Kolkata",
+            "location": {
+              "coordinates": { "lat": 17.2403, "lng": 78.4294, "alt_ft": 2024 },
+              "geo": "geo:17.2403,78.4294"
+            },
+            "contacts": {
+              "phone": "+91-40-66546370",
+              "website": "https://www.hyderabad.aero"
+            },
+            "stats": { "terminals": 1, "runways": 1 },
+            "createdAt": "2025-06-12T06:15:00Z",
+            "updatedAt": "2025-08-25T10:05:00Z"
+          },
+          {
+            "id": "air_maa",
+            "iata": "MAA",
+            "icao": "VOMM",
+            "name": "Chennai International Airport",
+            "city": "Chennai",
+            "country": "India",
+            "isoCountry": "IN",
+            "tz": "Asia/Kolkata",
+            "location": {
+              "coordinates": { "lat": 12.9941, "lng": 80.1709, "alt_ft": 52 },
+              "geo": "geo:12.9941,80.1709"
+            },
+            "contacts": {
+              "phone": "+91-44-22560551",
+              "website": "https://www.aai.aero/en/airports/chennai"
+            },
+            "stats": { "terminals": 2, "runways": 2 },
+            "createdAt": "2025-05-28T08:00:00Z",
+            "updatedAt": "2025-08-21T12:15:00Z"
+          },
+          {
+            "id": "air_ccu",
+            "iata": "CCU",
+            "icao": "VECC",
+            "name": "Netaji Subhas Chandra Bose International Airport",
+            "city": "Kolkata",
+            "country": "India",
+            "isoCountry": "IN",
+            "tz": "Asia/Kolkata",
+            "location": {
+              "coordinates": { "lat": 22.6547, "lng": 88.4467, "alt_ft": 16 },
+              "geo": "geo:22.6547,88.4467"
+            },
+            "contacts": {
+              "phone": "+91-33-25118236",
+              "website": "https://www.aai.aero/en/airports/kolkata"
+            },
+            "stats": { "terminals": 1, "runways": 2 },
+            "createdAt": "2025-06-02T05:30:00Z",
+            "updatedAt": "2025-08-18T09:45:00Z"
+          },
+          {
+            "id": "air_goi",
+            "iata": "GOI",
+            "icao": "VOGO",
+            "name": "Dabolim Airport",
+            "city": "Goa",
+            "country": "India",
+            "isoCountry": "IN",
+            "tz": "Asia/Kolkata",
+            "location": {
+              "coordinates": { "lat": 15.3800, "lng": 73.8317, "alt_ft": 151 },
+              "geo": "geo:15.3800,73.8317"
+            },
+            "contacts": {
+              "phone": "+91-832-2540806",
+              "website": "https://www.aai.aero/en/airports/goa"
+            },
+            "stats": { "terminals": 1, "runways": 1 },
+            "createdAt": "2025-05-05T07:10:00Z",
+            "updatedAt": "2025-08-12T11:25:00Z"
+          },
+          {
+            "id": "air_gox",
+            "iata": "GOX",
+            "icao": "VOGA",
+            "name": "Manohar International Airport (Mopa)",
+            "city": "Goa",
+            "country": "India",
+            "isoCountry": "IN",
+            "tz": "Asia/Kolkata",
+            "location": {
+              "coordinates": { "lat": 15.7404, "lng": 73.8284, "alt_ft": 680 },
+              "geo": "geo:15.7404,73.8284"
+            },
+            "contacts": {
+              "phone": "+91-832-1234567",
+              "website": "https://www.goa-mopa.com"
+            },
+            "stats": { "terminals": 1, "runways": 1 },
+            "createdAt": "2025-05-06T07:20:00Z",
+            "updatedAt": "2025-08-12T11:30:00Z"
+          },
+          {
+            "id": "air_cok",
+            "iata": "COK",
+            "icao": "VOCI",
+            "name": "Cochin International Airport",
+            "city": "Kochi",
+            "country": "India",
+            "isoCountry": "IN",
+            "tz": "Asia/Kolkata",
+            "location": {
+              "coordinates": { "lat": 10.1520, "lng": 76.4019, "alt_ft": 30 },
+              "geo": "geo:10.1520,76.4019"
+            },
+            "contacts": {
+              "phone": "+91-484-2610115",
+              "website": "https://www.cial.aero"
+            },
+            "stats": { "terminals": 3, "runways": 1 },
+            "createdAt": "2025-05-15T06:40:00Z",
+            "updatedAt": "2025-08-15T10:50:00Z"
+          },
+          {
+            "id": "air_dxb",
+            "iata": "DXB",
+            "icao": "OMDB",
+            "name": "Dubai International Airport",
+            "city": "Dubai",
+            "country": "United Arab Emirates",
+            "isoCountry": "AE",
+            "tz": "Asia/Dubai",
+            "location": {
+              "coordinates": { "lat": 25.2532, "lng": 55.3657, "alt_ft": 62 },
+              "geo": "geo:25.2532,55.3657"
+            },
+            "contacts": {
+              "phone": "+971-4-224-5555",
+              "website": "https://www.dubaiairports.ae"
+            },
+            "stats": { "terminals": 3, "runways": 2 },
+            "createdAt": "2025-06-01T08:00:00Z",
+            "updatedAt": "2025-08-31T12:00:00Z"
+          },
+          {
+            "id": "air_sin",
+            "iata": "SIN",
+            "icao": "WSSS",
+            "name": "Singapore Changi Airport",
+            "city": "Singapore",
+            "country": "Singapore",
+            "isoCountry": "SG",
+            "tz": "Asia/Singapore",
+            "location": {
+              "coordinates": { "lat": 1.3644, "lng": 103.9915, "alt_ft": 22 },
+              "geo": "geo:1.3644,103.9915"
+            },
+            "contacts": {
+              "phone": "+65-6595-6868",
+              "website": "https://www.changiairport.com"
+            },
+            "stats": { "terminals": 4, "runways": 2 },
+            "createdAt": "2025-06-03T09:00:00Z",
+            "updatedAt": "2025-08-31T12:10:00Z"
+          },
+          {
+            "id": "air_lhr",
+            "iata": "LHR",
+            "icao": "EGLL",
+            "name": "London Heathrow Airport",
+            "city": "London",
+            "country": "United Kingdom",
+            "isoCountry": "GB",
+            "tz": "Europe/London",
+            "location": {
+              "coordinates": { "lat": 51.4700, "lng": -0.4543, "alt_ft": 83 },
+              "geo": "geo:51.4700,-0.4543"
+            },
+            "contacts": {
+              "phone": "+44-345-600-1515",
+              "website": "https://www.heathrow.com"
+            },
+            "stats": { "terminals": 4, "runways": 2 },
+            "createdAt": "2025-06-05T10:30:00Z",
+            "updatedAt": "2025-08-31T12:20:00Z"
+          }
+        ]
+      }
+      

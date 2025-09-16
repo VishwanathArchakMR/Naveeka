@@ -1,0 +1,197 @@
+{
+        "version": 1,
+        "generatedAt": "2025-09-14T12:58:00Z",
+        "stops": [
+          {
+            "id": "stop_del_kashmere_gate",
+            "stop_code": "DL-KG-01",
+            "name": "Kashmere Gate ISBT",
+            "city": "New Delhi",
+            "zone": "DL-N",
+            "tz": "Asia/Kolkata",
+            "location": {
+              "coordinates": { "lat": 28.6676, "lng": 77.2286 },
+              "geo": "geo:28.6676,77.2286"
+            },
+            "platform": "Bay 3",
+            "wheelchair_boarding": 1,
+            "sheltered": true,
+            "lighting": true,
+            "routes": ["rt_dl_ring_1", "rt_dl_gurgaon_rapid"],
+            "createdAt": "2025-08-01T06:30:00Z",
+            "updatedAt": "2025-09-10T09:35:00Z"
+          },
+          {
+            "id": "stop_del_aiims",
+            "stop_code": "DL-AIIMS-07",
+            "name": "AIIMS Bus Stop",
+            "city": "New Delhi",
+            "zone": "DL-S",
+            "tz": "Asia/Kolkata",
+            "location": {
+              "coordinates": { "lat": 28.5672, "lng": 77.2100 },
+              "geo": "geo:28.5672,77.2100"
+            },
+            "platform": "Stop A",
+            "wheelchair_boarding": 1,
+            "sheltered": true,
+            "lighting": true,
+            "routes": ["rt_dl_ring_1", "rt_dl_saket_2"],
+            "createdAt": "2025-08-01T06:40:00Z",
+            "updatedAt": "2025-09-08T11:10:00Z"
+          },
+          {
+            "id": "stop_del_igl_metro_gate_2",
+            "stop_code": "DL-IGL-12",
+            "name": "IGI Airport T3 (Metro Gate 2)",
+            "city": "New Delhi",
+            "zone": "DL-W",
+            "tz": "Asia/Kolkata",
+            "location": {
+              "coordinates": { "lat": 28.5562, "lng": 77.1000 },
+              "geo": "geo:28.5562,77.1000"
+            },
+            "platform": "Bus Bay T3",
+            "wheelchair_boarding": 1,
+            "sheltered": true,
+            "lighting": true,
+            "routes": ["rt_dl_airport_1"],
+            "createdAt": "2025-08-02T07:00:00Z",
+            "updatedAt": "2025-09-07T10:20:00Z"
+          },
+          {
+            "id": "stop_blr_kempegowda_term",
+            "stop_code": "KA-BLR-01",
+            "name": "Kempegowda Bus Station",
+            "city": "Bengaluru",
+            "zone": "KA-BLR",
+            "tz": "Asia/Kolkata",
+            "location": {
+              "coordinates": { "lat": 12.9789, "lng": 77.5723 },
+              "geo": "geo:12.9789,77.5723"
+            },
+            "platform": "Platform 6",
+            "wheelchair_boarding": 1,
+            "sheltered": true,
+            "lighting": true,
+            "routes": ["rt_blr_ring_500", "rt_blr_airport_volvo"],
+            "createdAt": "2025-07-25T05:15:00Z",
+            "updatedAt": "2025-09-05T08:45:00Z"
+          },
+          {
+            "id": "stop_blr_kia_term_2_bay_c",
+            "stop_code": "KA-KIA-02C",
+            "name": "KIA Terminal 2 – Bay C",
+            "city": "Bengaluru",
+            "zone": "KA-BLR-N",
+            "tz": "Asia/Kolkata",
+            "location": {
+              "coordinates": { "lat": 13.1986, "lng": 77.7066 },
+              "geo": "geo:13.1986,77.7066"
+            },
+            "platform": "Bay C",
+            "wheelchair_boarding": 1,
+            "sheltered": true,
+            "lighting": true,
+            "routes": ["rt_blr_airport_volvo"],
+            "createdAt": "2025-07-26T06:10:00Z",
+            "updatedAt": "2025-09-05T08:50:00Z"
+          },
+          {
+            "id": "stop_mum_dadar_tt",
+            "stop_code": "MH-DDR-05",
+            "name": "Dadar TT Circle",
+            "city": "Mumbai",
+            "zone": "MH-MUM-C",
+            "tz": "Asia/Kolkata",
+            "location": {
+              "coordinates": { "lat": 19.0176, "lng": 72.8526 },
+              "geo": "geo:19.0176,72.8526"
+            },
+            "platform": "Island Stop",
+            "wheelchair_boarding": 0,
+            "sheltered": true,
+            "lighting": true,
+            "routes": ["rt_mum_aisle_1", "rt_mum_bkc_express"],
+            "createdAt": "2025-07-30T07:30:00Z",
+            "updatedAt": "2025-09-04T12:05:00Z"
+          },
+          {
+            "id": "stop_mum_csmt_fountain",
+            "stop_code": "MH-CSMT-02",
+            "name": "CSMT Fountain",
+            "city": "Mumbai",
+            "zone": "MH-MUM-S",
+            "tz": "Asia/Kolkata",
+            "location": {
+              "coordinates": { "lat": 18.9402, "lng": 72.8357 },
+              "geo": "geo:18.9402,72.8357"
+            },
+            "platform": "Stop B",
+            "wheelchair_boarding": 1,
+            "sheltered": true,
+            "lighting": true,
+            "routes": ["rt_mum_colaba_2"],
+            "createdAt": "2025-07-30T08:00:00Z",
+            "updatedAt": "2025-09-04T12:10:00Z"
+          },
+          {
+            "id": "stop_ccu_dumdum",
+            "stop_code": "WB-DDM-01",
+            "name": "Dum Dum Junction",
+            "city": "Kolkata",
+            "zone": "WB-KOL-N",
+            "tz": "Asia/Kolkata",
+            "location": {
+              "coordinates": { "lat": 22.6220, "lng": 88.3940 },
+              "geo": "geo:22.6220,88.3940"
+            },
+            "platform": "Bus Bay",
+            "wheelchair_boarding": 1,
+            "sheltered": true,
+            "lighting": true,
+            "routes": ["rt_ccu_airport_1", "rt_ccu_ring_2"],
+            "createdAt": "2025-08-05T05:50:00Z",
+            "updatedAt": "2025-09-02T09:00:00Z"
+          },
+          {
+            "id": "stop_cok_mg_road",
+            "stop_code": "KL-COK-03",
+            "name": "MG Road (Kochi)",
+            "city": "Kochi",
+            "zone": "KL-KOC-C",
+            "tz": "Asia/Kolkata",
+            "location": {
+              "coordinates": { "lat": 9.9674, "lng": 76.2820 },
+              "geo": "geo:9.9674,76.2820"
+            },
+            "platform": "Stop 1",
+            "wheelchair_boarding": 1,
+            "sheltered": true,
+            "lighting": true,
+            "routes": ["rt_cok_metro_feeder", "rt_cok_fort_kochi"],
+            "createdAt": "2025-08-06T06:05:00Z",
+            "updatedAt": "2025-09-01T10:40:00Z"
+          },
+          {
+            "id": "stop_goa_panaji_bus_stand",
+            "stop_code": "GA-PJI-01",
+            "name": "Panaji Bus Stand",
+            "city": "Panaji",
+            "zone": "GA-N",
+            "tz": "Asia/Kolkata",
+            "location": {
+              "coordinates": { "lat": 15.4989, "lng": 73.8278 },
+              "geo": "geo:15.4989,73.8278"
+            },
+            "platform": "Main Bay",
+            "wheelchair_boarding": 1,
+            "sheltered": true,
+            "lighting": true,
+            "routes": ["rt_goa_beachline_1", "rt_goa_airport_shuttle"],
+            "createdAt": "2025-08-08T07:10:00Z",
+            "updatedAt": "2025-08-30T12:20:00Z"
+          }
+        ]
+      }
+      

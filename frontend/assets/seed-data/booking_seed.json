@@ -1,0 +1,179 @@
+{
+        "version": 1,
+        "generatedAt": "2025-09-14T12:55:00Z",
+        "bookings": [
+          {
+            "id": "bk_0001_flt_del_bom",
+            "type": "flight",
+            "status": "confirmed",
+            "user": {
+              "id": "usr_aj_1029",
+              "email": "aj******@example.com",
+              "country": "IN"
+            },
+            "payment": {
+              "currency": "INR",
+              "total": 8650,
+              "breakdown": {
+                "baseFare": 7200,
+                "taxes": 1250,
+                "convenienceFee": 200
+              }
+            },
+            "itinerary": {
+              "pnr": "H7Q9TZ",
+              "segments": [
+                {
+                  "carrier": { "code": "AI", "name": "Air India" },
+                  "flightNo": "AI-665",
+                  "from": {
+                    "iata": "DEL",
+                    "icao": "VIDP",
+                    "name": "Indira Gandhi International Airport",
+                    "tz": "Asia/Kolkata"
+                  },
+                  "to": {
+                    "iata": "BOM",
+                    "icao": "VABB",
+                    "name": "Chhatrapati Shivaji Maharaj International Airport",
+                    "tz": "Asia/Kolkata"
+                  },
+                  "departure": "2025-10-05T09:30:00+05:30",
+                  "arrival": "2025-10-05T11:45:00+05:30",
+                  "cabin": "Economy",
+                  "seats": [
+                    { "name": "AJAY J", "type": "ADT", "seat": "18A" },
+                    { "name": "RHEA S", "type": "ADT", "seat": "18B" }
+                  ],
+                  "baggage": {
+                    "carryOn_kg": 7,
+                    "checked_kg": 15
+                  }
+                }
+              ]
+            },
+            "createdAt": "2025-09-10T08:15:00Z",
+            "updatedAt": "2025-09-10T08:15:00Z"
+          },
+          {
+            "id": "bk_0002_act_taj",
+            "type": "activity",
+            "status": "confirmed",
+            "user": {
+              "id": "usr_rs_2031",
+              "email": "rs******@example.com",
+              "country": "IN"
+            },
+            "payment": {
+              "currency": "INR",
+              "total": 200,
+              "breakdown": {
+                "ticket": 200,
+                "taxes": 0,
+                "fees": 0
+              }
+            },
+            "activity": {
+              "activityId": "act_taj_mahal_sunrise",
+              "title": "Taj Mahal Sunrise",
+              "emotionKind": "heritage",
+              "date": "2025-10-06",
+              "slot": { "start": "2025-10-06T06:05:00+05:30", "end": "2025-10-06T07:35:00+05:30", "tz": "Asia/Kolkata" },
+              "participants": [
+                { "name": "Rhea S", "type": "ADT" },
+                { "name": "Meera S", "type": "CHD" }
+              ],
+              "meetingPoint": {
+                "label": "Taj East Gate",
+                "geo": "geo:27.1751,78.0421"
+              }
+            },
+            "createdAt": "2025-09-11T10:30:00Z",
+            "updatedAt": "2025-09-11T10:30:00Z"
+          },
+          {
+            "id": "bk_0003_act_backwaters",
+            "type": "activity",
+            "status": "pending",
+            "user": {
+              "id": "usr_vk_4412",
+              "email": "vk******@example.com",
+              "country": "IN"
+            },
+            "payment": {
+              "currency": "INR",
+              "total": 7200,
+              "breakdown": {
+                "charter": 7000,
+                "taxes": 200,
+                "fees": 0
+              }
+            },
+            "activity": {
+              "activityId": "act_backwaters_houseboat",
+              "title": "Alleppey Backwaters Houseboat",
+              "emotionKind": "peaceful",
+              "date": "2025-11-02",
+              "slot": { "start": "2025-11-02T12:00:00+05:30", "end": "2025-11-02T16:00:00+05:30", "tz": "Asia/Kolkata" },
+              "participants": [
+                { "name": "Vikram K", "type": "ADT" }
+              ],
+              "meetingPoint": {
+                "label": "Finishing Point, Alappuzha",
+                "geo": "geo:9.4981,76.3388"
+              }
+            },
+            "createdAt": "2025-09-12T09:05:00Z",
+            "updatedAt": "2025-09-12T09:05:00Z"
+          },
+          {
+            "id": "bk_0004_flt_bom_del_roundtrip",
+            "type": "flight",
+            "status": "confirmed",
+            "user": {
+              "id": "usr_am_9182",
+              "email": "am******@example.com",
+              "country": "IN"
+            },
+            "payment": {
+              "currency": "INR",
+              "total": 15240,
+              "breakdown": {
+                "baseFare": 12600,
+                "taxes": 2340,
+                "convenienceFee": 300
+              }
+            },
+            "itinerary": {
+              "pnr": "R2M7XJ",
+              "segments": [
+                {
+                  "carrier": { "code": "6E", "name": "IndiGo" },
+                  "flightNo": "6E-2124",
+                  "from": { "iata": "BOM", "icao": "VABB", "name": "Chhatrapati Shivaji Maharaj International Airport", "tz": "Asia/Kolkata" },
+                  "to": { "iata": "DEL", "icao": "VIDP", "name": "Indira Gandhi International Airport", "tz": "Asia/Kolkata" },
+                  "departure": "2025-10-18T18:15:00+05:30",
+                  "arrival": "2025-10-18T20:25:00+05:30",
+                  "cabin": "Economy",
+                  "seats": [{ "name": "Aman M", "type": "ADT", "seat": "10C" }],
+                  "baggage": { "carryOn_kg": 7, "checked_kg": 15 }
+                },
+                {
+                  "carrier": { "code": "6E", "name": "IndiGo" },
+                  "flightNo": "6E-2331",
+                  "from": { "iata": "DEL", "icao": "VIDP", "name": "Indira Gandhi International Airport", "tz": "Asia/Kolkata" },
+                  "to": { "iata": "BOM", "icao": "VABB", "name": "Chhatrapati Shivaji Maharaj International Airport", "tz": "Asia/Kolkata" },
+                  "departure": "2025-10-22T09:10:00+05:30",
+                  "arrival": "2025-10-22T11:20:00+05:30",
+                  "cabin": "Economy",
+                  "seats": [{ "name": "Aman M", "type": "ADT", "seat": "9C" }],
+                  "baggage": { "carryOn_kg": 7, "checked_kg": 15 }
+                }
+              ]
+            },
+            "createdAt": "2025-09-09T07:20:00Z",
+            "updatedAt": "2025-09-09T07:20:00Z"
+          }
+        ]
+      }
+      

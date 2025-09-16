@@ -1,0 +1,128 @@
+# =========================
+# OS & Editor junk
+# =========================
+.DS_Store
+Thumbs.db
+*.log
+*.swp
+*.tmp
+*.class
+*.pyc
+.history/
+.svn/
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+
+# =========================
+# Flutter / Dart
+# =========================
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+/build/
+/coverage/
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Symbolication & obfuscation
+app.*.symbols
+app.*.map.json
+
+# =========================
+# Android
+# =========================
+/android/.gradle/
+/android/.idea/
+/android/local.properties
+/android/app/build/
+/android/build/
+/android/app/outputs/
+/android/app/intermediates/
+/android/captures/
+
+# Generated APK/AAB artifacts
+*.apk
+*.aab
+
+# Firebase / Google config (keep out of VCS; share via CI secrets)
+android/app/google-services.json
+
+# Signing keys (never commit)
+android/key.properties
+android/app/*.keystore
+android/app/*.jks
+
+# =========================
+# iOS
+# =========================
+/ios/Pods/
+/ios/.symlinks/
+/ios/Flutter/Flutter.framework
+/ios/Flutter/Flutter.podspec
+/ios/Flutter/Generated.xcconfig
+/ios/Flutter/App.framework
+/ios/Flutter/ephemeral/
+/ios/build/
+/ios/.generated/
+/ios/Runner.xcworkspace/
+/ios/Runner/GeneratedPluginRegistrant.*
+/ios/.last_build_id
+
+# Firebase / Google config (keep out of VCS)
+ios/Runner/GoogleService-Info.plist
+
+# Xcode user data
+**/*.mode1v3
+**/*.mode2v3
+**/*.perspectivev3
+**/*.pbxuser
+**/*xcuserdata/
+
+# =========================
+# Web (if enabled)
+# =========================
+/web/.dart_tool/
+/web/build/
+/web/.firebase/
+
+# =========================
+# Mac/Windows/Linux desktop (if enabled)
+# =========================
+/macos/Flutter/ephemeral/
+/macos/Pods/
+/macos/build/
+/linux/build/
+/windows/build/
+
+# =========================
+# Env & secrets
+# =========================
+# Keep local env files private; commit an .env.example instead
+.env
+.env.*
+!.env.example
+
+# Any JSON/YAML secret configs (adjust as needed)
+**/secrets*.json
+**/secret*.yaml
+**/*.secrets.json
+
+# =========================
+# Misc tools
+# =========================
+.migrate/
+.melos_tool/
+melos_tool/
+.swiftpm/
+.swift-version
+migrate_working_dir/

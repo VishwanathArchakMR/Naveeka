@@ -1,0 +1,61 @@
+{
+        "version": 1,
+        "generatedAt": "2025-09-14T13:07:00Z",
+        "following": [
+          {
+            "userId": "usr_aj_1029",
+            "follows": [
+              { "type": "user", "refId": "usr_rs_2031", "since": "2025-08-20T10:05:00Z", "notifications": true },
+              { "type": "user", "refId": "usr_am_9182", "since": "2025-08-21T11:15:00Z", "notifications": true },
+              { "type": "activity", "refId": "act_taj_mahal_sunrise", "since": "2025-08-22T07:25:00Z", "notifications": true },
+              { "type": "airport", "refId": "air_bom", "since": "2025-08-22T07:30:00Z", "notifications": false }
+            ],
+            "createdAt": "2025-08-20T10:05:00Z",
+            "updatedAt": "2025-08-22T07:30:00Z"
+          },
+          {
+            "userId": "usr_rs_2031",
+            "follows": [
+              { "type": "user", "refId": "usr_aj_1029", "since": "2025-08-22T08:00:00Z", "notifications": true },
+              { "type": "activity", "refId": "act_backwaters_houseboat", "since": "2025-08-23T06:10:00Z", "notifications": true },
+              { "type": "stop", "refId": "stop_cok_mg_road", "since": "2025-08-24T09:45:00Z", "notifications": false }
+            ],
+            "createdAt": "2025-08-22T08:00:00Z",
+            "updatedAt": "2025-08-24T09:45:00Z"
+          },
+          {
+            "userId": "usr_vk_4412",
+            "follows": [
+              { "type": "user", "refId": "usr_aj_1029", "since": "2025-08-25T12:00:00Z", "notifications": true },
+              { "type": "activity", "refId": "act_rishikesh_rafting", "since": "2025-08-26T05:50:00Z", "notifications": true },
+              { "type": "airport", "refId": "air_del", "since": "2025-08-26T06:00:00Z", "notifications": false }
+            ],
+            "createdAt": "2025-08-25T12:00:00Z",
+            "updatedAt": "2025-08-26T06:00:00Z"
+          },
+          {
+            "userId": "usr_am_9182",
+            "follows": [
+              { "type": "user", "refId": "usr_rs_2031", "since": "2025-08-27T08:35:00Z", "notifications": true },
+              { "type": "activity", "refId": "act_mumbai_heritage_walk", "since": "2025-08-28T14:15:00Z", "notifications": true },
+              { "type": "airport", "refId": "air_dxb", "since": "2025-08-28T14:20:00Z", "notifications": false },
+              { "type": "airport", "refId": "air_sin", "since": "2025-08-28T14:25:00Z", "notifications": false }
+            ],
+            "createdAt": "2025-08-27T08:35:00Z",
+            "updatedAt": "2025-08-28T14:25:00Z"
+          },
+          {
+            "userId": "usr_demo_0001",
+            "follows": [
+              { "type": "user", "refId": "usr_am_9182", "since": "2025-08-29T09:00:00Z", "notifications": true },
+              { "type": "activity", "refId": "act_varanasi_aarti", "since": "2025-08-29T09:05:00Z", "notifications": true },
+              { "type": "activity", "refId": "act_jaipur_food_walk", "since": "2025-08-29T09:06:00Z", "notifications": true },
+              { "type": "activity", "refId": "act_western_ghats_trek", "since": "2025-08-29T09:07:00Z", "notifications": false },
+              { "type": "stop", "refId": "stop_goa_panaji_bus_stand", "since": "2025-08-29T09:10:00Z", "notifications": false }
+            ],
+            "createdAt": "2025-08-29T09:00:00Z",
+            "updatedAt": "2025-08-29T09:10:00Z"
+          }
+        ]
+      }
+      

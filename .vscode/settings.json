@@ -1,0 +1,54 @@
+{
+    // VS Code workspace settings for Naveeka
+    // - Uses Dart/Flutter recommended editor behavior
+    // - Points CMake to the Flutter Linux runner in the frontend folder
+    // - Keeps formatting consistent across the team
+    "cmake.sourceDirectory": "C:/app/Naveeka/frontend/linux",
+  
+    // Open Debug Console when a session starts (useful for Flutter logs)
+    "debug.internalConsoleOptions": "openOnSessionStart",
+  
+    // Global editor defaults (overridden for Dart below)
+    "editor.formatOnSave": true,
+    "editor.formatOnType": true,
+    "editor.defaultFormatter": "Dart-Code.dart-code",
+  
+    // Language-specific Dart/Flutter settings
+    "[dart]": {
+      "editor.formatOnSave": true,
+      "editor.formatOnType": true,
+      "editor.rulers": [80],
+      "editor.selectionHighlight": false,
+      "editor.tabCompletion": "onlySnippets",
+      "editor.wordBasedSuggestions": "off"
+    },
+  
+    // Dart/Flutter extension settings
+    "dart.lineLength": 80,
+    "dart.renameFilesWithClasses": "prompt",
+    "dart.warnWhenEditingFilesOutsideWorkspace": false,
+  
+    // File nesting for generated outputs (cleaner explorer)
+    "explorer.fileNesting.enabled": true,
+    "explorer.fileNesting.expand": false,
+    "explorer.fileNesting.patterns": {
+      "*.dart": "${capture}.g.dart, ${capture}.freezed.dart"
+    },
+  
+    // Exclude common build/generated folders from search and problems
+    "files.watcherExclude": {
+      "**/.dart_tool/**": true,
+      "**/.git/**": true,
+      "**/.idea/**": true,
+      "**/build/**": true,
+      "**/ios/Pods/**": true,
+      "**/android/.gradle/**": true
+    },
+    "search.exclude": {
+      "**/.dart_tool/**": true,
+      "**/build/**": true,
+      "**/ios/Pods/**": true,
+      "**/android/.gradle/**": true
+    }
+  }
+  

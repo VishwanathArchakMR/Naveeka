@@ -1,0 +1,59 @@
+{
+        "version": 1,
+        "generatedAt": "2025-09-14T13:02:00Z",
+        "favorites": [
+          {
+            "userId": "usr_aj_1029",
+            "items": [
+              { "type": "activity", "refId": "act_taj_mahal_sunrise", "addedAt": "2025-09-10T08:20:00Z" },
+              { "type": "airport",  "refId": "air_bom",               "addedAt": "2025-09-10T08:21:00Z" },
+              { "type": "stop",     "refId": "stop_del_kashmere_gate","addedAt": "2025-09-10T08:22:00Z" }
+            ],
+            "createdAt": "2025-09-10T08:20:00Z",
+            "updatedAt": "2025-09-10T08:22:00Z"
+          },
+          {
+            "userId": "usr_rs_2031",
+            "items": [
+              { "type": "activity", "refId": "act_backwaters_houseboat", "addedAt": "2025-09-11T10:35:00Z" },
+              { "type": "activity", "refId": "act_meenakshi_temple",     "addedAt": "2025-09-11T10:36:00Z" },
+              { "type": "airport",  "refId": "air_maa",                  "addedAt": "2025-09-11T10:37:00Z" }
+            ],
+            "createdAt": "2025-09-11T10:35:00Z",
+            "updatedAt": "2025-09-11T10:37:00Z"
+          },
+          {
+            "userId": "usr_vk_4412",
+            "items": [
+              { "type": "activity", "refId": "act_rishikesh_rafting", "addedAt": "2025-09-12T09:10:00Z" },
+              { "type": "airport",  "refId": "air_del",               "addedAt": "2025-09-12T09:11:00Z" },
+              { "type": "stop",     "refId": "stop_cok_mg_road",      "addedAt": "2025-09-12T09:12:00Z" }
+            ],
+            "createdAt": "2025-09-12T09:10:00Z",
+            "updatedAt": "2025-09-12T09:12:00Z"
+          },
+          {
+            "userId": "usr_am_9182",
+            "items": [
+              { "type": "activity", "refId": "act_mumbai_heritage_walk", "addedAt": "2025-09-09T07:25:00Z" },
+              { "type": "airport",  "refId": "air_dxb",                  "addedAt": "2025-09-09T07:26:00Z" },
+              { "type": "airport",  "refId": "air_sin",                  "addedAt": "2025-09-09T07:27:00Z" }
+            ],
+            "createdAt": "2025-09-09T07:25:00Z",
+            "updatedAt": "2025-09-09T07:27:00Z"
+          },
+          {
+            "userId": "usr_demo_0001",
+            "items": [
+              { "type": "activity", "refId": "act_varanasi_aarti",        "addedAt": "2025-09-08T18:40:00Z" },
+              { "type": "activity", "refId": "act_jaipur_food_walk",      "addedAt": "2025-09-08T18:41:00Z" },
+              { "type": "activity", "refId": "act_western_ghats_trek",    "addedAt": "2025-09-08T18:42:00Z" },
+              { "type": "airport",  "refId": "air_gox",                   "addedAt": "2025-09-08T18:43:00Z" },
+              { "type": "stop",     "refId": "stop_goa_panaji_bus_stand", "addedAt": "2025-09-08T18:44:00Z" }
+            ],
+            "createdAt": "2025-09-08T18:40:00Z",
+            "updatedAt": "2025-09-08T18:44:00Z"
+          }
+        ]
+      }
+      

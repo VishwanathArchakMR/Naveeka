@@ -1,0 +1,338 @@
+{
+        "version": 1,
+        "generatedAt": "2025-09-14T13:14:00Z",
+        "hotels": [
+          {
+            "id": "htl_agra_marble_vista",
+            "name": "Marble Vista Agra",
+            "brand": "Vista Collection",
+            "stars": 4.3,
+            "emotionKind": "stay",
+            "location": {
+              "coordinates": { "lat": 27.1708, "lng": 78.0418, "alt": 170 },
+              "geo": "geo:27.1708,78.0418",
+              "address": {
+                "line1": "Near East Gate, Tajganj",
+                "city": "Agra",
+                "state": "Uttar Pradesh",
+                "country": "IN",
+                "postalCode": "282001"
+              }
+            },
+            "contact": { "phone": "+91-562-4001001", "email": "reservations@marblevista.example" },
+            "nearestAirportRefId": "air_del",
+            "rating": { "score": 4.6, "reviews": 5821 },
+            "checkin": { "from": "14:00", "to": "23:00", "tz": "Asia/Kolkata" },
+            "checkout": { "until": "11:00", "tz": "Asia/Kolkata" },
+            "amenities": [
+              "wifi","breakfast","parking","airport_shuttle","pool","spa","gym","ac","restaurant","bar","elevator","wheelchair_access"
+            ],
+            "policies": { "smoking": false, "petFriendly": false, "childFriendly": true },
+            "rooms": [
+              {
+                "id": "rm_mv_dl_king",
+                "name": "Deluxe King with Taj View",
+                "capacity": { "adults": 2, "children": 1 },
+                "beds": [{ "type": "king", "count": 1 }],
+                "size_sqm": 28,
+                "refundable": true,
+                "freeCancellationUntil": "2025-10-03T12:00:00+05:30",
+                "price": { "currency": "INR", "per_night": 5800, "taxes_fees": 650 },
+                "images": [
+                  "assets/images/hotels/agra_marble_vista_dl_1.jpg",
+                  "assets/images/hotels/agra_marble_vista_dl_2.jpg"
+                ]
+              },
+              {
+                "id": "rm_mv_suite",
+                "name": "Panorama Suite",
+                "capacity": { "adults": 3, "children": 1 },
+                "beds": [{ "type": "king", "count": 1 }, { "type": "sofa", "count": 1 }],
+                "size_sqm": 45,
+                "refundable": true,
+                "freeCancellationUntil": "2025-10-03T12:00:00+05:30",
+                "price": { "currency": "INR", "per_night": 11200, "taxes_fees": 1250 },
+                "images": [
+                  "assets/images/hotels/agra_marble_vista_suite_1.jpg"
+                ]
+              }
+            ],
+            "landmarks": [
+              { "type": "activity", "refId": "act_taj_mahal_sunrise", "distance_m": 600 }
+            ],
+            "createdAt": "2025-08-30T09:00:00Z",
+            "updatedAt": "2025-09-10T11:30:00Z"
+          },
+          {
+            "id": "htl_rishikesh_riverbend",
+            "name": "Riverbend Retreat Rishikesh",
+            "brand": "Ganga Stays",
+            "stars": 4.1,
+            "emotionKind": "stay",
+            "location": {
+              "coordinates": { "lat": 30.1060, "lng": 78.3010, "alt": 372 },
+              "geo": "geo:30.1060,78.3010",
+              "address": {
+                "line1": "Tapovan, Laxman Jhula Road",
+                "city": "Rishikesh",
+                "state": "Uttarakhand",
+                "country": "IN",
+                "postalCode": "249302"
+              }
+            },
+            "contact": { "phone": "+91-135-4002200", "email": "stay@riverbend.example" },
+            "nearestAirportRefId": "air_del",
+            "rating": { "score": 4.5, "reviews": 2380 },
+            "checkin": { "from": "13:00", "to": "22:00", "tz": "Asia/Kolkata" },
+            "checkout": { "until": "11:00", "tz": "Asia/Kolkata" },
+            "amenities": ["wifi","breakfast","parking","river_view","yoga_deck","ac","restaurant"],
+            "policies": { "smoking": false, "petFriendly": true, "childFriendly": true },
+            "rooms": [
+              {
+                "id": "rm_rb_ganga",
+                "name": "Ganga View Room",
+                "capacity": { "adults": 2, "children": 1 },
+                "beds": [{ "type": "queen", "count": 1 }],
+                "size_sqm": 24,
+                "refundable": true,
+                "freeCancellationUntil": "2025-10-01T12:00:00+05:30",
+                "price": { "currency": "INR", "per_night": 4200, "taxes_fees": 480 },
+                "images": [
+                  "assets/images/hotels/rishikesh_riverbend_ganga_1.jpg"
+                ]
+              }
+            ],
+            "landmarks": [
+              { "type": "activity", "refId": "act_rishikesh_rafting", "distance_m": 1800 }
+            ],
+            "createdAt": "2025-08-20T07:10:00Z",
+            "updatedAt": "2025-09-05T10:25:00Z"
+          },
+          {
+            "id": "htl_alappuzha_backwater_lodge",
+            "name": "Backwater Lodge Alleppey",
+            "brand": "Lagoon Hotels",
+            "stars": 4.5,
+            "emotionKind": "stay",
+            "location": {
+              "coordinates": { "lat": 9.4988, "lng": 76.3431, "alt": 5 },
+              "geo": "geo:9.4988,76.3431",
+              "address": {
+                "line1": "Finishing Point Road",
+                "city": "Alappuzha",
+                "state": "Kerala",
+                "country": "IN",
+                "postalCode": "688013"
+              }
+            },
+            "contact": { "phone": "+91-477-4005500", "email": "book@backwaterlodge.example" },
+            "nearestAirportRefId": "air_cok",
+            "rating": { "score": 4.7, "reviews": 3341 },
+            "checkin": { "from": "12:00", "to": "22:00", "tz": "Asia/Kolkata" },
+            "checkout": { "until": "10:00", "tz": "Asia/Kolkata" },
+            "amenities": ["wifi","breakfast","parking","boat_jetty","pool","spa","ac","restaurant"],
+            "policies": { "smoking": false, "petFriendly": false, "childFriendly": true },
+            "rooms": [
+              {
+                "id": "rm_bw_canal",
+                "name": "Canal View Deluxe",
+                "capacity": { "adults": 2, "children": 1 },
+                "beds": [{ "type": "queen", "count": 1 }],
+                "size_sqm": 26,
+                "refundable": true,
+                "freeCancellationUntil": "2025-10-02T12:00:00+05:30",
+                "price": { "currency": "INR", "per_night": 5200, "taxes_fees": 560 },
+                "images": [
+                  "assets/images/hotels/alleppey_backwater_lodge_1.jpg"
+                ]
+              }
+            ],
+            "landmarks": [
+              { "type": "activity", "refId": "act_backwaters_houseboat", "distance_m": 350 }
+            ],
+            "createdAt": "2025-08-15T09:40:00Z",
+            "updatedAt": "2025-09-02T12:20:00Z"
+          },
+          {
+            "id": "htl_jaipur_pink_pearl",
+            "name": "Pink Pearl Jaipur",
+            "brand": "Royal Stays",
+            "stars": 4.2,
+            "emotionKind": "stay",
+            "location": {
+              "coordinates": { "lat": 26.9230, "lng": 75.8260, "alt": 431 },
+              "geo": "geo:26.9230,75.8260",
+              "address": {
+                "line1": "Badi Choupad, Old City",
+                "city": "Jaipur",
+                "state": "Rajasthan",
+                "country": "IN",
+                "postalCode": "302002"
+              }
+            },
+            "contact": { "phone": "+91-141-4003300", "email": "hello@pinkpearl.example" },
+            "nearestAirportRefId": "air_maa",
+            "rating": { "score": 4.4, "reviews": 6120 },
+            "checkin": { "from": "14:00", "to": "23:00", "tz": "Asia/Kolkata" },
+            "checkout": { "until": "11:00", "tz": "Asia/Kolkata" },
+            "amenities": ["wifi","breakfast","parking","ac","restaurant","bar","spa","gym","elevator"],
+            "policies": { "smoking": false, "petFriendly": false, "childFriendly": true },
+            "rooms": [
+              {
+                "id": "rm_pp_standard",
+                "name": "Standard Room",
+                "capacity": { "adults": 2, "children": 1 },
+                "beds": [{ "type": "queen", "count": 1 }],
+                "size_sqm": 22,
+                "refundable": true,
+                "freeCancellationUntil": "2025-10-07T12:00:00+05:30",
+                "price": { "currency": "INR", "per_night": 3600, "taxes_fees": 400 },
+                "images": [
+                  "assets/images/hotels/jaipur_pink_pearl_std_1.jpg"
+                ]
+              }
+            ],
+            "landmarks": [
+              { "type": "activity", "refId": "act_jaipur_food_walk", "distance_m": 900 }
+            ],
+            "createdAt": "2025-08-22T06:10:00Z",
+            "updatedAt": "2025-09-01T08:30:00Z"
+          },
+          {
+            "id": "htl_mumbai_bayfront",
+            "name": "Bayfront Mumbai",
+            "brand": "Harbor Hotels",
+            "stars": 4.6,
+            "emotionKind": "stay",
+            "location": {
+              "coordinates": { "lat": 18.9330, "lng": 72.8260, "alt": 14 },
+              "geo": "geo:18.9330,72.8260",
+              "address": {
+                "line1": "Marine Drive, Churchgate",
+                "city": "Mumbai",
+                "state": "Maharashtra",
+                "country": "IN",
+                "postalCode": "400020"
+              }
+            },
+            "contact": { "phone": "+91-22-40066000", "email": "stay@bayfront.example" },
+            "nearestAirportRefId": "air_bom",
+            "rating": { "score": 4.7, "reviews": 10430 },
+            "checkin": { "from": "15:00", "to": "23:30", "tz": "Asia/Kolkata" },
+            "checkout": { "until": "12:00", "tz": "Asia/Kolkata" },
+            "amenities": ["wifi","breakfast","parking","pool","spa","gym","ac","restaurant","bar","elevator","sea_view"],
+            "policies": { "smoking": false, "petFriendly": true, "childFriendly": true },
+            "rooms": [
+              {
+                "id": "rm_bf_sea_king",
+                "name": "Sea View King",
+                "capacity": { "adults": 2, "children": 1 },
+                "beds": [{ "type": "king", "count": 1 }],
+                "size_sqm": 30,
+                "refundable": true,
+                "freeCancellationUntil": "2025-10-10T12:00:00+05:30",
+                "price": { "currency": "INR", "per_night": 9800, "taxes_fees": 1100 },
+                "images": [
+                  "assets/images/hotels/mumbai_bayfront_king_1.jpg"
+                ]
+              }
+            ],
+            "landmarks": [
+              { "type": "activity", "refId": "act_mumbai_heritage_walk", "distance_m": 1600 }
+            ],
+            "createdAt": "2025-08-18T07:00:00Z",
+            "updatedAt": "2025-09-03T09:45:00Z"
+          },
+          {
+            "id": "htl_varanasi_ghatview",
+            "name": "Ghat View Varanasi",
+            "brand": "Aarti Homes",
+            "stars": 4.0,
+            "emotionKind": "stay",
+            "location": {
+              "coordinates": { "lat": 25.3074, "lng": 83.0109, "alt": 81 },
+              "geo": "geo:25.3074,83.0109",
+              "address": {
+                "line1": "Dashashwamedh Road",
+                "city": "Varanasi",
+                "state": "Uttar Pradesh",
+                "country": "IN",
+                "postalCode": "221001"
+              }
+            },
+            "contact": { "phone": "+91-542-4007700", "email": "hello@ghatview.example" },
+            "nearestAirportRefId": "air_del",
+            "rating": { "score": 4.3, "reviews": 5211 },
+            "checkin": { "from": "12:00", "to": "22:00", "tz": "Asia/Kolkata" },
+            "checkout": { "until": "11:00", "tz": "Asia/Kolkata" },
+            "amenities": ["wifi","breakfast","ac","restaurant","river_view","elevator"],
+            "policies": { "smoking": false, "petFriendly": false, "childFriendly": true },
+            "rooms": [
+              {
+                "id": "rm_gv_river_dl",
+                "name": "River Deluxe",
+                "capacity": { "adults": 2, "children": 1 },
+                "beds": [{ "type": "queen", "count": 1 }],
+                "size_sqm": 20,
+                "refundable": true,
+                "freeCancellationUntil": "2025-10-08T12:00:00+05:30",
+                "price": { "currency": "INR", "per_night": 3800, "taxes_fees": 420 },
+                "images": [
+                  "assets/images/hotels/varanasi_ghatview_1.jpg"
+                ]
+              }
+            ],
+            "landmarks": [
+              { "type": "activity", "refId": "act_varanasi_aarti", "distance_m": 250 }
+            ],
+            "createdAt": "2025-08-25T06:50:00Z",
+            "updatedAt": "2025-09-04T08:05:00Z"
+          },
+          {
+            "id": "htl_goa_shores",
+            "name": "Goa Shores Resort",
+            "brand": "Coastal Collection",
+            "stars": 4.4,
+            "emotionKind": "stay",
+            "location": {
+              "coordinates": { "lat": 15.4920, "lng": 73.8080, "alt": 5 },
+              "geo": "geo:15.4920,73.8080",
+              "address": {
+                "line1": "Campal, Panaji",
+                "city": "Panaji",
+                "state": "Goa",
+                "country": "IN",
+                "postalCode": "403001"
+              }
+            },
+            "contact": { "phone": "+91-832-4008800", "email": "stay@goashores.example" },
+            "nearestAirportRefId": "air_gox",
+            "rating": { "score": 4.5, "reviews": 7122 },
+            "checkin": { "from": "14:00", "to": "23:00", "tz": "Asia/Kolkata" },
+            "checkout": { "until": "11:00", "tz": "Asia/Kolkata" },
+            "amenities": ["wifi","breakfast","parking","pool","spa","gym","ac","restaurant","bar","beach_access"],
+            "policies": { "smoking": false, "petFriendly": true, "childFriendly": true },
+            "rooms": [
+              {
+                "id": "rm_gs_garden",
+                "name": "Garden Room",
+                "capacity": { "adults": 2, "children": 1 },
+                "beds": [{ "type": "twin", "count": 2 }],
+                "size_sqm": 25,
+                "refundable": true,
+                "freeCancellationUntil": "2025-10-06T12:00:00+05:30",
+                "price": { "currency": "INR", "per_night": 5600, "taxes_fees": 620 },
+                "images": [
+                  "assets/images/hotels/goa_shores_garden_1.jpg"
+                ]
+              }
+            ],
+            "landmarks": [
+              { "type": "stop", "refId": "stop_goa_panaji_bus_stand", "distance_m": 900 }
+            ],
+            "createdAt": "2025-08-28T07:35:00Z",
+            "updatedAt": "2025-09-03T10:25:00Z"
+          }
+        ]
+      }
+      

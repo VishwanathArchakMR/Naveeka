@@ -1,0 +1,148 @@
+{
+        "version": 1,
+        "generatedAt": "2025-09-14T13:16:00Z",
+        "journeys": [
+          {
+            "id": "jrny_mumbai_weekend_aj_2025_10",
+            "userId": "usr_aj_1029",
+            "title": "Mumbai Weekend",
+            "status": "planned",
+            "currency": "INR",
+            "costSummary": {
+              "items": [
+                { "label": "Flight (DEL → BOM)", "amount": 8650, "ref": "bk_0001_flt_del_bom" },
+                { "label": "Hotel (1 night)", "amount": 9800, "ref": "htl_mumbai_bayfront" },
+                { "label": "Local transit", "amount": 600, "ref": "rt_mum_bkc_express" }
+              ],
+              "total": 19050
+            },
+            "days": [
+              {
+                "date": "2025-10-05",
+                "items": [
+                  {
+                    "type": "flight",
+                    "refId": "flt_AI665_DEL_BOM_2025-10-05",
+                    "from": { "iata": "DEL", "geo": "geo:28.5562,77.1000" },
+                    "to": { "iata": "BOM", "geo": "geo:19.0896,72.8656" },
+                    "departure": "2025-10-05T09:30:00+05:30",
+                    "arrival": "2025-10-05T11:45:00+05:30",
+                    "bookingRefId": "bk_0001_flt_del_bom"
+                  },
+                  {
+                    "type": "transfer",
+                    "mode": "taxi",
+                    "from": { "label": "BOM T2 Arrivals", "geo": "geo:19.0896,72.8656" },
+                    "to": { "label": "Bayfront Mumbai", "refId": "htl_mumbai_bayfront", "geo": "geo:18.9330,72.8260" },
+                    "start": "2025-10-05T12:10:00+05:30",
+                    "end": "2025-10-05T13:05:00+05:30",
+                    "notes": "Airport to hotel"
+                  },
+                  {
+                    "type": "checkin",
+                    "hotelRefId": "htl_mumbai_bayfront",
+                    "roomRefId": "rm_bf_sea_king",
+                    "start": "2025-10-05T15:00:00+05:30",
+                    "nights": 1
+                  },
+                  {
+                    "type": "activity",
+                    "refId": "act_mumbai_heritage_walk",
+                    "start": "2025-10-05T16:30:00+05:30",
+                    "end": "2025-10-05T18:30:00+05:30",
+                    "meetingPoint": { "label": "Fort, Kala Ghoda", "geo": "geo:18.9275,72.8327" }
+                  }
+                ]
+              },
+              {
+                "date": "2025-10-06",
+                "items": [
+                  {
+                    "type": "note",
+                    "text": "Breakfast and Marine Drive stroll",
+                    "time": "2025-10-06T08:30:00+05:30",
+                    "geo": "geo:18.9432,72.8238"
+                  },
+                  {
+                    "type": "bus",
+                    "routeRefId": "rt_mum_bkc_express",
+                    "fromStopRefId": "stop_mum_dadar_tt",
+                    "toStopRefId": "stop_mum_csmt_fountain",
+                    "start": "2025-10-06T10:15:00+05:30",
+                    "end": "2025-10-06T10:55:00+05:30"
+                  },
+                  {
+                    "type": "checkout",
+                    "hotelRefId": "htl_mumbai_bayfront",
+                    "time": "2025-10-06T12:00:00+05:30"
+                  }
+                ]
+              }
+            ],
+            "createdAt": "2025-09-10T08:15:00Z",
+            "updatedAt": "2025-09-10T08:19:30Z"
+          },
+          {
+            "id": "jrny_agra_sunrise_rs_2025_10",
+            "userId": "usr_rs_2031",
+            "title": "Agra Sunrise Getaway",
+            "status": "confirmed",
+            "currency": "INR",
+            "costSummary": {
+              "items": [
+                { "label": "Hotel (1 night)", "amount": 5800, "ref": "htl_agra_marble_vista" },
+                { "label": "Taj entry", "amount": 200, "ref": "bk_0002_act_taj" }
+              ],
+              "total": 6000
+            },
+            "days": [
+              {
+                "date": "2025-10-05",
+                "items": [
+                  {
+                    "type": "checkin",
+                    "hotelRefId": "htl_agra_marble_vista",
+                    "roomRefId": "rm_mv_dl_king",
+                    "start": "2025-10-05T18:00:00+05:30",
+                    "nights": 1
+                  }
+                ]
+              },
+              {
+                "date": "2025-10-06",
+                "items": [
+                  {
+                    "type": "walk",
+                    "from": { "label": "Hotel", "geo": "geo:27.1708,78.0418" },
+                    "to": { "label": "Taj East Gate", "geo": "geo:27.1751,78.0421" },
+                    "start": "2025-10-06T05:45:00+05:30",
+                    "end": "2025-10-06T06:00:00+05:30"
+                  },
+                  {
+                    "type": "activity",
+                    "refId": "act_taj_mahal_sunrise",
+                    "start": "2025-10-06T06:05:00+05:30",
+                    "end": "2025-10-06T07:35:00+05:30",
+                    "bookingRefId": "bk_0002_act_taj",
+                    "meetingPoint": { "label": "Taj East Gate", "geo": "geo:27.1751,78.0421" }
+                  },
+                  {
+                    "type": "note",
+                    "text": "Breakfast near Tajganj",
+                    "time": "2025-10-06T08:00:00+05:30",
+                    "geo": "geo:27.1695,78.0428"
+                  },
+                  {
+                    "type": "checkout",
+                    "hotelRefId": "htl_agra_marble_vista",
+                    "time": "2025-10-06T11:00:00+05:30"
+                  }
+                ]
+              }
+            ],
+            "createdAt": "2025-09-11T10:30:00Z",
+            "updatedAt": "2025-09-11T10:35:00Z"
+          }
+        ]
+      }
+      

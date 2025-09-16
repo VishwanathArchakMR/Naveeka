@@ -1,0 +1,205 @@
+{
+        "version": 1,
+        "generatedAt": "2025-09-14T13:30:00Z",
+        "trails": [
+          {
+            "id": "trl_mumbai_marine_walk",
+            "name": "Marine Drive Seaface Walk",
+            "emotionKind": "peaceful",
+            "region": { "city": "Mumbai", "state": "Maharashtra", "country": "IN" },
+            "difficulty": "easy",
+            "length_km": 3.2,
+            "ascent_m": 8,
+            "descent_m": 8,
+            "min_elev_m": 5,
+            "max_elev_m": 12,
+            "est_duration_min": 45,
+            "surface": ["paved"],
+            "allowed": ["walk", "run"],
+            "season": { "best_months": ["11","12","01","02","03"] },
+            "safety": { "shade": "partial", "water": true, "cell": "good", "hazards": ["waves_on_sprays"] },
+            "entryPoints": [
+              { "label": "Chowpatty End", "geo": "geo:18.9540,72.8125" },
+              { "label": "Nariman Point End", "geo": "geo:18.9259,72.8205" }
+            ],
+            "waypoints": [
+              { "id": "wp_mdr_chowpatty", "label": "Girgaum Chowpatty", "kind": "poi", "geo": "geo:18.9540,72.8125", "elev_m": 7, "km": 0.0 },
+              { "id": "wp_mdr_mid", "label": "Mid Promenade", "kind": "view", "geo": "geo:18.9432,72.8238", "elev_m": 9, "km": 1.6 },
+              { "id": "wp_mdr_nariman", "label": "Nariman Point", "kind": "poi", "geo": "geo:18.9259,72.8205", "elev_m": 8, "km": 3.2 }
+            ],
+            "path": {
+              "geojson": {
+                "type": "LineString",
+                "coordinates": [
+                  [72.8125, 18.9540],
+                  [72.8162, 18.9502],
+                  [72.8200, 18.9460],
+                  [72.8238, 18.9432],
+                  [72.8223, 18.9369],
+                  [72.8205, 18.9259]
+                ]
+              },
+              "bbox": [72.8125, 18.9259, 72.8238, 18.9540],
+              "srid": 4326
+            },
+            "media": {
+              "thumbnail": "assets/images/trails/marine_walk_thumb.jpg",
+              "images": ["assets/images/trails/marine_walk_1.jpg"]
+            },
+            "open": { "mon": [{"open":"00:00","close":"23:59"}], "tue": [{"open":"00:00","close":"23:59"}], "wed": [{"open":"00:00","close":"23:59"}], "thu": [{"open":"00:00","close":"23:59"}], "fri": [{"open":"00:00","close":"23:59"}], "sat": [{"open":"00:00","close":"23:59"}], "sun": [{"open":"00:00","close":"23:59"}] },
+            "rules": { "permitRequired": false, "fee": { "currency": "INR", "amount": 0 } },
+            "tags": ["sunset","sea_view","promenade"],
+            "createdAt": "2025-08-18T07:00:00Z",
+            "updatedAt": "2025-09-03T09:45:00Z"
+          },
+          {
+            "id": "trl_rishikesh_river_cliff",
+            "name": "Rishikesh River Cliff Trail",
+            "emotionKind": "adventure",
+            "region": { "city": "Rishikesh", "state": "Uttarakhand", "country": "IN" },
+            "difficulty": "moderate",
+            "length_km": 4.8,
+            "ascent_m": 180,
+            "descent_m": 180,
+            "min_elev_m": 350,
+            "max_elev_m": 520,
+            "est_duration_min": 120,
+            "surface": ["rock","dirt"],
+            "allowed": ["hike"],
+            "season": { "best_months": ["10","11","12","01","02","03","04"] },
+            "safety": { "shade": "partial", "water": false, "cell": "patchy", "hazards": ["loose_rock","steep_drop"] },
+            "entryPoints": [
+              { "label": "Tapovan Start", "geo": "geo:30.1245,78.3175" }
+            ],
+            "waypoints": [
+              { "id": "wp_riv_laxman", "label": "View of Laxman Jhula", "kind": "view", "geo": "geo:30.1247,78.3230", "elev_m": 410, "km": 1.2 },
+              { "id": "wp_riv_clifftop", "label": "Clifftop Ridge", "kind": "summit", "geo": "geo:30.1188,78.3291", "elev_m": 520, "km": 2.6 },
+              { "id": "wp_riv_loop", "label": "Loop Junction", "kind": "junction", "geo": "geo:30.1162,78.3260", "elev_m": 470, "km": 3.5 }
+            ],
+            "path": {
+              "geojson": {
+                "type": "LineString",
+                "coordinates": [
+                  [78.3175, 30.1245],
+                  [78.3202, 30.1231],
+                  [78.3230, 30.1247],
+                  [78.3272, 30.1210],
+                  [78.3291, 30.1188],
+                  [78.3260, 30.1162],
+                  [78.3220, 30.1180],
+                  [78.3179, 30.1215]
+                ]
+              },
+              "bbox": [78.3175, 30.1162, 78.3291, 30.1247],
+              "srid": 4326
+            },
+            "media": {
+              "thumbnail": "assets/images/trails/rishikesh_cliff_thumb.jpg",
+              "images": ["assets/images/trails/rishikesh_cliff_1.jpg","assets/images/trails/rishikesh_cliff_2.jpg"]
+            },
+            "open": { "mon": [{"open":"06:00","close":"18:00"}], "tue": [{"open":"06:00","close":"18:00"}], "wed": [{"open":"06:00","close":"18:00"}], "thu": [{"open":"06:00","close":"18:00"}], "fri": [{"open":"06:00","close":"18:00"}], "sat": [{"open":"06:00","close":"18:00"}], "sun": [{"open":"06:00","close":"18:00"}] },
+            "rules": { "permitRequired": false, "fee": { "currency": "INR", "amount": 0 } },
+            "tags": ["ganga","views","ridge"],
+            "createdAt": "2025-08-22T07:40:00Z",
+            "updatedAt": "2025-09-05T09:50:00Z"
+          },
+          {
+            "id": "trl_alleppey_backwater_bank",
+            "name": "Alleppey Backwater Bank Trail",
+            "emotionKind": "peaceful",
+            "region": { "city": "Alappuzha", "state": "Kerala", "country": "IN" },
+            "difficulty": "easy",
+            "length_km": 2.5,
+            "ascent_m": 10,
+            "descent_m": 10,
+            "min_elev_m": 2,
+            "max_elev_m": 8,
+            "est_duration_min": 50,
+            "surface": ["dirt","paved"],
+            "allowed": ["walk","run","cycle"],
+            "season": { "best_months": ["11","12","01","02","03"] },
+            "safety": { "shade": "good", "water": true, "cell": "good", "hazards": ["uneven_edge","boats_wake"] },
+            "entryPoints": [
+              { "label": "Finishing Point Jetty", "geo": "geo:9.4981,76.3388" }
+            ],
+            "waypoints": [
+              { "id": "wp_alp_view", "label": "Canal View Bend", "kind": "view", "geo": "geo:9.4995,76.3422", "elev_m": 4, "km": 0.9 },
+              { "id": "wp_alp_bridge", "label": "Small Wooden Bridge", "kind": "bridge", "geo": "geo:9.5010,76.3451", "elev_m": 5, "km": 1.6 }
+            ],
+            "path": {
+              "geojson": {
+                "type": "LineString",
+                "coordinates": [
+                  [76.3388, 9.4981],
+                  [76.3405, 9.4990],
+                  [76.3422, 9.4995],
+                  [76.3439, 9.5002],
+                  [76.3451, 9.5010],
+                  [76.3465, 9.5018]
+                ]
+              },
+              "bbox": [76.3388, 9.4981, 76.3465, 9.5018],
+              "srid": 4326
+            },
+            "media": {
+              "thumbnail": "assets/images/trails/alleppey_bank_thumb.jpg",
+              "images": ["assets/images/trails/alleppey_bank_1.jpg"]
+            },
+            "open": { "mon": [{"open":"06:00","close":"19:00"}], "tue": [{"open":"06:00","close":"19:00"}], "wed": [{"open":"06:00","close":"19:00"}], "thu": [{"open":"06:00","close":"19:00"}], "fri": [{"open":"06:00","close":"19:00"}], "sat": [{"open":"06:00","close":"19:00"}], "sun": [{"open":"06:00","close":"19:00"}] },
+            "rules": { "permitRequired": false, "fee": { "currency": "INR", "amount": 0 } },
+            "tags": ["backwaters","canal","family_friendly"],
+            "createdAt": "2025-08-20T09:00:00Z",
+            "updatedAt": "2025-09-01T13:40:00Z"
+          },
+          {
+            "id": "trl_western_ghats_ridge",
+            "name": "Western Ghats Ridge Loop",
+            "emotionKind": "nature",
+            "region": { "city": "Kodaikanal", "state": "Tamil Nadu", "country": "IN" },
+            "difficulty": "hard",
+            "length_km": 12.4,
+            "ascent_m": 680,
+            "descent_m": 680,
+            "min_elev_m": 1650,
+            "max_elev_m": 2050,
+            "est_duration_min": 360,
+            "surface": ["dirt","rock"],
+            "allowed": ["hike"],
+            "season": { "best_months": ["10","11","12","01","02","03","04"] },
+            "safety": { "shade": "partial", "water": false, "cell": "spotty", "hazards": ["leeches_in_monsoon","steep_sections"] },
+            "entryPoints": [
+              { "label": "Ridge Base Camp", "geo": "geo:10.1200,77.0600" }
+            ],
+            "waypoints": [
+              { "id": "wp_wg_view1", "label": "Shola Viewpoint", "kind": "view", "geo": "geo:10.1260,77.0600", "elev_m": 1900, "km": 3.0 },
+              { "id": "wp_wg_peak", "label": "Ridge High Point", "kind": "summit", "geo": "geo:10.1310,77.0550", "elev_m": 2050, "km": 6.2 }
+            ],
+            "path": {
+              "geojson": {
+                "type": "LineString",
+                "coordinates": [
+                  [77.0600, 10.1200],
+                  [77.0600, 10.1260],
+                  [77.0575, 10.1285],
+                  [77.0550, 10.1310],
+                  [77.0568, 10.1279],
+                  [77.0589, 10.1235],
+                  [77.0600, 10.1200]
+                ]
+              },
+              "bbox": [77.0550, 10.1200, 77.0600, 10.1310],
+              "srid": 4326
+            },
+            "media": {
+              "thumbnail": "assets/images/trails/wg_ridge_thumb.jpg",
+              "images": ["assets/images/trails/wg_ridge_1.jpg","assets/images/trails/wg_ridge_2.jpg"]
+            },
+            "open": { "mon": [{"open":"06:00","close":"17:00"}], "tue": [{"open":"06:00","close":"17:00"}], "wed": [{"open":"06:00","close":"17:00"}], "thu": [{"open":"06:00","close":"17:00"}], "fri": [{"open":"06:00","close":"17:00"}], "sat": [{"open":"06:00","close":"17:00"}], "sun": [{"open":"06:00","close":"17:00"}] },
+            "rules": { "permitRequired": true, "fee": { "currency": "INR", "amount": 200 } },
+            "tags": ["ridge","views","shola"],
+            "createdAt": "2025-05-12T07:00:00Z",
+            "updatedAt": "2025-08-21T10:05:00Z"
+          }
+        ]
+      }
+      

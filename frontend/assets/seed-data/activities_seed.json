@@ -1,0 +1,343 @@
+{
+        "version": 1,
+        "generatedAt": "2025-09-14T12:40:00Z",
+        "activities": [
+          {
+            "id": "act_taj_mahal_sunrise",
+            "title": "Taj Mahal Sunrise",
+            "subtitle": "Marble mausoleum at dawn",
+            "emotionKind": "heritage",
+            "type": "sightseeing",
+            "location": {
+              "coordinates": { "lat": 27.1751, "lng": 78.0421, "alt": 171 },
+              "geo": "geo:27.1751,78.0421",
+              "address": {
+                "line1": "Dharmapuri, Forest Colony",
+                "city": "Agra",
+                "state": "Uttar Pradesh",
+                "country": "IN",
+                "postalCode": "282001"
+              }
+            },
+            "media": {
+              "thumbnail": "assets/images/activities/taj_mahal_thumb.jpg",
+              "images": [
+                "assets/images/activities/taj_mahal_1.jpg",
+                "assets/images/activities/taj_mahal_2.jpg"
+              ]
+            },
+            "duration_min": 90,
+            "price": { "currency": "INR", "level": 2, "estimate_from": 50, "estimate_to": 250 },
+            "stats": { "rating": 4.8, "reviews": 238762, "favorites": 54021 },
+            "open": {
+              "mon": [{ "open": "06:00", "close": "18:30" }],
+              "tue": [{ "open": "06:00", "close": "18:30" }],
+              "wed": [{ "open": "06:00", "close": "18:30" }],
+              "thu": [{ "open": "06:00", "close": "18:30" }],
+              "fri": [],
+              "sat": [{ "open": "06:00", "close": "18:30" }],
+              "sun": [{ "open": "06:00", "close": "18:30" }]
+            },
+            "features": ["guided", "photography", "heritage_site"],
+            "tags": ["sunrise", "UNESCO", "architecture"],
+            "accessibility": { "wheelchair": true, "petFriendly": false, "familyFriendly": true },
+            "createdAt": "2025-08-01T06:00:00Z",
+            "updatedAt": "2025-09-10T09:30:00Z"
+          },
+          {
+            "id": "act_rishikesh_rafting",
+            "title": "Rishikesh River Rafting",
+            "subtitle": "Grade II–III rapids on the Ganga",
+            "emotionKind": "adventure",
+            "type": "outdoor",
+            "location": {
+              "coordinates": { "lat": 30.0869, "lng": 78.2676, "alt": 372 },
+              "geo": "geo:30.0869,78.2676",
+              "address": {
+                "line1": "Tapovan",
+                "city": "Rishikesh",
+                "state": "Uttarakhand",
+                "country": "IN",
+                "postalCode": "249192"
+              }
+            },
+            "media": {
+              "thumbnail": "assets/images/activities/rishikesh_rafting_thumb.jpg",
+              "images": [
+                "assets/images/activities/rishikesh_rafting_1.jpg",
+                "assets/images/activities/rishikesh_rafting_2.jpg"
+              ]
+            },
+            "duration_min": 150,
+            "price": { "currency": "INR", "level": 2, "estimate_from": 800, "estimate_to": 1800 },
+            "stats": { "rating": 4.6, "reviews": 12543, "favorites": 9021 },
+            "open": {
+              "mon": [{ "open": "07:00", "close": "17:30" }],
+              "tue": [{ "open": "07:00", "close": "17:30" }],
+              "wed": [{ "open": "07:00", "close": "17:30" }],
+              "thu": [{ "open": "07:00", "close": "17:30" }],
+              "fri": [{ "open": "07:00", "close": "17:30" }],
+              "sat": [{ "open": "06:30", "close": "18:00" }],
+              "sun": [{ "open": "06:30", "close": "18:00" }]
+            },
+            "features": ["safety_briefing", "gear_included", "photography"],
+            "tags": ["ganga", "rafting", "outdoors"],
+            "accessibility": { "wheelchair": false, "petFriendly": false, "familyFriendly": true },
+            "createdAt": "2025-07-20T05:30:00Z",
+            "updatedAt": "2025-09-03T11:10:00Z"
+          },
+          {
+            "id": "act_backwaters_houseboat",
+            "title": "Alleppey Backwaters Houseboat",
+            "subtitle": "Lazy cruise through Kerala’s canals",
+            "emotionKind": "peaceful",
+            "type": "leisure",
+            "location": {
+              "coordinates": { "lat": 9.4981, "lng": 76.3388, "alt": 6 },
+              "geo": "geo:9.4981,76.3388",
+              "address": {
+                "line1": "Finishing Point",
+                "city": "Alappuzha",
+                "state": "Kerala",
+                "country": "IN",
+                "postalCode": "688013"
+              }
+            },
+            "media": {
+              "thumbnail": "assets/images/activities/backwaters_thumb.jpg",
+              "images": [
+                "assets/images/activities/backwaters_1.jpg",
+                "assets/images/activities/backwaters_2.jpg"
+              ]
+            },
+            "duration_min": 240,
+            "price": { "currency": "INR", "level": 3, "estimate_from": 4500, "estimate_to": 12000 },
+            "stats": { "rating": 4.7, "reviews": 21432, "favorites": 15043 },
+            "open": {
+              "mon": [{ "open": "10:00", "close": "20:00" }],
+              "tue": [{ "open": "10:00", "close": "20:00" }],
+              "wed": [{ "open": "10:00", "close": "20:00" }],
+              "thu": [{ "open": "10:00", "close": "20:00" }],
+              "fri": [{ "open": "10:00", "close": "20:00" }],
+              "sat": [{ "open": "10:00", "close": "21:00" }],
+              "sun": [{ "open": "10:00", "close": "21:00" }]
+            },
+            "features": ["lunch_included", "private_cabin", "sunset_view"],
+            "tags": ["backwaters", "houseboat", "kerala"],
+            "accessibility": { "wheelchair": true, "petFriendly": true, "familyFriendly": true },
+            "createdAt": "2025-06-10T09:00:00Z",
+            "updatedAt": "2025-09-01T13:40:00Z"
+          },
+          {
+            "id": "act_meenakshi_temple",
+            "title": "Meenakshi Amman Temple",
+            "subtitle": "Dravidian gopurams and rituals",
+            "emotionKind": "spiritual",
+            "type": "sightseeing",
+            "location": {
+              "coordinates": { "lat": 9.9195, "lng": 78.1193, "alt": 137 },
+              "geo": "geo:9.9195,78.1193",
+              "address": {
+                "line1": "Madurai Main",
+                "city": "Madurai",
+                "state": "Tamil Nadu",
+                "country": "IN",
+                "postalCode": "625001"
+              }
+            },
+            "media": {
+              "thumbnail": "assets/images/activities/meenakshi_temple_thumb.jpg",
+              "images": [
+                "assets/images/activities/meenakshi_1.jpg",
+                "assets/images/activities/meenakshi_2.jpg"
+              ]
+            },
+            "duration_min": 120,
+            "price": { "currency": "INR", "level": 1, "estimate_from": 0, "estimate_to": 100 },
+            "stats": { "rating": 4.7, "reviews": 18321, "favorites": 12011 },
+            "open": {
+              "mon": [{ "open": "05:00", "close": "12:30" }, { "open": "16:00", "close": "21:30" }],
+              "tue": [{ "open": "05:00", "close": "12:30" }, { "open": "16:00", "close": "21:30" }],
+              "wed": [{ "open": "05:00", "close": "12:30" }, { "open": "16:00", "close": "21:30" }],
+              "thu": [{ "open": "05:00", "close": "12:30" }, { "open": "16:00", "close": "21:30" }],
+              "fri": [{ "open": "05:00", "close": "12:30" }, { "open": "16:00", "close": "21:30" }],
+              "sat": [{ "open": "05:00", "close": "12:30" }, { "open": "16:00", "close": "21:30" }],
+              "sun": [{ "open": "05:00", "close": "12:30" }, { "open": "16:00", "close": "21:30" }]
+            },
+            "features": ["dress_code", "guided", "photography_rules"],
+            "tags": ["temple", "gopuram", "rituals"],
+            "accessibility": { "wheelchair": true, "petFriendly": false, "familyFriendly": true },
+            "createdAt": "2025-06-20T04:30:00Z",
+            "updatedAt": "2025-08-30T08:15:00Z"
+          },
+          {
+            "id": "act_western_ghats_trek",
+            "title": "Western Ghats Ridge Trek",
+            "subtitle": "Shola forests and misty ridgelines",
+            "emotionKind": "nature",
+            "type": "hike",
+            "location": {
+              "coordinates": { "lat": 10.1260, "lng": 77.0600, "alt": 1800 },
+              "geo": "geo:10.1260,77.0600",
+              "address": {
+                "line1": "Base Camp",
+                "city": "Kodaikanal",
+                "state": "Tamil Nadu",
+                "country": "IN",
+                "postalCode": "624101"
+              }
+            },
+            "media": {
+              "thumbnail": "assets/images/activities/ghats_trek_thumb.jpg",
+              "images": [
+                "assets/images/activities/ghats_trek_1.jpg",
+                "assets/images/activities/ghats_trek_2.jpg"
+              ]
+            },
+            "duration_min": 300,
+            "price": { "currency": "INR", "level": 2, "estimate_from": 1200, "estimate_to": 2500 },
+            "stats": { "rating": 4.5, "reviews": 6311, "favorites": 4022 },
+            "open": {
+              "mon": [{ "open": "06:00", "close": "17:00" }],
+              "tue": [{ "open": "06:00", "close": "17:00" }],
+              "wed": [{ "open": "06:00", "close": "17:00" }],
+              "thu": [{ "open": "06:00", "close": "17:00" }],
+              "fri": [{ "open": "06:00", "close": "17:00" }],
+              "sat": [{ "open": "06:00", "close": "17:00" }],
+              "sun": [{ "open": "06:00", "close": "17:00" }]
+            },
+            "features": ["permit", "guide_required", "eco_sensible"],
+            "tags": ["trek", "ridge", "views"],
+            "accessibility": { "wheelchair": false, "petFriendly": false, "familyFriendly": true },
+            "createdAt": "2025-05-12T07:00:00Z",
+            "updatedAt": "2025-08-21T10:05:00Z"
+          },
+          {
+            "id": "act_jaipur_food_walk",
+            "title": "Jaipur Pink City Food Walk",
+            "subtitle": "Street eats and sweets",
+            "emotionKind": "stay",
+            "type": "food",
+            "location": {
+              "coordinates": { "lat": 26.9239, "lng": 75.8267, "alt": 431 },
+              "geo": "geo:26.9239,75.8267",
+              "address": {
+                "line1": "Hawa Mahal Road",
+                "city": "Jaipur",
+                "state": "Rajasthan",
+                "country": "IN",
+                "postalCode": "302002"
+              }
+            },
+            "media": {
+              "thumbnail": "assets/images/activities/jaipur_food_thumb.jpg",
+              "images": [
+                "assets/images/activities/jaipur_food_1.jpg",
+                "assets/images/activities/jaipur_food_2.jpg"
+              ]
+            },
+            "duration_min": 150,
+            "price": { "currency": "INR", "level": 1, "estimate_from": 600, "estimate_to": 1200 },
+            "stats": { "rating": 4.6, "reviews": 8422, "favorites": 5311 },
+            "open": {
+              "mon": [{ "open": "16:00", "close": "21:00" }],
+              "tue": [{ "open": "16:00", "close": "21:00" }],
+              "wed": [{ "open": "16:00", "close": "21:00" }],
+              "thu": [{ "open": "16:00", "close": "21:00" }],
+              "fri": [{ "open": "16:00", "close": "21:00" }],
+              "sat": [{ "open": "16:00", "close": "21:30" }],
+              "sun": [{ "open": "16:00", "close": "21:30" }]
+            },
+            "features": ["veg_options", "hygiene_first", "local_guide"],
+            "tags": ["chaat", "lassi", "sweets"],
+            "accessibility": { "wheelchair": true, "petFriendly": false, "familyFriendly": true },
+            "createdAt": "2025-04-30T12:00:00Z",
+            "updatedAt": "2025-08-15T14:30:00Z"
+          },
+          {
+            "id": "act_varanasi_aarti",
+            "title": "Varanasi Ganga Aarti",
+            "subtitle": "Evening ceremony on the ghats",
+            "emotionKind": "spiritual",
+            "type": "ceremony",
+            "location": {
+              "coordinates": { "lat": 25.3069, "lng": 83.0104, "alt": 81 },
+              "geo": "geo:25.3069,83.0104",
+              "address": {
+                "line1": "Dashashwamedh Ghat",
+                "city": "Varanasi",
+                "state": "Uttar Pradesh",
+                "country": "IN",
+                "postalCode": "221001"
+              }
+            },
+            "media": {
+              "thumbnail": "assets/images/activities/varanasi_aarti_thumb.jpg",
+              "images": [
+                "assets/images/activities/varanasi_aarti_1.jpg",
+                "assets/images/activities/varanasi_aarti_2.jpg"
+              ]
+            },
+            "duration_min": 60,
+            "price": { "currency": "INR", "level": 0, "estimate_from": 0, "estimate_to": 0 },
+            "stats": { "rating": 4.8, "reviews": 50331, "favorites": 32014 },
+            "open": {
+              "mon": [{ "open": "18:30", "close": "19:30" }],
+              "tue": [{ "open": "18:30", "close": "19:30" }],
+              "wed": [{ "open": "18:30", "close": "19:30" }],
+              "thu": [{ "open": "18:30", "close": "19:30" }],
+              "fri": [{ "open": "18:30", "close": "19:30" }],
+              "sat": [{ "open": "18:30", "close": "19:30" }],
+              "sun": [{ "open": "18:30", "close": "19:30" }]
+            },
+            "features": ["crowd_control", "boat_view_optional"],
+            "tags": ["aarti", "ceremony", "ganga"],
+            "accessibility": { "wheelchair": true, "petFriendly": false, "familyFriendly": true },
+            "createdAt": "2025-05-05T16:00:00Z",
+            "updatedAt": "2025-08-28T17:45:00Z"
+          },
+          {
+            "id": "act_mumbai_heritage_walk",
+            "title": "Mumbai Heritage Walk",
+            "subtitle": "Victorian Gothic and Art Deco",
+            "emotionKind": "heritage",
+            "type": "walk",
+            "location": {
+              "coordinates": { "lat": 18.9275, "lng": 72.8327, "alt": 14 },
+              "geo": "geo:18.9275,72.8327",
+              "address": {
+                "line1": "Fort, Kala Ghoda",
+                "city": "Mumbai",
+                "state": "Maharashtra",
+                "country": "IN",
+                "postalCode": "400001"
+              }
+            },
+            "media": {
+              "thumbnail": "assets/images/activities/mumbai_walk_thumb.jpg",
+              "images": [
+                "assets/images/activities/mumbai_walk_1.jpg",
+                "assets/images/activities/mumbai_walk_2.jpg"
+              ]
+            },
+            "duration_min": 120,
+            "price": { "currency": "INR", "level": 1, "estimate_from": 500, "estimate_to": 900 },
+            "stats": { "rating": 4.5, "reviews": 7218, "favorites": 4103 },
+            "open": {
+              "mon": [{ "open": "08:00", "close": "11:00" }, { "open": "16:00", "close": "18:30" }],
+              "tue": [{ "open": "08:00", "close": "11:00" }, { "open": "16:00", "close": "18:30" }],
+              "wed": [{ "open": "08:00", "close": "11:00" }, { "open": "16:00", "close": "18:30" }],
+              "thu": [{ "open": "08:00", "close": "11:00" }, { "open": "16:00", "close": "18:30" }],
+              "fri": [{ "open": "08:00", "close": "11:00" }, { "open": "16:00", "close": "18:30" }],
+              "sat": [{ "open": "08:00", "close": "11:30" }, { "open": "16:00", "close": "19:00" }],
+              "sun": [{ "open": "08:00", "close": "11:30" }, { "open": "16:00", "close": "19:00" }]
+            },
+            "features": ["guided", "architecture_focus", "photo_spots"],
+            "tags": ["victorian", "art_deco", "fort"],
+            "accessibility": { "wheelchair": true, "petFriendly": false, "familyFriendly": true },
+            "createdAt": "2025-05-18T06:30:00Z",
+            "updatedAt": "2025-08-27T09:55:00Z"
+          }
+        ]
+      }
+      

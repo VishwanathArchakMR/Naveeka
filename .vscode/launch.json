@@ -1,0 +1,82 @@
+{
+    // VS Code launch configuration for Naveeka (Flutter + Backend)
+    // Docs:
+    // - Dart/Flutter launch config: https://dartcode.org/docs/launch-configuration/
+    // - VS Code debug config: https://code.visualstudio.com/docs/debugging
+    "version": "0.2.0",
+    "configurations": [
+      // ----- Flutter (root app) -----
+      {
+        "name": "Naveeka (debug)",
+        "request": "launch",
+        "type": "dart",
+        "flutterMode": "debug"
+      },
+      {
+        "name": "Naveeka (profile)",
+        "request": "launch",
+        "type": "dart",
+        "flutterMode": "profile"
+      },
+      {
+        "name": "Naveeka (release)",
+        "request": "launch",
+        "type": "dart",
+        "flutterMode": "release"
+      },
+  
+      // ----- Flutter (frontend subfolder) -----
+      {
+        "name": "frontend (debug)",
+        "cwd": "frontend",
+        "request": "launch",
+        "type": "dart",
+        "flutterMode": "debug"
+      },
+      {
+        "name": "frontend (profile)",
+        "cwd": "frontend",
+        "request": "launch",
+        "type": "dart",
+        "flutterMode": "profile"
+      },
+      {
+        "name": "frontend (release)",
+        "cwd": "frontend",
+        "request": "launch",
+        "type": "dart",
+        "flutterMode": "release"
+      },
+  
+      // ----- Node.js backend (optional attach/launch) -----
+      {
+        "name": "Backend: Node (launch)",
+        "type": "node",
+        "request": "launch",
+        "cwd": "backend",
+        "program": "${workspaceFolder}/backend/server.js",
+        "runtimeExecutable": "node",
+        "envFile": "${workspaceFolder}/backend/.env",
+        "console": "integratedTerminal",
+        "restart": true,
+        "autoAttachChildProcesses": true,
+        "skipFiles": ["<node_internals>/**"]
+      },
+      {
+        "name": "Backend: Node (attach)",
+        "type": "node",
+        "request": "attach",
+        "port": 9229,
+        "address": "localhost",
+        "restart": true,
+        "skipFiles": ["<node_internals>/**"]
+      }
+    ],
+    "compounds": [
+      {
+        "name": "Run Frontend + Backend",
+        "configurations": ["frontend (debug)", "Backend: Node (launch)"]
+      }
+    ]
+  }
+  

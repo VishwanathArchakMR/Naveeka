@@ -1,0 +1,235 @@
+{
+        "version": 1,
+        "generatedAt": "2025-09-14T13:20:00Z",
+        "assistant": {
+          "id": "navee_ai",
+          "name": "Navee AI",
+          "persona": {
+            "voice": "friendly, concise, expert local guide",
+            "style": ["helpful", "non-judgmental", "safety-first"],
+            "tone": ["warm", "clear", "actionable"]
+          },
+          "guardrails": {
+            "disclaimers": [
+              "Information may change; verify time-sensitive details with providers.",
+              "No medical, legal, or financial advice; provide general information only."
+            ],
+            "safety": {
+              "refuse": ["self-harm", "illegal activity", "hate/harassment"],
+              "escalateToHuman": ["safety risk", "payment dispute", "identity issue"]
+            }
+          }
+        },
+        "routing": {
+          "intentsToRoutes": {
+            "search_flights": "/flights",
+            "open_booking": "/bookings/:bookingId",
+            "find_activity": "/activities",
+            "show_favorites": "/account/favorites",
+            "navigate_stop": "/transit/stops/:stopId",
+            "show_airport": "/airports/:iata",
+            "open_hotel": "/stays/:hotelId",
+            "start_journey": "/planner",
+            "help": "/help"
+          }
+        },
+        "entities": {
+          "airport": {
+            "keys": ["iata", "icao", "name"],
+            "samples": [
+              { "iata": "DEL", "icao": "VIDP", "name": "Indira Gandhi International" },
+              { "iata": "BOM", "icao": "VABB", "name": "Chhatrapati Shivaji Maharaj" },
+              { "iata": "BLR", "icao": "VOBL", "name": "Kempegowda International" }
+            ]
+          },
+          "activity": {
+            "keys": ["id", "title", "emotionKind"],
+            "samples": [
+              { "id": "act_taj_mahal_sunrise", "title": "Taj Mahal Sunrise", "emotionKind": "heritage" },
+              { "id": "act_mumbai_heritage_walk", "title": "Mumbai Heritage Walk", "emotionKind": "heritage" }
+            ]
+          },
+          "stop": {
+            "keys": ["id", "name", "city"],
+            "samples": [
+              { "id": "stop_del_kashmere_gate", "name": "Kashmere Gate ISBT", "city": "New Delhi" },
+              { "id": "stop_mum_dadar_tt", "name": "Dadar TT Circle", "city": "Mumbai" }
+            ]
+          },
+          "hotel": {
+            "keys": ["id", "name", "city"],
+            "samples": [
+              { "id": "htl_mumbai_bayfront", "name": "Bayfront Mumbai", "city": "Mumbai" },
+              { "id": "htl_agra_marble_vista", "name": "Marble Vista Agra", "city": "Agra" }
+            ]
+          },
+          "date": {
+            "format": "ISO_8601",
+            "examples": ["2025-10-05", "2025-10-05T09:30:00+05:30", "2025-10-05T04:00:00Z"]
+          }
+        },
+        "intents": [
+          {
+            "name": "greet",
+            "utterances": ["Hi", "Hello", "Hey Navee", "Good morning"],
+            "slots": [],
+            "reply": "Hi! Where to today — flights, stays, or nearby plans?"
+          },
+          {
+            "name": "search_flights",
+            "utterances": [
+              "Find flights from DEL to BOM on 2025-10-05",
+              "Flights to Delhi next Friday",
+              "Show cheap flights to Mumbai tomorrow"
+            ],
+            "slots": [
+              { "name": "from", "type": "airport", "required": false },
+              { "name": "to", "type": "airport", "required": true },
+              { "name": "when", "type": "date", "required": false },
+              { "name": "adults", "type": "number", "required": false }
+            ],
+            "confirm": "Looking for flights {from}->{to} {when} for {adults} adult(s). Open results?",
+            "route": "search_flights"
+          },
+          {
+            "name": "find_activity",
+            "utterances": [
+              "Show heritage spots in Agra",
+              "What to do in Mumbai this evening",
+              "Spiritual places near me"
+            ],
+            "slots": [
+              { "name": "emotionKind", "type": "enum", "enum": ["peaceful","adventure","spiritual","nature","heritage","stay"] },
+              { "name": "city", "type": "string" },
+              { "name": "when", "type": "date" }
+            ],
+            "confirm": "Here are {emotionKind} picks {city} {when}. Want more details?",
+            "route": "find_activity"
+          },
+          {
+            "name": "open_booking",
+            "utterances": [
+              "Open my DEL to BOM booking",
+              "Show booking H7Q9TZ",
+              "View last flight booking"
+            ],
+            "slots": [
+              { "name": "bookingId", "type": "string", "required": false }
+            ],
+            "confirm": "Opening booking {bookingId}.",
+            "route": "open_booking"
+          },
+          {
+            "name": "navigate_stop",
+            "utterances": [
+              "Navigate to Kashmere Gate bus stop",
+              "Directions to Dadar TT",
+              "Take me to the nearest bus stand"
+            ],
+            "slots": [
+              { "name": "stopId", "type": "stop", "required": false }
+            ],
+            "confirm": "Opening directions to {stopId}.",
+            "route": "navigate_stop"
+          },
+          {
+            "name": "open_hotel",
+            "utterances": [
+              "Open Bayfront Mumbai hotel",
+              "Show Marble Vista Agra rooms"
+            ],
+            "slots": [
+              { "name": "hotelId", "type": "hotel", "required": true }
+            ],
+            "confirm": "Opening {hotelId}.",
+            "route": "open_hotel"
+          },
+          {
+            "name": "show_airport",
+            "utterances": [
+              "Show DEL airport",
+              "Open Mumbai airport info"
+            ],
+            "slots": [
+              { "name": "iata", "type": "airport", "required": true }
+            ],
+            "confirm": "Opening airport {iata}.",
+            "route": "show_airport"
+          },
+          {
+            "name": "show_favorites",
+            "utterances": [
+              "Show my favorites",
+              "Open saved places"
+            ],
+            "slots": [],
+            "confirm": "Opening favorites.",
+            "route": "show_favorites"
+          },
+          {
+            "name": "help",
+            "utterances": ["Help", "What can you do?", "Show commands"],
+            "slots": [],
+            "reply": "Try: ‘Find flights DEL to BOM’, ‘Show heritage in Agra’, or ‘Navigate to Kashmere Gate’.",
+            "route": "help"
+          }
+        ],
+        "responses": {
+          "templates": [
+            {
+              "id": "flights_results_summary",
+              "text": "Found {count} flights {from}->{to} on {when}. Open results to compare fares?",
+              "role": "assistant"
+            },
+            {
+              "id": "activities_summary",
+              "text": "{count} {emotionKind} ideas near {city}. Want top 3?",
+              "role": "assistant"
+            },
+            {
+              "id": "ack_opening_screen",
+              "text": "Sure, opening {screen}…",
+              "role": "assistant"
+            },
+            {
+              "id": "fallback",
+              "text": "Sorry, didn’t catch that. Try ‘Flights DEL to BOM on 2025-10-05’.",
+              "role": "assistant"
+            }
+          ]
+        },
+        "suggestions": {
+          "chips": {
+            "home": [
+              { "label": "Flights Today", "intent": "search_flights", "slots": { "to": "BOM", "when": "2025-10-05" } },
+              { "label": "Heritage in Agra", "intent": "find_activity", "slots": { "emotionKind": "heritage", "city": "Agra" } },
+              { "label": "Open Favorites", "intent": "show_favorites" }
+            ],
+            "after_booking": [
+              { "label": "Airport Info (DEL)", "intent": "show_airport", "slots": { "iata": "DEL" } },
+              { "label": "Hotel Bayfront", "intent": "open_hotel", "slots": { "hotelId": "htl_mumbai_bayfront" } }
+            ]
+          }
+        },
+        "samples": {
+          "conversations": [
+            {
+              "id": "cx_flights_1",
+              "turns": [
+                { "role": "user", "text": "Find flights from DEL to BOM on 2025-10-05" },
+                { "role": "assistant", "template": "flights_results_summary", "vars": { "count": 3, "from": "DEL", "to": "BOM", "when": "2025-10-05" } }
+              ],
+              "timestamp": "2025-09-14T13:20:05Z"
+            },
+            {
+              "id": "cx_activity_1",
+              "turns": [
+                { "role": "user", "text": "Show heritage spots in Agra" },
+                { "role": "assistant", "template": "activities_summary", "vars": { "count": 4, "emotionKind": "heritage", "city": "Agra" } }
+              ],
+              "timestamp": "2025-09-14T13:20:20Z"
+            }
+          ]
+        }
+      }
+      

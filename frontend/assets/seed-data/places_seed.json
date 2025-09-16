@@ -1,0 +1,291 @@
+{
+        "version": 1,
+        "generatedAt": "2025-09-14T13:22:00Z",
+        "places": [
+          {
+            "id": "plc_taj_mahal",
+            "title": "Taj Mahal",
+            "subtitle": "Marble mausoleum",
+            "emotionKind": "heritage",
+            "categories": ["monument", "architecture", "unesco"],
+            "location": {
+              "coordinates": { "lat": 27.1751, "lng": 78.0421, "alt": 171 },
+              "geo": "geo:27.1751,78.0421",
+              "address": {
+                "line1": "Dharmapuri, Forest Colony, Tajganj",
+                "city": "Agra",
+                "state": "Uttar Pradesh",
+                "country": "IN",
+                "postalCode": "282001"
+              }
+            },
+            "media": {
+              "thumbnail": "assets/images/places/taj_mahal_thumb.jpg",
+              "images": [
+                "assets/images/places/taj_mahal_1.jpg",
+                "assets/images/places/taj_mahal_2.jpg"
+              ]
+            },
+            "open": {
+              "mon": [{ "open": "06:00", "close": "18:30" }],
+              "tue": [{ "open": "06:00", "close": "18:30" }],
+              "wed": [{ "open": "06:00", "close": "18:30" }],
+              "thu": [{ "open": "06:00", "close": "18:30" }],
+              "fri": [],
+              "sat": [{ "open": "06:00", "close": "18:30" }],
+              "sun": [{ "open": "06:00", "close": "18:30" }]
+            },
+            "fees": { "currency": "INR", "adult": 250, "child": 0, "foreigner": 1300 },
+            "rating": { "score": 4.8, "reviews": 238762 },
+            "features": ["guided", "photography", "heritage_site", "parking"],
+            "accessibility": { "wheelchair": true, "petFriendly": false, "familyFriendly": true },
+            "tags": ["sunrise", "UNESCO", "architecture"],
+            "createdAt": "2025-06-01T06:00:00Z",
+            "updatedAt": "2025-09-10T09:30:00Z"
+          },
+          {
+            "id": "plc_meenakshi_temple",
+            "title": "Meenakshi Amman Temple",
+            "subtitle": "Dravidian temple complex",
+            "emotionKind": "spiritual",
+            "categories": ["temple", "architecture", "rituals"],
+            "location": {
+              "coordinates": { "lat": 9.9195, "lng": 78.1193, "alt": 137 },
+              "geo": "geo:9.9195,78.1193",
+              "address": {
+                "line1": "Madurai Main",
+                "city": "Madurai",
+                "state": "Tamil Nadu",
+                "country": "IN",
+                "postalCode": "625001"
+              }
+            },
+            "media": {
+              "thumbnail": "assets/images/places/meenakshi_thumb.jpg",
+              "images": [
+                "assets/images/places/meenakshi_1.jpg",
+                "assets/images/places/meenakshi_2.jpg"
+              ]
+            },
+            "open": {
+              "mon": [{ "open": "05:00", "close": "12:30" }, { "open": "16:00", "close": "21:30" }],
+              "tue": [{ "open": "05:00", "close": "12:30" }, { "open": "16:00", "close": "21:30" }],
+              "wed": [{ "open": "05:00", "close": "12:30" }, { "open": "16:00", "close": "21:30" }],
+              "thu": [{ "open": "05:00", "close": "12:30" }, { "open": "16:00", "close": "21:30" }],
+              "fri": [{ "open": "05:00", "close": "12:30" }, { "open": "16:00", "close": "21:30" }],
+              "sat": [{ "open": "05:00", "close": "12:30" }, { "open": "16:00", "close": "21:30" }],
+              "sun": [{ "open": "05:00", "close": "12:30" }, { "open": "16:00", "close": "21:30" }]
+            },
+            "fees": { "currency": "INR", "adult": 0, "child": 0, "foreigner": 0 },
+            "rating": { "score": 4.7, "reviews": 18321 },
+            "features": ["dress_code", "guided", "photography_rules"],
+            "accessibility": { "wheelchair": true, "petFriendly": false, "familyFriendly": true },
+            "tags": ["temple", "gopuram", "rituals"],
+            "createdAt": "2025-06-20T04:30:00Z",
+            "updatedAt": "2025-08-30T08:15:00Z"
+          },
+          {
+            "id": "plc_backwaters_finishing_point",
+            "title": "Alleppey Finishing Point",
+            "subtitle": "Backwaters jetty",
+            "emotionKind": "peaceful",
+            "categories": ["jetty", "backwaters", "cruise"],
+            "location": {
+              "coordinates": { "lat": 9.4981, "lng": 76.3388, "alt": 6 },
+              "geo": "geo:9.4981,76.3388",
+              "address": {
+                "line1": "Finishing Point",
+                "city": "Alappuzha",
+                "state": "Kerala",
+                "country": "IN",
+                "postalCode": "688013"
+              }
+            },
+            "media": {
+              "thumbnail": "assets/images/places/backwaters_thumb.jpg",
+              "images": [
+                "assets/images/places/backwaters_1.jpg",
+                "assets/images/places/backwaters_2.jpg"
+              ]
+            },
+            "open": {
+              "mon": [{ "open": "10:00", "close": "20:00" }],
+              "tue": [{ "open": "10:00", "close": "20:00" }],
+              "wed": [{ "open": "10:00", "close": "20:00" }],
+              "thu": [{ "open": "10:00", "close": "20:00" }],
+              "fri": [{ "open": "10:00", "close": "20:00" }],
+              "sat": [{ "open": "10:00", "close": "21:00" }],
+              "sun": [{ "open": "10:00", "close": "21:00" }]
+            },
+            "fees": { "currency": "INR", "adult": 0, "child": 0, "foreigner": 0 },
+            "rating": { "score": 4.7, "reviews": 21432 },
+            "features": ["boat_rides", "photography", "parking"],
+            "accessibility": { "wheelchair": true, "petFriendly": true, "familyFriendly": true },
+            "tags": ["sunset", "houseboat", "kerala"],
+            "createdAt": "2025-06-10T09:00:00Z",
+            "updatedAt": "2025-09-01T13:40:00Z"
+          },
+          {
+            "id": "plc_varanasi_dashashwamedh_ghat",
+            "title": "Dashashwamedh Ghat",
+            "subtitle": "Ganga Aarti venue",
+            "emotionKind": "spiritual",
+            "categories": ["ghat", "ceremony", "riverfront"],
+            "location": {
+              "coordinates": { "lat": 25.3069, "lng": 83.0104, "alt": 81 },
+              "geo": "geo:25.3069,83.0104",
+              "address": {
+                "line1": "Dashashwamedh Ghat",
+                "city": "Varanasi",
+                "state": "Uttar Pradesh",
+                "country": "IN",
+                "postalCode": "221001"
+              }
+            },
+            "media": {
+              "thumbnail": "assets/images/places/varanasi_ghat_thumb.jpg",
+              "images": [
+                "assets/images/places/varanasi_ghat_1.jpg",
+                "assets/images/places/varanasi_ghat_2.jpg"
+              ]
+            },
+            "open": {
+              "mon": [{ "open": "00:00", "close": "23:59" }],
+              "tue": [{ "open": "00:00", "close": "23:59" }],
+              "wed": [{ "open": "00:00", "close": "23:59" }],
+              "thu": [{ "open": "00:00", "close": "23:59" }],
+              "fri": [{ "open": "00:00", "close": "23:59" }],
+              "sat": [{ "open": "00:00", "close": "23:59" }],
+              "sun": [{ "open": "00:00", "close": "23:59" }]
+            },
+            "fees": { "currency": "INR", "adult": 0, "child": 0, "foreigner": 0 },
+            "rating": { "score": 4.8, "reviews": 50331 },
+            "features": ["ceremony", "boat_view_optional", "photography"],
+            "accessibility": { "wheelchair": true, "petFriendly": false, "familyFriendly": true },
+            "tags": ["aarti", "ganga", "evening"],
+            "createdAt": "2025-05-05T16:00:00Z",
+            "updatedAt": "2025-08-28T17:45:00Z"
+          },
+          {
+            "id": "plc_mumbai_marine_drive",
+            "title": "Marine Drive",
+            "subtitle": "Queens Necklace promenade",
+            "emotionKind": "peaceful",
+            "categories": ["promenade", "sea_view", "sunset"],
+            "location": {
+              "coordinates": { "lat": 18.9432, "lng": 72.8238, "alt": 10 },
+              "geo": "geo:18.9432,72.8238",
+              "address": {
+                "line1": "Netaji Subhash Chandra Bose Road",
+                "city": "Mumbai",
+                "state": "Maharashtra",
+                "country": "IN",
+                "postalCode": "400020"
+              }
+            },
+            "media": {
+              "thumbnail": "assets/images/places/marine_drive_thumb.jpg",
+              "images": [
+                "assets/images/places/marine_drive_1.jpg"
+              ]
+            },
+            "open": {
+              "mon": [{ "open": "00:00", "close": "23:59" }],
+              "tue": [{ "open": "00:00", "close": "23:59" }],
+              "wed": [{ "open": "00:00", "close": "23:59" }],
+              "thu": [{ "open": "00:00", "close": "23:59" }],
+              "fri": [{ "open": "00:00", "close": "23:59" }],
+              "sat": [{ "open": "00:00", "close": "23:59" }],
+              "sun": [{ "open": "00:00", "close": "23:59" }]
+            },
+            "fees": { "currency": "INR", "adult": 0, "child": 0, "foreigner": 0 },
+            "rating": { "score": 4.7, "reviews": 102201 },
+            "features": ["walkway", "benches", "sea_breeze"],
+            "accessibility": { "wheelchair": true, "petFriendly": true, "familyFriendly": true },
+            "tags": ["sunset", "seaface", "mumbai"],
+            "createdAt": "2025-05-15T07:40:00Z",
+            "updatedAt": "2025-08-27T09:55:00Z"
+          },
+          {
+            "id": "plc_jaipur_hawa_mahal",
+            "title": "Hawa Mahal",
+            "subtitle": "Palace of Winds",
+            "emotionKind": "heritage",
+            "categories": ["palace", "architecture", "museum"],
+            "location": {
+              "coordinates": { "lat": 26.9239, "lng": 75.8267, "alt": 431 },
+              "geo": "geo:26.9239,75.8267",
+              "address": {
+                "line1": "Hawa Mahal Rd, Badi Choupad, J.D.A. Market",
+                "city": "Jaipur",
+                "state": "Rajasthan",
+                "country": "IN",
+                "postalCode": "302002"
+              }
+            },
+            "media": {
+              "thumbnail": "assets/images/places/hawa_mahal_thumb.jpg",
+              "images": [
+                "assets/images/places/hawa_mahal_1.jpg"
+              ]
+            },
+            "open": {
+              "mon": [{ "open": "09:00", "close": "17:00" }],
+              "tue": [{ "open": "09:00", "close": "17:00" }],
+              "wed": [{ "open": "09:00", "close": "17:00" }],
+              "thu": [{ "open": "09:00", "close": "17:00" }],
+              "fri": [{ "open": "09:00", "close": "17:00" }],
+              "sat": [{ "open": "09:00", "close": "17:00" }],
+              "sun": [{ "open": "09:00", "close": "17:00" }]
+            },
+            "fees": { "currency": "INR", "adult": 50, "child": 10, "foreigner": 200 },
+            "rating": { "score": 4.6, "reviews": 65311 },
+            "features": ["museum", "photography", "guided"],
+            "accessibility": { "wheelchair": false, "petFriendly": false, "familyFriendly": true },
+            "tags": ["jaipur", "pink_city", "architecture"],
+            "createdAt": "2025-05-18T06:30:00Z",
+            "updatedAt": "2025-08-15T14:30:00Z"
+          },
+          {
+            "id": "plc_bengaluru_lalbagh",
+            "title": "Lalbagh Botanical Garden",
+            "subtitle": "Historic botanical garden",
+            "emotionKind": "nature",
+            "categories": ["garden", "nature", "heritage"],
+            "location": {
+              "coordinates": { "lat": 12.9507, "lng": 77.5848, "alt": 920 },
+              "geo": "geo:12.9507,77.5848",
+              "address": {
+                "line1": "Lalbagh",
+                "city": "Bengaluru",
+                "state": "Karnataka",
+                "country": "IN",
+                "postalCode": "560004"
+              }
+            },
+            "media": {
+              "thumbnail": "assets/images/places/lalbagh_thumb.jpg",
+              "images": [
+                "assets/images/places/lalbagh_1.jpg"
+              ]
+            },
+            "open": {
+              "mon": [{ "open": "06:00", "close": "19:00" }],
+              "tue": [{ "open": "06:00", "close": "19:00" }],
+              "wed": [{ "open": "06:00", "close": "19:00" }],
+              "thu": [{ "open": "06:00", "close": "19:00" }],
+              "fri": [{ "open": "06:00", "close": "19:00" }],
+              "sat": [{ "open": "06:00", "close": "19:00" }],
+              "sun": [{ "open": "06:00", "close": "19:00" }]
+            },
+            "fees": { "currency": "INR", "adult": 30, "child": 10, "foreigner": 60 },
+            "rating": { "score": 4.6, "reviews": 13121 },
+            "features": ["glass_house", "lake", "nursery"],
+            "accessibility": { "wheelchair": true, "petFriendly": false, "familyFriendly": true },
+            "tags": ["flowershow", "nature", "bengaluru"],
+            "createdAt": "2025-05-12T07:00:00Z",
+            "updatedAt": "2025-08-21T10:05:00Z"
+          }
+        ]
+      }
+      

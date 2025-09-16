@@ -1,0 +1,183 @@
+{
+        "version": 1,
+        "generatedAt": "2025-09-14T13:26:00Z",
+        "restaurants": [
+          {
+            "id": "rst_agra_shahi_thali",
+            "name": "Shahi Thali Agra",
+            "cuisines": ["North Indian", "Mughlai"],
+            "price": { "currency": "INR", "level": 2, "avg_per_person": 350 },
+            "rating": { "score": 4.5, "reviews": 4211 },
+            "location": {
+              "coordinates": { "lat": 27.1728, "lng": 78.0412 },
+              "geo": "geo:27.1728,78.0412",
+              "address": {
+                "line1": "Taj East Gate Rd, Tajganj",
+                "city": "Agra",
+                "state": "Uttar Pradesh",
+                "country": "IN",
+                "postalCode": "282001"
+              }
+            },
+            "contact": { "phone": "+91-562-4002200" },
+            "open": {
+              "mon": [{ "open": "11:00", "close": "22:30" }],
+              "tue": [{ "open": "11:00", "close": "22:30" }],
+              "wed": [{ "open": "11:00", "close": "22:30" }],
+              "thu": [{ "open": "11:00", "close": "22:30" }],
+              "fri": [{ "open": "11:00", "close": "23:00" }],
+              "sat": [{ "open": "11:00", "close": "23:00" }],
+              "sun": [{ "open": "11:00", "close": "22:30" }]
+            },
+            "dietary": ["veg", "jain_available"],
+            "features": ["family_friendly", "parking", "air_conditioned"],
+            "nearby": [
+              { "type": "place", "refId": "plc_taj_mahal", "distance_m": 600 },
+              { "type": "activity", "refId": "act_taj_mahal_sunrise", "distance_m": 650 }
+            ],
+            "createdAt": "2025-08-20T07:00:00Z",
+            "updatedAt": "2025-09-10T11:20:00Z"
+          },
+          {
+            "id": "rst_mumbai_chowpatty_bites",
+            "name": "Chowpatty Bites",
+            "cuisines": ["Street Food", "Fast Food"],
+            "price": { "currency": "INR", "level": 1, "avg_per_person": 200 },
+            "rating": { "score": 4.6, "reviews": 10822 },
+            "location": {
+              "coordinates": { "lat": 18.9445, "lng": 72.8230 },
+              "geo": "geo:18.9445,72.8230",
+              "address": {
+                "line1": "Marine Drive",
+                "city": "Mumbai",
+                "state": "Maharashtra",
+                "country": "IN",
+                "postalCode": "400020"
+              }
+            },
+            "contact": { "phone": "+91-22-40011010" },
+            "open": {
+              "mon": [{ "open": "16:30", "close": "23:30" }],
+              "tue": [{ "open": "16:30", "close": "23:30" }],
+              "wed": [{ "open": "16:30", "close": "23:30" }],
+              "thu": [{ "open": "16:30", "close": "23:30" }],
+              "fri": [{ "open": "16:30", "close": "23:59" }],
+              "sat": [{ "open": "16:30", "close": "23:59" }],
+              "sun": [{ "open": "16:30", "close": "23:30" }]
+            },
+            "dietary": ["veg", "egg_free_options"],
+            "features": ["takeaway", "seating_outdoor"],
+            "nearby": [
+              { "type": "place", "refId": "plc_mumbai_marine_drive", "distance_m": 120 }
+            ],
+            "createdAt": "2025-08-18T08:10:00Z",
+            "updatedAt": "2025-09-03T10:05:00Z"
+          },
+          {
+            "id": "rst_rishikesh_ganga_cafe",
+            "name": "Ganga View Cafe",
+            "cuisines": ["Cafe", "Continental", "Healthy"],
+            "price": { "currency": "INR", "level": 2, "avg_per_person": 300 },
+            "rating": { "score": 4.4, "reviews": 3911 },
+            "location": {
+              "coordinates": { "lat": 30.1201, "lng": 78.3205 },
+              "geo": "geo:30.1201,78.3205",
+              "address": {
+                "line1": "Laxman Jhula Rd, Tapovan",
+                "city": "Rishikesh",
+                "state": "Uttarakhand",
+                "country": "IN",
+                "postalCode": "249302"
+              }
+            },
+            "contact": { "phone": "+91-135-4009900" },
+            "open": {
+              "mon": [{ "open": "08:00", "close": "22:00" }],
+              "tue": [{ "open": "08:00", "close": "22:00" }],
+              "wed": [{ "open": "08:00", "close": "22:00" }],
+              "thu": [{ "open": "08:00", "close": "22:00" }],
+              "fri": [{ "open": "08:00", "close": "22:30" }],
+              "sat": [{ "open": "08:00", "close": "22:30" }],
+              "sun": [{ "open": "08:00", "close": "22:00" }]
+            },
+            "dietary": ["veg", "vegan_options", "gluten_free_options"],
+            "features": ["river_view", "wifi", "card_accepted"],
+            "nearby": [
+              { "type": "activity", "refId": "act_rishikesh_rafting", "distance_m": 1800 }
+            ],
+            "createdAt": "2025-08-22T07:40:00Z",
+            "updatedAt": "2025-09-05T09:50:00Z"
+          },
+          {
+            "id": "rst_jaipur_kachori_house",
+            "name": "Badi Choupad Kachori House",
+            "cuisines": ["Rajasthani", "Street Food"],
+            "price": { "currency": "INR", "level": 1, "avg_per_person": 180 },
+            "rating": { "score": 4.3, "reviews": 6721 },
+            "location": {
+              "coordinates": { "lat": 26.9245, "lng": 75.8269 },
+              "geo": "geo:26.9245,75.8269",
+              "address": {
+                "line1": "Badi Choupad",
+                "city": "Jaipur",
+                "state": "Rajasthan",
+                "country": "IN",
+                "postalCode": "302002"
+              }
+            },
+            "contact": { "phone": "+91-141-4001181" },
+            "open": {
+              "mon": [{ "open": "08:00", "close": "21:30" }],
+              "tue": [{ "open": "08:00", "close": "21:30" }],
+              "wed": [{ "open": "08:00", "close": "21:30" }],
+              "thu": [{ "open": "08:00", "close": "21:30" }],
+              "fri": [{ "open": "08:00", "close": "22:00" }],
+              "sat": [{ "open": "08:00", "close": "22:00" }],
+              "sun": [{ "open": "08:00", "close": "21:30" }]
+            },
+            "dietary": ["veg"],
+            "features": ["takeaway", "cash_only"],
+            "nearby": [
+              { "type": "place", "refId": "plc_jaipur_hawa_mahal", "distance_m": 180 }
+            ],
+            "createdAt": "2025-08-25T06:25:00Z",
+            "updatedAt": "2025-09-01T08:15:00Z"
+          },
+          {
+            "id": "rst_bengaluru_green_garden",
+            "name": "The Green Garden",
+            "cuisines": ["South Indian", "Healthy", "Juices"],
+            "price": { "currency": "INR", "level": 2, "avg_per_person": 280 },
+            "rating": { "score": 4.5, "reviews": 5210 },
+            "location": {
+              "coordinates": { "lat": 12.9518, "lng": 77.5859 },
+              "geo": "geo:12.9518,77.5859",
+              "address": {
+                "line1": "Near West Gate, Lalbagh",
+                "city": "Bengaluru",
+                "state": "Karnataka",
+                "country": "IN",
+                "postalCode": "560004"
+              }
+            },
+            "contact": { "phone": "+91-80-4003300" },
+            "open": {
+              "mon": [{ "open": "07:30", "close": "21:30" }],
+              "tue": [{ "open": "07:30", "close": "21:30" }],
+              "wed": [{ "open": "07:30", "close": "21:30" }],
+              "thu": [{ "open": "07:30", "close": "21:30" }],
+              "fri": [{ "open": "07:30", "close": "22:00" }],
+              "sat": [{ "open": "07:30", "close": "22:00" }],
+              "sun": [{ "open": "07:30", "close": "21:30" }]
+            },
+            "dietary": ["veg", "vegan_options"],
+            "features": ["outdoor_seating", "family_friendly", "upi_card_accepted"],
+            "nearby": [
+              { "type": "place", "refId": "plc_bengaluru_lalbagh", "distance_m": 220 }
+            ],
+            "createdAt": "2025-08-28T07:55:00Z",
+            "updatedAt": "2025-09-02T09:10:00Z"
+          }
+        ]
+      }
+      

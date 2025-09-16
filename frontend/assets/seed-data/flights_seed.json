@@ -1,0 +1,209 @@
+{
+        "version": 1,
+        "generatedAt": "2025-09-14T13:05:00Z",
+        "flights": [
+          {
+            "id": "flt_AI665_DEL_BOM_2025-10-05",
+            "carrier": { "iata": "AI", "icao": "AIC", "name": "Air India" },
+            "flightNo": "AI665",
+            "equipment": "A320",
+            "legs": [
+              {
+                "from": { "iata": "DEL", "icao": "VIDP", "tz": "Asia/Kolkata" },
+                "to":   { "iata": "BOM", "icao": "VABB", "tz": "Asia/Kolkata" },
+                "departure": "2025-10-05T09:30:00+05:30",
+                "arrival":   "2025-10-05T11:45:00+05:30",
+                "duration_min": 135
+              }
+            ],
+            "service": { "cabins": ["Economy"], "meals": "Snack", "baggage": { "carryOn_kg": 7, "checked_kg": 15 } },
+            "fareBrands": [
+              { "code": "SAVER",  "refund": false, "changes": true },
+              { "code": "FLEX",   "refund": true,  "changes": true }
+            ],
+            "createdAt": "2025-09-10T08:15:00Z",
+            "updatedAt": "2025-09-10T08:15:00Z"
+          },
+          {
+            "id": "flt_6E2124_BOM_DEL_2025-10-18",
+            "carrier": { "iata": "6E", "icao": "IGO", "name": "IndiGo" },
+            "flightNo": "6E2124",
+            "equipment": "A321",
+            "legs": [
+              {
+                "from": { "iata": "BOM", "icao": "VABB", "tz": "Asia/Kolkata" },
+                "to":   { "iata": "DEL", "icao": "VIDP", "tz": "Asia/Kolkata" },
+                "departure": "2025-10-18T18:15:00+05:30",
+                "arrival":   "2025-10-18T20:25:00+05:30",
+                "duration_min": 130
+              }
+            ],
+            "service": { "cabins": ["Economy"], "meals": "BuyOnBoard", "baggage": { "carryOn_kg": 7, "checked_kg": 15 } },
+            "fareBrands": [
+              { "code": "SAVER", "refund": false, "changes": true }
+            ],
+            "createdAt": "2025-09-09T07:20:00Z",
+            "updatedAt": "2025-09-09T07:20:00Z"
+          },
+          {
+            "id": "flt_6E2331_DEL_BOM_2025-10-22",
+            "carrier": { "iata": "6E", "icao": "IGO", "name": "IndiGo" },
+            "flightNo": "6E2331",
+            "equipment": "A321",
+            "legs": [
+              {
+                "from": { "iata": "DEL", "icao": "VIDP", "tz": "Asia/Kolkata" },
+                "to":   { "iata": "BOM", "icao": "VABB", "tz": "Asia/Kolkata" },
+                "departure": "2025-10-22T09:10:00+05:30",
+                "arrival":   "2025-10-22T11:20:00+05:30",
+                "duration_min": 130
+              }
+            ],
+            "service": { "cabins": ["Economy"], "meals": "BuyOnBoard", "baggage": { "carryOn_kg": 7, "checked_kg": 15 } },
+            "fareBrands": [
+              { "code": "SAVER", "refund": false, "changes": true }
+            ],
+            "createdAt": "2025-09-09T07:20:00Z",
+            "updatedAt": "2025-09-09T07:20:00Z"
+          },
+          {
+            "id": "flt_SG401_DEL_BLR_2025-10-12",
+            "carrier": { "iata": "SG", "icao": "SEJ", "name": "SpiceJet" },
+            "flightNo": "SG401",
+            "equipment": "B738",
+            "legs": [
+              {
+                "from": { "iata": "DEL", "icao": "VIDP", "tz": "Asia/Kolkata" },
+                "to":   { "iata": "BLR", "icao": "VOBL", "tz": "Asia/Kolkata" },
+                "departure": "2025-10-12T07:00:00+05:30",
+                "arrival":   "2025-10-12T09:35:00+05:30",
+                "duration_min": 155
+              }
+            ],
+            "service": { "cabins": ["Economy"], "meals": "BuyOnBoard", "baggage": { "carryOn_kg": 7, "checked_kg": 15 } },
+            "fareBrands": [
+              { "code": "BASIC", "refund": false, "changes": true }
+            ],
+            "createdAt": "2025-09-06T10:00:00Z",
+            "updatedAt": "2025-09-06T10:00:00Z"
+          },
+          {
+            "id": "flt_UK981_DEL_DXB_2025-11-03",
+            "carrier": { "iata": "UK", "icao": "VTI", "name": "Vistara" },
+            "flightNo": "UK981",
+            "equipment": "A320neo",
+            "legs": [
+              {
+                "from": { "iata": "DEL", "icao": "VIDP", "tz": "Asia/Kolkata" },
+                "to":   { "iata": "DXB", "icao": "OMDB", "tz": "Asia/Dubai" },
+                "departure": "2025-11-03T20:45:00+05:30",
+                "arrival":   "2025-11-03T22:45:00+04:00",
+                "duration_min": 180
+              }
+            ],
+            "service": { "cabins": ["Economy", "Business"], "meals": "HotMeal", "baggage": { "carryOn_kg": 7, "checked_kg": 23 } },
+            "fareBrands": [
+              { "code": "VALUE", "refund": false, "changes": true },
+              { "code": "FLEXI", "refund": true,  "changes": true }
+            ],
+            "createdAt": "2025-09-08T12:40:00Z",
+            "updatedAt": "2025-09-08T12:40:00Z"
+          },
+          {
+            "id": "flt_EK501_MAA_DXB_2025-11-10",
+            "carrier": { "iata": "EK", "icao": "UAE", "name": "Emirates" },
+            "flightNo": "EK501",
+            "equipment": "B77W",
+            "legs": [
+              {
+                "from": { "iata": "MAA", "icao": "VOMM", "tz": "Asia/Kolkata" },
+                "to":   { "iata": "DXB", "icao": "OMDB", "tz": "Asia/Dubai" },
+                "departure": "2025-11-10T04:15:00+05:30",
+                "arrival":   "2025-11-10T06:45:00+04:00",
+                "duration_min": 180
+              }
+            ],
+            "service": { "cabins": ["Economy", "Business"], "meals": "HotMeal", "baggage": { "carryOn_kg": 7, "checked_kg": 25 } },
+            "fareBrands": [
+              { "code": "SAVER", "refund": false, "changes": true },
+              { "code": "FLEX",  "refund": true,  "changes": true }
+            ],
+            "createdAt": "2025-09-05T09:15:00Z",
+            "updatedAt": "2025-09-05T09:15:00Z"
+          },
+          {
+            "id": "flt_SQ403_DEL_SIN_2025-12-01",
+            "carrier": { "iata": "SQ", "icao": "SIA", "name": "Singapore Airlines" },
+            "flightNo": "SQ403",
+            "equipment": "A359",
+            "legs": [
+              {
+                "from": { "iata": "DEL", "icao": "VIDP", "tz": "Asia/Kolkata" },
+                "to":   { "iata": "SIN", "icao": "WSSS", "tz": "Asia/Singapore" },
+                "departure": "2025-12-01T09:00:00+05:30",
+                "arrival":   "2025-12-01T17:15:00+08:00",
+                "duration_min": 345
+              }
+            ],
+            "service": { "cabins": ["Economy", "PremiumEconomy", "Business"], "meals": "HotMeal", "baggage": { "carryOn_kg": 7, "checked_kg": 25 } },
+            "fareBrands": [
+              { "code": "LITE",  "refund": false, "changes": true },
+              { "code": "STD",   "refund": true,  "changes": true }
+            ],
+            "createdAt": "2025-09-02T08:30:00Z",
+            "updatedAt": "2025-09-02T08:30:00Z"
+          },
+          {
+            "id": "flt_BA256_DEL_LHR_2025-12-15",
+            "carrier": { "iata": "BA", "icao": "BAW", "name": "British Airways" },
+            "flightNo": "BA256",
+            "equipment": "B789",
+            "legs": [
+              {
+                "from": { "iata": "DEL", "icao": "VIDP", "tz": "Asia/Kolkata" },
+                "to":   { "iata": "LHR", "icao": "EGLL", "tz": "Europe/London" },
+                "departure": "2025-12-15T02:05:00+05:30",
+                "arrival":   "2025-12-15T06:30:00+00:00",
+                "duration_min": 575
+              }
+            ],
+            "service": { "cabins": ["Economy", "PremiumEconomy", "Business"], "meals": "HotMeal", "baggage": { "carryOn_kg": 7, "checked_kg": 23 } },
+            "fareBrands": [
+              { "code": "BASIC", "refund": false, "changes": true },
+              { "code": "FLEX",  "refund": true,  "changes": true }
+            ],
+            "createdAt": "2025-09-01T10:00:00Z",
+            "updatedAt": "2025-09-01T10:00:00Z"
+          },
+          {
+            "id": "flt_QR571_BLR_DOH_SIN_2025-11-20",
+            "carrier": { "iata": "QR", "icao": "QTR", "name": "Qatar Airways" },
+            "flightNo": "QR571",
+            "equipment": "A35K",
+            "legs": [
+              {
+                "from": { "iata": "BLR", "icao": "VOBL", "tz": "Asia/Kolkata" },
+                "to":   { "iata": "DOH", "icao": "OTHH", "tz": "Asia/Qatar" },
+                "departure": "2025-11-20T03:10:00+05:30",
+                "arrival":   "2025-11-20T05:10:00+03:00",
+                "duration_min": 210
+              },
+              {
+                "from": { "iata": "DOH", "icao": "OTHH", "tz": "Asia/Qatar" },
+                "to":   { "iata": "SIN", "icao": "WSSS", "tz": "Asia/Singapore" },
+                "departure": "2025-11-20T07:45:00+03:00",
+                "arrival":   "2025-11-20T20:15:00+08:00",
+                "duration_min": 430
+              }
+            ],
+            "service": { "cabins": ["Economy", "Business"], "meals": "HotMeal", "baggage": { "carryOn_kg": 7, "checked_kg": 25 } },
+            "fareBrands": [
+              { "code": "SAVER", "refund": false, "changes": true },
+              { "code": "FLEXI", "refund": true,  "changes": true }
+            ],
+            "createdAt": "2025-09-04T09:20:00Z",
+            "updatedAt": "2025-09-04T09:20:00Z"
+          }
+        ]
+      }
+      

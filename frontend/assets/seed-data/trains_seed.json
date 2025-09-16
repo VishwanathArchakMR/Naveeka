@@ -1,0 +1,210 @@
+{
+        "version": 1,
+        "generatedAt": "2025-09-14T13:34:00Z",
+        "trains": [
+          {
+            "id": "trn_ndls_bct_express",
+            "number": "NDLS-BCT-1001",
+            "name": "New Delhi – Mumbai Central Express",
+            "operator": "Naveeka Rail",
+            "classes": ["2S","CC","SL","3A","2A"],
+            "serviceDays": { "mon": true, "tue": true, "wed": true, "thu": true, "fri": true, "sat": true, "sun": true },
+            "validity": { "start": "2025-10-01", "end": "2026-03-31" },
+            "stops": [
+              {
+                "seq": 1,
+                "stationRefId": "stn_ndls",
+                "station_code": "NDLS",
+                "arr": "2025-10-05T06:50:00+05:30",
+                "dep": "2025-10-05T07:10:00+05:30",
+                "platform": "4",
+                "distance_km": 0
+              },
+              {
+                "seq": 2,
+                "stationRefId": "stn_pune",
+                "station_code": "PUNE",
+                "arr": "2025-10-05T19:15:00+05:30",
+                "dep": "2025-10-05T19:25:00+05:30",
+                "platform": "2",
+                "distance_km": 1480
+              },
+              {
+                "seq": 3,
+                "stationRefId": "stn_bct",
+                "station_code": "BCT",
+                "arr": "2025-10-05T23:10:00+05:30",
+                "dep": null,
+                "platform": "6",
+                "distance_km": 1535
+              }
+            ],
+            "fares": [
+              { "class": "2S", "currency": "INR", "min": 650, "max": 950 },
+              { "class": "CC", "currency": "INR", "min": 1800, "max": 2300 },
+              { "class": "SL", "currency": "INR", "min": 1100, "max": 1600 },
+              { "class": "3A", "currency": "INR", "min": 2400, "max": 3200 },
+              { "class": "2A", "currency": "INR", "min": 3600, "max": 4800 }
+            ],
+            "createdAt": "2025-09-10T08:00:00Z",
+            "updatedAt": "2025-09-10T08:00:00Z"
+          },
+          {
+            "id": "trn_cstmt_ndls_superfast",
+            "number": "CSMT-NDLS-2002",
+            "name": "CSMT – New Delhi Superfast",
+            "operator": "Naveeka Rail",
+            "classes": ["CC","SL","3A","2A","1A"],
+            "serviceDays": { "mon": true, "tue": false, "wed": true, "thu": false, "fri": true, "sat": false, "sun": true },
+            "validity": { "start": "2025-10-01", "end": "2026-03-31" },
+            "stops": [
+              {
+                "seq": 1,
+                "stationRefId": "stn_cstmt",
+                "station_code": "CSMT",
+                "arr": "2025-10-12T06:40:00+05:30",
+                "dep": "2025-10-12T07:00:00+05:30",
+                "platform": "8",
+                "distance_km": 0
+              },
+              {
+                "seq": 2,
+                "stationRefId": "stn_pune",
+                "station_code": "PUNE",
+                "arr": "2025-10-12T10:40:00+05:30",
+                "dep": "2025-10-12T10:50:00+05:30",
+                "platform": "1",
+                "distance_km": 192
+              },
+              {
+                "seq": 3,
+                "stationRefId": "stn_ndls",
+                "station_code": "NDLS",
+                "arr": "2025-10-12T22:15:00+05:30",
+                "dep": null,
+                "platform": "5",
+                "distance_km": 1520
+              }
+            ],
+            "fares": [
+              { "class": "CC", "currency": "INR", "min": 2200, "max": 2900 },
+              { "class": "SL", "currency": "INR", "min": 1300, "max": 1800 },
+              { "class": "3A", "currency": "INR", "min": 2600, "max": 3400 },
+              { "class": "2A", "currency": "INR", "min": 3800, "max": 5200 },
+              { "class": "1A", "currency": "INR", "min": 6300, "max": 8200 }
+            ],
+            "createdAt": "2025-09-06T10:00:00Z",
+            "updatedAt": "2025-09-06T10:00:00Z"
+          },
+          {
+            "id": "trn_mas_sbc_shatabdi",
+            "number": "MAS-SBC-3003",
+            "name": "Chennai – Bengaluru Shatabdi",
+            "operator": "Naveeka Rail",
+            "classes": ["EC","CC"],
+            "serviceDays": { "mon": true, "tue": true, "wed": true, "thu": true, "fri": true, "sat": true, "sun": false },
+            "validity": { "start": "2025-10-01", "end": "2026-03-31" },
+            "stops": [
+              {
+                "seq": 1,
+                "stationRefId": "stn_mas",
+                "station_code": "MAS",
+                "arr": "2025-10-18T06:55:00+05:30",
+                "dep": "2025-10-18T07:15:00+05:30",
+                "platform": "3",
+                "distance_km": 0
+              },
+              {
+                "seq": 2,
+                "stationRefId": "stn_sbc",
+                "station_code": "SBC",
+                "arr": "2025-10-18T12:10:00+05:30",
+                "dep": null,
+                "platform": "7",
+                "distance_km": 362
+              }
+            ],
+            "fares": [
+              { "class": "CC", "currency": "INR", "min": 1150, "max": 1650 },
+              { "class": "EC", "currency": "INR", "min": 2150, "max": 2850 }
+            ],
+            "createdAt": "2025-09-02T08:30:00Z",
+            "updatedAt": "2025-09-02T08:30:00Z"
+          },
+          {
+            "id": "trn_hwh_ndls_duronto",
+            "number": "HWH-NDLS-4004",
+            "name": "Howrah – New Delhi Duronto",
+            "operator": "Naveeka Rail",
+            "classes": ["SL","3A","2A","1A"],
+            "serviceDays": { "mon": false, "tue": true, "wed": false, "thu": true, "fri": false, "sat": true, "sun": false },
+            "validity": { "start": "2025-10-01", "end": "2026-03-31" },
+            "stops": [
+              {
+                "seq": 1,
+                "stationRefId": "stn_hwh",
+                "station_code": "HWH",
+                "arr": "2025-12-15T17:50:00+05:30",
+                "dep": "2025-12-15T18:10:00+05:30",
+                "platform": "12",
+                "distance_km": 0
+              },
+              {
+                "seq": 2,
+                "stationRefId": "stn_ndls",
+                "station_code": "NDLS",
+                "arr": "2025-12-16T10:05:00+05:30",
+                "dep": null,
+                "platform": "2",
+                "distance_km": 1450
+              }
+            ],
+            "fares": [
+              { "class": "SL", "currency": "INR", "min": 1200, "max": 1700 },
+              { "class": "3A", "currency": "INR", "min": 2600, "max": 3400 },
+              { "class": "2A", "currency": "INR", "min": 3800, "max": 5200 },
+              { "class": "1A", "currency": "INR", "min": 6400, "max": 8400 }
+            ],
+            "createdAt": "2025-09-01T10:00:00Z",
+            "updatedAt": "2025-09-01T10:00:00Z"
+          },
+          {
+            "id": "trn_sc_mas_intercity",
+            "number": "SC-MAS-5005",
+            "name": "Secunderabad – Chennai Intercity",
+            "operator": "Naveeka Rail",
+            "classes": ["2S","CC","SL","3A"],
+            "serviceDays": { "mon": true, "tue": true, "wed": true, "thu": true, "fri": true, "sat": true, "sun": true },
+            "validity": { "start": "2025-10-01", "end": "2026-03-31" },
+            "stops": [
+              {
+                "seq": 1,
+                "stationRefId": "stn_sc",
+                "station_code": "SC",
+                "arr": "2025-11-03T06:45:00+05:30",
+                "dep": "2025-11-03T07:00:00+05:30",
+                "platform": "4",
+                "distance_km": 0
+              },
+              {
+                "seq": 2,
+                "stationRefId": "stn_mas",
+                "station_code": "MAS",
+                "arr": "2025-11-03T16:30:00+05:30",
+                "dep": null,
+                "platform": "5",
+                "distance_km": 707
+              }
+            ],
+            "fares": [
+              { "class": "2S", "currency": "INR", "min": 350, "max": 600 },
+              { "class": "CC", "currency": "INR", "min": 1200, "max": 1700 },
+              { "class": "SL", "currency": "INR", "min": 900, "max": 1300 },
+              { "class": "3A", "currency": "INR", "min": 1900, "max": 2600 }
+            ],
+            "createdAt": "2025-09-08T12:40:00Z",
+            "updatedAt": "2025-09-08T12:40:00Z"
+          }
+        ]
+      }
+      
