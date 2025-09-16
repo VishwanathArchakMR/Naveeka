@@ -8,6 +8,21 @@ import '../../../services/location_service.dart';
 import '../../../models/place.dart';
 import '../presentation/widgets/location_filters.dart';
 
+// Provide a derived 'isFavorite' without modifying the Place model
+extension PlaceFavoriteExt on Place {
+  bool get isFavorite {
+    // Heuristic: treat tags that contain 'favorite'/'favourite'/'fav' as favorites
+    try {
+      return tags.any((t) {
+        final s = t.toLowerCase();
+        return s == 'favorite' || s == 'favourite' || s.startsWith('fav');
+      });
+    } catch (_) {
+      return false;
+    }
+  }
+}
+
 // Core data providers
 final atlasDataProvider = FutureProvider<Map<String, dynamic>>((ref) async {
   return await SeedDataLoader.instance.loadAtlasData();
@@ -177,7 +192,7 @@ final filteredPlacesProvider = FutureProvider.family<List<Place>, String>((ref, 
       }
     }
 
-    // Favorites filter
+    // Favorites filter (derived via extension)
     if (showFavoritesOnly && !place.isFavorite) {
       return false;
     }
@@ -233,10 +248,10 @@ final filteredPlacesProvider = FutureProvider.family<List<Place>, String>((ref, 
 // Search suggestions provider
 final searchSuggestionsProvider = FutureProvider.family<List<Place>, String>((ref, query) async {
   if (query.isEmpty) return [];
-  
+
   final allPlaces = await ref.watch(allPlacesProvider.future);
   final lowerQuery = query.toLowerCase();
-  
+
   return allPlaces
       .where((place) {
         final matchesName = place.name.toLowerCase().contains(lowerQuery);
@@ -268,10 +283,7 @@ final placeCategoriesProvider = FutureProvider<List<PlaceCategory>>((ref) async 
 // Emotion categories provider (for filter chips)
 final emotionCategoriesProvider = FutureProvider<List<EmotionCategory>>((ref) async {
   final allPlaces = await ref.watch(allPlacesProvider.future);
-  final emotions = allPlaces
-      .expand((place) => place.emotions)
-      .toSet()
-      .toList();
+  final emotions = allPlaces.expand((place) => place.emotions).toSet().toList();
   emotions.sort((a, b) => a.label.compareTo(b.label));
   return emotions;
 });

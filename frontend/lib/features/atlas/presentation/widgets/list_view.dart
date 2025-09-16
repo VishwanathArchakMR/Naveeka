@@ -1,11 +1,8 @@
 // lib/features/atlas/presentation/widgets/list_view.dart
 
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../models/place.dart';
-import '../../../../navigation/route_names.dart';
-import '../../../../services/location_service.dart';
 
 class AtlasListView extends StatelessWidget {
   final List<Place> places;

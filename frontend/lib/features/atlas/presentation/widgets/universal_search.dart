@@ -2,25 +2,25 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../core/storage/seed_data_loader.dart';
 import '../../../../models/place.dart';
-import '../../../../services/location_service.dart';
 import '../../../../navigation/route_names.dart';
-import 'map_list_toggle.dart';
 
 final universalSearchProvider = FutureProvider.family<List<Place>, String>((ref, query) async {
   if (query.isEmpty) return [];
   // Fetch all places from atlas provider
-  final atlasData = await ref.read(atlasDataProvider.future);
-  final allPlaces = (atlasData['places'] as List<dynamic>? ?? [])
+  final Map<String, dynamic> atlasData = await ref.read(atlasDataProvider.future);
+  final allPlaces = (atlasData['places'] as List<dynamic>? ?? const [])
       .cast<Map<String, dynamic>>()
       .map((json) => Place.fromJson(json))
       .toList();
   // Filter by name or tags
   return allPlaces.where((place) {
     final q = query.toLowerCase();
-    return place.name.toLowerCase().contains(q)
-        || place.tags.any((tag) => tag.toLowerCase().contains(q));
+    return place.name.toLowerCase().contains(q) ||
+        place.tags.any((tag) => tag.toLowerCase().contains(q));
   }).toList();
 });
 

@@ -7,7 +7,6 @@ import 'package:go_router/go_router.dart';
 import '../../../../models/place.dart';
 import '../../../../navigation/route_names.dart';
 import '../../../../core/storage/seed_data_loader.dart';
-import '../../../../services/location_service.dart';
 
 class TrendingSectionWidget extends ConsumerStatefulWidget {
   const TrendingSectionWidget({super.key});
