@@ -222,7 +222,7 @@ class _JourneyTileState extends State<_JourneyTile> {
       if (j.days != null) '${j.days}d',
       if (j.places != null) '${j.places} places',
       if (j.distanceKm != null) '${j.distanceKm!.toStringAsFixed(1)} km',
-    ].where((e) => e != null && e.toString().trim().isNotEmpty).join(' · ');
+    ].where((e) => e.toString().trim().isNotEmpty).join(' · ');
 
     return Card(
       key: widget.key,

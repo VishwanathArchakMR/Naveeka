@@ -84,7 +84,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
   // Data state — wire these to your Riverpod providers or controllers
   bool _loading = false;
-  bool _hasMore = false;
+  final bool _hasMore = false;
   final List<Place> _favorites = <Place>[];
 
   // Tag selection (local mirror)

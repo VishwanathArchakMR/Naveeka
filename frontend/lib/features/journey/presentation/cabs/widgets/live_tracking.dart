@@ -3,8 +3,6 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class LiveTracking extends StatefulWidget {
@@ -23,17 +21,17 @@ class LiveTracking extends StatefulWidget {
 
     // Visual config
     this.height = 320,
-    this.initialZoom = 14,
-    this.tileUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-    this.tileSubdomains = const ['a', 'b', 'c'],
+    this.initialZoom = 14, // kept for API compatibility
 
     // Driver info / quick actions
     this.driverName,
     this.vehiclePlate,
     this.driverPhone,
     this.onTick, // optional observer for each position item
-  }) : assert(positionStream != null || fetchTick != null,
-            'Provide either positionStream or fetchTick for updates');
+  }) : assert(
+          positionStream != null || fetchTick != null,
+          'Provide either positionStream or fetchTick for updates',
+        );
 
   final double pickupLat;
   final double pickupLng;
@@ -46,8 +44,6 @@ class LiveTracking extends StatefulWidget {
 
   final double height;
   final double initialZoom;
-  final String tileUrl;
-  final List<String> tileSubdomains;
 
   final String? driverName;
   final String? vehiclePlate;
@@ -60,8 +56,6 @@ class LiveTracking extends StatefulWidget {
 }
 
 class _LiveTrackingState extends State<LiveTracking> {
-  final MapController _map = MapController();
-
   LatLng? _vehicle;
   double _headingRad = 0.0;
   int? _etaSec;
@@ -71,7 +65,7 @@ class _LiveTrackingState extends State<LiveTracking> {
   final List<LatLng> _trail = <LatLng>[];
   static const int _trailMax = 300;
 
-  // Follow camera toggle
+  // Follow camera toggle (placeholder flag; painter auto-fits to bounds)
   bool _follow = true;
 
   // Subscriptions
@@ -108,18 +102,18 @@ class _LiveTrackingState extends State<LiveTracking> {
 
   void _ingest(Map<String, dynamic> data) {
     // Parse inputs
-    double? _d(dynamic v) {
+    double? d(dynamic v) {
       if (v is double) return v;
       if (v is int) return v.toDouble();
       if (v is String) return double.tryParse(v);
       return null;
     }
 
-    final lat = _d(data['lat']);
-    final lng = _d(data['lng']);
+    final lat = d(data['lat']);
+    final lng = d(data['lng']);
     if (lat == null || lng == null) return;
 
-    final headingDeg = _d(data['heading']) ?? 0.0;
+    final headingDeg = d(data['heading']) ?? 0.0;
     final etaSec = (data['etaSec'] is num) ? (data['etaSec'] as num).toInt() : null;
     final status = (data['status'] ?? '').toString();
 
@@ -135,12 +129,6 @@ class _LiveTrackingState extends State<LiveTracking> {
       if (_trail.length > _trailMax) {
         _trail.removeRange(0, _trail.length - _trailMax);
       }
-
-      if (_follow) {
-        // Move camera to vehicle keeping current zoom
-        final z = _map.camera.zoom;
-        _map.move(_vehicle!, z);
-      }
     });
   }
 
@@ -149,137 +137,120 @@ class _LiveTrackingState extends State<LiveTracking> {
     final pickup = LatLng(widget.pickupLat, widget.pickupLng);
     final drop = LatLng(widget.dropLat, widget.dropLng);
 
-    // Build bounds for initial fit if we have no vehicle yet
-    final initialBounds = _vehicle == null
-        ? LatLngBounds.fromPoints([pickup, drop])
-        : LatLngBounds.fromPoints([pickup, drop, _vehicle!]);
+    // Points to fit: pickup, drop, trail, vehicle
+    final fitPoints = <LatLng>[
+      pickup,
+      drop,
+      if (_vehicle != null) _vehicle!,
+      ..._trail,
+    ];
 
     return SizedBox(
       height: widget.height,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Stack(
-          children: [
-            FlutterMap(
-              mapController: _map,
-              options: MapOptions(
-                // Auto-fit on first paint; thereafter we manually follow using move()
-                cameraFit: CameraFit.bounds(
-                  bounds: initialBounds,
-                  padding: const EdgeInsets.all(28),
-                  maxZoom: 16,
-                ),
-                initialZoom: widget.initialZoom,
-                interactionOptions: const InteractionOptions(
-                  flags: InteractiveFlag.pinchZoom |
-                      InteractiveFlag.drag |
-                      InteractiveFlag.doubleTapZoom,
-                ),
-              ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final w = constraints.maxWidth;
+          final projector = _Projector.fromPoints(fitPoints, Size(w, widget.height));
+
+          final pickupOffset = projector.toOffset(pickup);
+          final dropOffset = projector.toOffset(drop);
+          final vehicleOffset = _vehicle == null ? null : projector.toOffset(_vehicle!);
+
+          return ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Stack(
               children: [
-                TileLayer(
-                  urlTemplate: widget.tileUrl,
-                  subdomains: widget.tileSubdomains,
-                  userAgentPackageName: 'com.example.app',
+                // Route/trail painter
+                CustomPaint(
+                  size: Size(w, widget.height),
+                  painter: _LiveTrackingPainter(
+                    projector: projector,
+                    trail: _trail,
+                    pickup: pickup,
+                    drop: drop,
+                    primary: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
-                // Trail polyline + planned straight line
-                PolylineLayer(
-                  polylines: [
-                    if (_trail.length >= 2)
-                      Polyline(
-                        points: _trail,
-                        strokeWidth: 4,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                    // Optional visual of pickup->drop if trail absent
-                    if (_trail.length < 2)
-                      Polyline(
-                        points: [pickup, drop],
-                        strokeWidth: 2,
-                        color: Colors.black26,
-                        isDotted: true,
-                      ),
-                  ],
-                  polylineCulling: true,
+
+                // Pins
+                // Pickup
+                Positioned(
+                  left: pickupOffset.dx - 14,
+                  top: pickupOffset.dy - 14,
+                  width: 28,
+                  height: 28,
+                  child: const _Pin(color: Colors.green, icon: Icons.radio_button_checked, tooltip: 'Pickup'),
                 ),
-                // Markers: pickup, vehicle (if any), drop
-                MarkerLayer(
-                  markers: [
-                    Marker(
-                      point: pickup,
-                      width: 40,
-                      height: 40,
-                      child: const _Pin(color: Colors.green, icon: Icons.radio_button_checked, tooltip: 'Pickup'),
+                // Vehicle (if present)
+                if (vehicleOffset != null)
+                  Positioned(
+                    left: vehicleOffset.dx - 16,
+                    top: vehicleOffset.dy - 16,
+                    width: 32,
+                    height: 32,
+                    child: Transform.rotate(
+                      angle: _headingRad,
+                      child: const _Pin(color: Colors.blue, icon: Icons.local_taxi, tooltip: 'Cab'),
                     ),
-                    if (_vehicle != null)
-                      Marker(
-                        point: _vehicle!,
-                        width: 44,
-                        height: 44,
-                        alignment: Alignment.center,
-                        child: Transform.rotate(
-                          angle: _headingRad,
-                          child: const _Pin(color: Colors.blue, icon: Icons.local_taxi, tooltip: 'Cab'),
+                  ),
+                // Drop
+                Positioned(
+                  left: dropOffset.dx - 14,
+                  top: dropOffset.dy - 14,
+                  width: 28,
+                  height: 28,
+                  child: const _Pin(color: Colors.red, icon: Icons.place_outlined, tooltip: 'Drop'),
+                ),
+
+                // Info bar
+                Positioned(
+                  left: 12,
+                  right: 12,
+                  top: 12,
+                  child: _StatusBar(
+                    driverName: widget.driverName,
+                    vehiclePlate: widget.vehiclePlate,
+                    etaSec: _etaSec,
+                    status: _status,
+                    onCall: widget.driverPhone == null ? null : () => _call(widget.driverPhone!),
+                  ),
+                ),
+
+                // Controls
+                Positioned(
+                  right: 12,
+                  bottom: 12,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      // Follow toggle (visual only)
+                      Material(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        child: IconButton(
+                          tooltip: _follow ? 'Following' : 'Follow vehicle',
+                          icon: Icon(_follow ? Icons.center_focus_strong : Icons.center_focus_weak),
+                          onPressed: () => setState(() => _follow = !_follow),
                         ),
                       ),
-                    Marker(
-                      point: drop,
-                      width: 40,
-                      height: 40,
-                      child: const _Pin(color: Colors.red, icon: Icons.place_outlined, tooltip: 'Drop'),
-                    ),
-                  ],
+                      const SizedBox(height: 8),
+                      // Open directions (pickup -> drop)
+                      Material(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        child: IconButton(
+                          tooltip: 'Open in Maps',
+                          icon: const Icon(Icons.navigation_outlined),
+                          onPressed: () => _openDirections(pickup, drop),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
-
-            // Info bar
-            Positioned(
-              left: 12,
-              right: 12,
-              top: 12,
-              child: _StatusBar(
-                driverName: widget.driverName,
-                vehiclePlate: widget.vehiclePlate,
-                etaSec: _etaSec,
-                status: _status,
-                onCall: widget.driverPhone == null ? null : () => _call(widget.driverPhone!),
-              ),
-            ),
-
-            // Controls
-            Positioned(
-              right: 12,
-              bottom: 12,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  // Follow toggle
-                  Material(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                    child: IconButton(
-                      tooltip: _follow ? 'Following' : 'Follow vehicle',
-                      icon: Icon(_follow ? Icons.center_focus_strong : Icons.center_focus_weak),
-                      onPressed: () => setState(() => _follow = !_follow),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  // Open directions
-                  Material(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                    child: IconButton(
-                      tooltip: 'Open in Maps',
-                      icon: const Icon(Icons.navigation_outlined),
-                      onPressed: () => _openDirections(pickup, drop),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -293,13 +264,175 @@ class _LiveTrackingState extends State<LiveTracking> {
 
   Future<void> _openDirections(LatLng origin, LatLng dest) async {
     final uri = Uri.parse(
-      'https://www.google.com/maps/dir/?api=1&origin=${origin.latitude},${origin.longitude}&destination=${dest.latitude},${dest.longitude}&travelmode=driving&dir_action=navigate',
+      'https://www.google.com/maps/dir/?api=1&origin=${origin.latitude},'
+      '${origin.longitude}&destination=${dest.latitude},${dest.longitude}&travelmode=driving&dir_action=navigate',
     );
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
       await launchUrl(uri, mode: LaunchMode.platformDefault);
     }
+  }
+}
+
+// Minimal LatLng type to avoid external dependency
+class LatLng {
+  final double latitude;
+  final double longitude;
+  const LatLng(this.latitude, this.longitude);
+}
+
+// Projects geo bounds to canvas coordinates with padding
+class _Projector {
+  final double minLat, maxLat, minLng, maxLng;
+  final double sx, sy;
+  final double pad;
+  final Size size;
+
+  _Projector({
+    required this.minLat,
+    required this.maxLat,
+    required this.minLng,
+    required this.maxLng,
+    required this.sx,
+    required this.sy,
+    required this.pad,
+    required this.size,
+  });
+
+  factory _Projector.fromPoints(List<LatLng> pts, Size size, {double pad = 16}) {
+    if (pts.isEmpty) {
+      return _Projector(
+        minLat: 0,
+        maxLat: 1,
+        minLng: 0,
+        maxLng: 1,
+        sx: 1,
+        sy: 1,
+        pad: pad,
+        size: size,
+      );
+    }
+    double minLat = pts.first.latitude, maxLat = pts.first.latitude;
+    double minLng = pts.first.longitude, maxLng = pts.first.longitude;
+    for (final p in pts) {
+      if (p.latitude < minLat) minLat = p.latitude;
+      if (p.latitude > maxLat) maxLat = p.latitude;
+      if (p.longitude < minLng) minLng = p.longitude;
+      if (p.longitude > maxLng) maxLng = p.longitude;
+    }
+    // Avoid degenerate scale if bounds collapse
+    if ((maxLat - minLat).abs() < 1e-9) {
+      minLat -= 0.0001;
+      maxLat += 0.0001;
+    }
+    if ((maxLng - minLng).abs() < 1e-9) {
+      minLng -= 0.0001;
+      maxLng += 0.0001;
+    }
+    final dx = (maxLng - minLng).abs();
+    final dy = (maxLat - minLat).abs();
+    final sx = (size.width - 2 * pad) / dx;
+    final sy = (size.height - 2 * pad) / dy;
+    return _Projector(
+      minLat: minLat,
+      maxLat: maxLat,
+      minLng: minLng,
+      maxLng: maxLng,
+      sx: sx,
+      sy: sy,
+      pad: pad,
+      size: size,
+    );
+  }
+
+  Offset toOffset(LatLng p) {
+    final w = size.width, h = size.height;
+    final x = pad + (p.longitude - minLng) * sx;
+    final y = h - pad - (p.latitude - minLat) * sy; // invert Y for canvas
+    return Offset(x.clamp(0, w), y.clamp(0, h));
+  }
+}
+
+class _LiveTrackingPainter extends CustomPainter {
+  _LiveTrackingPainter({
+    required this.projector,
+    required this.trail,
+    required this.pickup,
+    required this.drop,
+    required this.primary,
+  });
+
+  final _Projector projector;
+  final List<LatLng> trail;
+  final LatLng pickup;
+  final LatLng drop;
+  final Color primary;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Background gradient + subtle grid
+    final bg = Paint()
+      ..shader = LinearGradient(
+        colors: [
+          Colors.white,
+          Colors.grey.shade100,
+        ],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ).createShader(Offset.zero & size);
+    canvas.drawRect(Offset.zero & size, bg);
+
+    final gridPaint = Paint()
+      ..color = Colors.black.withValues(alpha: 0.05)
+      ..strokeWidth = 1;
+    const pad = 16.0;
+    for (var x = pad; x < size.width - pad; x += 24) {
+      canvas.drawLine(Offset(x, pad), Offset(x, size.height - pad), gridPaint);
+    }
+    for (var y = pad; y < size.height - pad; y += 24) {
+      canvas.drawLine(Offset(pad, y), Offset(size.width - pad, y), gridPaint);
+    }
+
+    // Planned straight line (pickup -> drop) if trail is short
+    if (trail.length < 2) {
+      final p1 = projector.toOffset(pickup);
+      final p2 = projector.toOffset(drop);
+      final planned = Paint()
+        ..color = Colors.black26
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2;
+      final path = Path()..moveTo(p1.dx, p1.dy)..lineTo(p2.dx, p2.dy);
+      canvas.drawPath(path, planned);
+    }
+
+    // Trail polyline
+    if (trail.length >= 2) {
+      final routePaint = Paint()
+        ..color = primary
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 4
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round;
+
+      final path = Path();
+      final first = projector.toOffset(trail.first);
+      path.moveTo(first.dx, first.dy);
+      for (var i = 1; i < trail.length; i++) {
+        final o = projector.toOffset(trail[i]);
+        path.lineTo(o.dx, o.dy);
+      }
+      canvas.drawPath(path, routePaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _LiveTrackingPainter oldDelegate) {
+    return trail != oldDelegate.trail ||
+        pickup != oldDelegate.pickup ||
+        drop != oldDelegate.drop ||
+        primary != oldDelegate.primary ||
+        projector.size != oldDelegate.projector.size;
   }
 }
 

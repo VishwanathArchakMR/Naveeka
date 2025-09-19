@@ -166,9 +166,9 @@ class _MyContributionsState extends State<MyContributions> with TickerProviderSt
               const SizedBox(height: 8),
 
               // Tabs
-              TabBar(
+              const TabBar(
                 isScrollable: false,
-                tabs: const [
+                tabs: [
                   Tab(icon: Icon(Icons.place_outlined), text: 'Places'),
                   Tab(icon: Icon(Icons.reviews_outlined), text: 'Reviews'),
                   Tab(icon: Icon(Icons.photo_library_outlined), text: 'Photos'),
@@ -270,9 +270,9 @@ class _MyContributionsState extends State<MyContributions> with TickerProviderSt
           }
           final r = items[i];
           return ListTile(
-            leading: CircleAvatar(
+            leading: const CircleAvatar(
               backgroundColor: Colors.black12,
-              child: const Icon(Icons.rate_review_outlined, color: Colors.black54),
+              child: Icon(Icons.rate_review_outlined, color: Colors.black54),
             ),
             title: Text(r.title, maxLines: 1, overflow: TextOverflow.ellipsis),
             subtitle: Text(r.subtitle, maxLines: 2, overflow: TextOverflow.ellipsis),

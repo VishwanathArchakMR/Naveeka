@@ -147,7 +147,7 @@ class OfflineDownloads extends StatelessWidget {
             const SizedBox(height: 12),
 
             // Preferences
-            _SectionHeader(text: 'Preferences'),
+            const _SectionHeader(text: 'Preferences'),
             _SwitchTile(
               icon: Icons.wifi_tethering_off,
               title: 'Wi‑Fi only',
@@ -164,7 +164,7 @@ class OfflineDownloads extends StatelessWidget {
             ),
             ListTile(
               contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-              leading: _LeadIcon(icon: Icons.high_quality),
+              leading: const _LeadIcon(icon: Icons.high_quality),
               title: const Text('Download quality', style: TextStyle(fontWeight: FontWeight.w800)),
               subtitle: Text('Choose size vs. detail trade‑off', style: TextStyle(color: cs.onSurfaceVariant)),
               trailing: const Icon(Icons.chevron_right),
@@ -174,7 +174,7 @@ class OfflineDownloads extends StatelessWidget {
             const SizedBox(height: 12),
 
             // Items
-            _SectionHeader(text: 'Offline items'),
+            const _SectionHeader(text: 'Offline items'),
             if (items.isEmpty)
               Container(
                 padding: const EdgeInsets.all(10),
@@ -185,7 +185,7 @@ class OfflineDownloads extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    _LeadIcon(icon: Icons.folder_off_outlined),
+                    const _LeadIcon(icon: Icons.folder_off_outlined),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text('No downloads yet', style: TextStyle(color: cs.onSurfaceVariant)),

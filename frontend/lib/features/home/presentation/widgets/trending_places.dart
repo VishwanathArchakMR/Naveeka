@@ -188,9 +188,9 @@ class _TrendingPlaceCard extends StatelessWidget {
                           color: Colors.red[600],
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: Row(
+                        child: const Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: const [
+                          children: [
                             Icon(
                               Icons.trending_up_rounded,
                               size: 12,

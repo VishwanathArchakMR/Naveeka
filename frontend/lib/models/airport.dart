@@ -125,7 +125,7 @@ class Airport {
   // ---------- JSON ----------
 
   factory Airport.fromJson(Map<String, dynamic> json) {
-    double? _toD(Object? x) {
+    double? toD(Object? x) {
       if (x == null) return null;
       if (x is num) return x.toDouble();
       final s = x.toString().trim();
@@ -133,7 +133,7 @@ class Airport {
       return double.tryParse(s);
     }
 
-    int? _toI(Object? x) {
+    int? toI(Object? x) {
       if (x == null) return null;
       if (x is num) return x.toInt();
       final s = x.toString().trim();
@@ -149,11 +149,11 @@ class Airport {
       city: (json['city'] as String?)?.toString(),
       country: (json['country'] as String?)?.toString(),
       countryCode: (json['countryCode'] as String?)?.toUpperCase(),
-      latitude: _toD(json['lat'] ?? json['latitude']),
-      longitude: _toD(json['lng'] ?? json['longitude']),
-      elevationM: _toD(json['elevationM'] ?? json['elevation']),
+      latitude: toD(json['lat'] ?? json['latitude']),
+      longitude: toD(json['lng'] ?? json['longitude']),
+      elevationM: toD(json['elevationM'] ?? json['elevation']),
       timezone: (json['timezone'] as String?)?.toString(),
-      tzOffsetMinutes: _toI(json['tzOffsetMinutes'] ?? json['utcOffsetMinutes']),
+      tzOffsetMinutes: toI(json['tzOffsetMinutes'] ?? json['utcOffsetMinutes']),
       phone: (json['phone'] as String?)?.toString(),
       website: (json['website'] as String?)?.toString(),
       isInternational: (json['isInternational'] as bool?) ?? false,

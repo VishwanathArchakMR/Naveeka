@@ -218,7 +218,7 @@ class _RatingPill extends StatelessWidget {
           Text(
             reviews == null || reviews == 0
                 ? rating!.toStringAsFixed(1)
-                : '${rating!.toStringAsFixed(1)} · ${reviews}',
+                : '${rating!.toStringAsFixed(1)} · $reviews',
             style: const TextStyle(fontWeight: FontWeight.w700),
           ),
         ],

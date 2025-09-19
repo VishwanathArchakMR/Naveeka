@@ -213,21 +213,21 @@ class GenericCardSkeleton extends StatelessWidget {
               // Image placeholder
               SkeletonBox(width: width, height: imgH, borderRadius: 0, intensity: 0.08),
               const SizedBox(height: 10),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10),
                 child: SkeletonLine(height: 14, maxWidth: 0.60, intensity: 0.08),
               ),
               const SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10),
                 child: SkeletonLine(height: 12, maxWidth: 0.40, intensity: 0.06),
               ),
               if (showActions) ...<Widget>[
                 const SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 10),
                   child: Row(
-                    children: const <Widget>[
+                    children: <Widget>[
                       _Pill(),
                       SizedBox(width: 6),
                       _Pill(w: 48),
@@ -246,7 +246,7 @@ class GenericCardSkeleton extends StatelessWidget {
 }
 
 class _Pill extends StatelessWidget {
-  const _Pill({this.w = 64, this.h = 18});
+  const _Pill({this.w = 64});
   final double w;
   final double h;
 

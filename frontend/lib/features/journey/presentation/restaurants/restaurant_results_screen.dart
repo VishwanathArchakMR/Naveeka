@@ -368,7 +368,7 @@ class _RestaurantResultsScreenState extends State<RestaurantResultsScreen> {
           SizedBox(
             width: 220,
             child: DropdownButtonFormField<String>(
-              value: _sort,
+              initialValue: _sort,
               isDense: true,
               icon: const Icon(Icons.sort),
               onChanged: (v) async {

@@ -184,7 +184,7 @@ class _NaveeAiPlanningSheetState extends State<_NaveeAiPlanningSheet> {
   bool _access = false;
   bool _transit = false;
 
-  bool _busyGeo = false;
+  final bool _busyGeo = false;
   bool _busySearch = false;
   List<LocationSuggestion> _results = const [];
 
@@ -622,7 +622,7 @@ class _RadiusField extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Text(v == 0 ? 'Off' : '${v.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.w800)),
+              Text(v == 0 ? 'Off' : v.toStringAsFixed(0), style: const TextStyle(fontWeight: FontWeight.w800)),
             ],
           ),
         ),

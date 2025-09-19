@@ -346,7 +346,7 @@ class GroupsController extends AsyncNotifier<PagedState<TripGroupSummary>> {
     final repo = ref.read(planningRepositoryProvider);
     state = const AsyncLoading();
     final res = await AsyncValue.guard(() => repo.listGroups(cursor: null, limit: _q.pageSize, query: ( _q.search ?? '').trim().isEmpty ? null : _q.search!.trim()));
-    state = res.whenData((page) => AsyncData(PagedState<TripGroupSummary>(items: page.items, cursor: page.nextCursor, loading: false)).value!);
+    state = res.whenData((page) => AsyncData(PagedState<TripGroupSummary>(items: page.items, cursor: page.nextCursor, loading: false)).value);
   }
 
   Future<void> loadMore() async {
@@ -401,7 +401,7 @@ class StopsController extends AsyncNotifier<PagedState<TripStop>> {
   Future<void> refresh() async {
     final repo = ref.read(planningRepositoryProvider);
     final res = await AsyncValue.guard(() => repo.listStops(groupId: _groupId, cursor: null));
-    state = res.whenData((page) => AsyncData(PagedState<TripStop>(items: page.items, cursor: page.nextCursor, loading: false)).value!);
+    state = res.whenData((page) => AsyncData(PagedState<TripStop>(items: page.items, cursor: page.nextCursor, loading: false)).value);
   }
 
   Future<void> loadMore() async {
@@ -439,7 +439,7 @@ class ItineraryController extends AsyncNotifier<List<ItineraryDay>> {
   Future<void> refresh() async {
     final repo = ref.read(planningRepositoryProvider);
     final res = await AsyncValue.guard(() => repo.getItinerary(groupId: _groupId));
-    state = res.whenData((days) => AsyncData(days).value!);
+    state = res.whenData((days) => AsyncData(days).value);
   }
 
   Future<bool> reorder(DateTime day, int oldIndex, int newIndex) async {
@@ -520,7 +520,7 @@ class SuggestionsController extends AsyncNotifier<PagedState<PlaceSuggestion>> {
     final repo = ref.read(planningRepositoryProvider);
     state = const AsyncLoading();
     final res = await AsyncValue.guard(() => repo.searchSuggestions(params: p, cursor: null));
-    state = res.whenData((page) => AsyncData(PagedState<PlaceSuggestion>(items: page.items, cursor: page.nextCursor, loading: false)).value!);
+    state = res.whenData((page) => AsyncData(PagedState<PlaceSuggestion>(items: page.items, cursor: page.nextCursor, loading: false)).value);
   }
 
   Future<void> loadMore() async {
@@ -577,7 +577,7 @@ class AiPlanController extends AsyncNotifier<AiPlanState> {
       error: (e, st) {
         state = AsyncError(e, st);
         state = const AsyncData(AiPlanState.failed('Failed to start AI planning'));
-        throw e!;
+        throw e;
       },
     );
   }

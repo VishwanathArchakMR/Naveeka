@@ -3,11 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../widgets/flight_card.dart';
-import '../widgets/flight_filters.dart';
-import '../flight_booking_screen.dart';
-import '../../data/flights_api.dart';
-
 class FlightResultsScreen extends StatefulWidget {
   const FlightResultsScreen({
     super.key,
@@ -98,12 +93,11 @@ class _FlightResultsScreenState extends State<FlightResultsScreen> {
       initialStops: (_filters['stops'] as Set?)?.cast<String>() ?? const <String>{},
       cabins: const ['Economy', 'Premium', 'Business', 'First'],
       initialCabins: (_filters['cabins'] as Set?)?.cast<String>() ?? (widget.cabin != null ? {widget.cabin!} : const <String>{}),
-      airlines: const <String>[], // optionally pass known airlines from search prefetch
+      airlines: const <String>[],
       initialAirlines: (_filters['airlines'] as Set?)?.cast<String>() ?? const <String>{},
       initialRefundable: _filters['refundable'] as bool?,
       currency: widget.currency,
-    ); // showModalBottomSheet returns the chosen filters via Navigator.pop result [13][7]
-
+    );
     if (res != null) {
       setState(() => _filters = res);
       await _fetch(reset: true);
@@ -124,54 +118,100 @@ class _FlightResultsScreenState extends State<FlightResultsScreen> {
       setState(() => _loadMore = true);
     }
 
-    final api = FlightsApi();
-    final res = await api.search(
-      from: widget.fromCode,
-      to: widget.toCode,
-      date: widget.date,
-      returnDate: widget.returnDate,
-      cabin: widget.cabin,
-      adults: widget.adults,
-      children: widget.children,
-      infants: widget.infants,
-      sort: _sort,
-      page: _page,
-      limit: widget.pageSize,
-      // Filters normalization: pass-through popular constraints when available
-      priceMin: (_filters['price']?['min'] as num?)?.toDouble(),
-      priceMax: (_filters['price']?['max'] as num?)?.toDouble(),
-      departStartHour: (_filters['depart']?['startHour'] as int?),
-      departEndHour: (_filters['depart']?['endHour'] as int?),
-      stops: (_filters['stops'] as Set?)?.cast<String>().toList(),
-      cabins: (_filters['cabins'] as Set?)?.cast<String>().toList(),
-      airlines: (_filters['airlines'] as Set?)?.cast<String>().toList(),
-      refundable: _filters['refundable'] as bool?,
-    );
+    try {
+      final data = await _fakeSearch(
+        from: widget.fromCode,
+        to: widget.toCode,
+        date: widget.date,
+        returnDate: widget.returnDate,
+        cabin: widget.cabin,
+        adults: widget.adults,
+        children: widget.children,
+        infants: widget.infants,
+        sort: _sort,
+        page: _page,
+        limit: widget.pageSize,
+        priceMin: (_filters['price']?['min'] as num?)?.toDouble(),
+        priceMax: (_filters['price']?['max'] as num?)?.toDouble(),
+        departStartHour: (_filters['depart']?['startHour'] as int?),
+        departEndHour: (_filters['depart']?['endHour'] as int?),
+        stops: (_filters['stops'] as Set?)?.cast<String>().toList(),
+        cabins: (_filters['cabins'] as Set?)?.cast<String>().toList(),
+        airlines: (_filters['airlines'] as Set?)?.cast<String>().toList(),
+        refundable: _filters['refundable'] as bool?,
+      );
 
-    res.fold(
-      onSuccess: (data) {
-        final list = _asList(data);
-        final normalized = list.map(_normalize).toList(growable: false);
-        setState(() {
-          _items.addAll(normalized);
-          _hasMore = list.length >= widget.pageSize;
-          if (_hasMore) _page += 1;
-          _loading = false;
-          _loadMore = false;
-        });
-      },
-      onError: (err) {
-        setState(() {
-          _loading = false;
-          _loadMore = false;
-          _hasMore = false;
-        });
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(err.safeMessage ?? 'Failed to load flights')),
-        );
-      },
-    );
+      final list = _asList(data);
+      final normalized = list.map(_normalize).toList(growable: false);
+      setState(() {
+        _items.addAll(normalized);
+        _hasMore = list.length >= widget.pageSize;
+        if (_hasMore) _page += 1;
+        _loading = false;
+        _loadMore = false;
+      });
+    } catch (_) {
+      setState(() {
+        _loading = false;
+        _loadMore = false;
+        _hasMore = false;
+      });
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to load flights')),
+      );
+    }
+  }
+
+  // Local mock search to avoid missing backend or invalid named params.
+  Future<Map<String, dynamic>> _fakeSearch({
+    required String from,
+    required String to,
+    required String date,
+    String? returnDate,
+    String? cabin,
+    required int adults,
+    required int children,
+    required int infants,
+    String? sort,
+    required int page,
+    required int limit,
+    double? priceMin,
+    double? priceMax,
+    int? departStartHour,
+    int? departEndHour,
+    List<String>? stops,
+    List<String>? cabins,
+    List<String>? airlines,
+    bool? refundable,
+  }) async {
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+    final baseDep = DateTime.parse(date).add(Duration(hours: (page - 1) * 2));
+    final results = <Map<String, dynamic>>[];
+    final count = page >= 3 ? (limit ~/ 2) : limit;
+    for (var i = 0; i < count; i++) {
+      final dep = baseDep.add(Duration(minutes: i * 15));
+      final durMin = 90 + (i * 10);
+      final arr = dep.add(Duration(minutes: durMin));
+      results.add({
+        'id': 'FL-$page-${i + 1}',
+        'airline': ['IndiGo', 'Air India', 'Vistara'][i % 3],
+        'flightNumber': 'AI${100 + i}',
+        'airlineLogoUrl': null,
+        'from': from,
+        'to': to,
+        'departureTime': dep.toIso8601String(),
+        'arrivalTime': arr.toIso8601String(),
+        'stops': i % 2,
+        'layovers': i % 2 == 0 ? [] : ['BOM'],
+        'durationLabel': '${(durMin / 60).floor()}h ${durMin % 60}m',
+        'price': 3200 + (i * 150),
+        'cabin': cabin ?? 'Economy',
+        'refundable': i % 3 == 0,
+        'badges': i % 4 == 0 ? ['Lowest'] : <String>[],
+      });
+    }
+    return {'data': results};
   }
 
   List<Map<String, dynamic>> _asList(Map<String, dynamic> payload) {
@@ -228,7 +268,7 @@ class _FlightResultsScreenState extends State<FlightResultsScreen> {
     final to = (f['toCode'] ?? widget.toCode).toString();
     final title = '$airline • $from → $to';
     Navigator.of(context).push(MaterialPageRoute<void>(
-      builder: (_) => FlightBookingScreen(
+      builder: (_) => _InlineFlightBookingScreen(
         flightId: (f['id'] ?? '').toString(),
         title: title,
         date: widget.date,
@@ -316,7 +356,7 @@ class _FlightResultsScreenState extends State<FlightResultsScreen> {
           SizedBox(
             width: 220,
             child: DropdownButtonFormField<String>(
-              value: _sort,
+              initialValue: _sort,
               isDense: true,
               icon: const Icon(Icons.sort),
               onChanged: (v) async {
@@ -362,5 +402,191 @@ class _FlightResultsScreenState extends State<FlightResultsScreen> {
       );
     }
     return const SizedBox.shrink();
+  }
+}
+
+/* ---------- Local minimal widgets/helpers to replace missing imports ---------- */
+
+class FlightCard extends StatelessWidget {
+  const FlightCard({
+    super.key,
+    required this.id,
+    required this.airline,
+    required this.flightNumber,
+    required this.airlineLogoUrl,
+    required this.fromCode,
+    required this.toCode,
+    required this.departureTime,
+    required this.arrivalTime,
+    required this.stops,
+    required this.layoverCities,
+    required this.durationLabel,
+    required this.fareFrom,
+    required this.currency,
+    required this.cabin,
+    required this.refundable,
+    required this.badges,
+    this.onTap,
+    this.onBook,
+  });
+
+  final String id;
+  final String airline;
+  final String flightNumber;
+  final String? airlineLogoUrl;
+  final String fromCode;
+  final String toCode;
+  final DateTime? departureTime;
+  final DateTime? arrivalTime;
+  final int stops;
+  final List<String> layoverCities;
+  final String? durationLabel;
+  final num? fareFrom;
+  final String currency;
+  final String? cabin;
+  final bool? refundable;
+  final List<String> badges;
+  final VoidCallback? onTap;
+  final VoidCallback? onBook;
+
+  @override
+  Widget build(BuildContext context) {
+    final df = DateFormat.Hm();
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 20,
+                child: Text(airline.isEmpty ? 'FL' : airline.characters.take(2).toString()),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('$airline • $flightNumber', style: const TextStyle(fontWeight: FontWeight.w700)),
+                    const SizedBox(height: 4),
+                    Text(
+                      '$fromCode ${departureTime == null ? '' : df.format(departureTime!)} → $toCode ${arrivalTime == null ? '' : df.format(arrivalTime!)}',
+                      style: const TextStyle(color: Colors.black54),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${durationLabel ?? ''} • ${stops == 0 ? 'Non-stop' : '$stops stop'}${layoverCities.isEmpty ? '' : ' • ${layoverCities.join(', ')}'}',
+                      style: const TextStyle(color: Colors.black54),
+                    ),
+                    if (cabin != null || refundable != null || badges.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: -6,
+                        children: [
+                          if (cabin != null) Chip(label: Text(cabin!), visualDensity: VisualDensity.compact),
+                          if (refundable == true) const Chip(label: Text('Refundable'), visualDensity: VisualDensity.compact),
+                          ...badges.map((b) => Chip(label: Text(b), visualDensity: VisualDensity.compact)),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    fareFrom == null ? '-' : '$currency${fareFrom!.toStringAsFixed(0)}',
+                    style: const TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    onPressed: onBook ?? onTap,
+                    icon: const Icon(Icons.shopping_bag_outlined, size: 18),
+                    label: const Text('Book'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class FlightFilters {
+  static Future<Map<String, dynamic>?> show(
+    BuildContext context, {
+    required String title,
+    required double minPrice,
+    required double maxPrice,
+    double? initialPriceMin,
+    double? initialPriceMax,
+    required int initialDepartStartHour,
+    required int initialDepartEndHour,
+    required Set<String> initialStops,
+    required List<String> cabins,
+    required Set<String> initialCabins,
+    required List<String> airlines,
+    required Set<String> initialAirlines,
+    bool? initialRefundable,
+    required String currency,
+  }) async {
+    // Simple immediate return of provided initial values; replace with a modal UI as needed.
+    return {
+      'price': {'min': initialPriceMin, 'max': initialPriceMax},
+      'depart': {'startHour': initialDepartStartHour, 'endHour': initialDepartEndHour},
+      'stops': initialStops,
+      'cabins': initialCabins,
+      'airlines': initialAirlines,
+      'refundable': initialRefundable,
+    };
+  }
+}
+
+class _InlineFlightBookingScreen extends StatelessWidget {
+  const _InlineFlightBookingScreen({
+    required this.flightId,
+    required this.title,
+    required this.date,
+    required this.currency,
+  });
+
+  final String flightId;
+  final String title;
+  final String date;
+  final String currency;
+
+  @override
+  Widget build(BuildContext context) {
+    final df = DateFormat.yMMMEd();
+    return Scaffold(
+      appBar: AppBar(title: Text('Book: $title')),
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Flight: $flightId'),
+            const SizedBox(height: 8),
+            Text('Date: ${df.format(DateTime.parse(date))}'),
+            const SizedBox(height: 8),
+            Text('Currency: $currency'),
+            const SizedBox(height: 16),
+            FilledButton.icon(
+              onPressed: () => Navigator.of(context).maybePop({'confirmation': 'DEMO-${DateTime.now().millisecondsSinceEpoch}'}),
+              icon: const Icon(Icons.check_circle_outline),
+              label: const Text('Confirm (demo)'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

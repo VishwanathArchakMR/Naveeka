@@ -91,7 +91,7 @@ class LocationButton extends StatelessWidget {
       ],
     );
 
-    final VoidCallback? onTap = onPressed;
+    final VoidCallback onTap = onPressed;
     final VoidCallback? onLP = onLongPress;
 
     // Use a higher-emphasis variant when following, else the configured variant.

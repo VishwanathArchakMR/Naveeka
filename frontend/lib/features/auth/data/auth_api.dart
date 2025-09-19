@@ -117,5 +117,5 @@ class AuthApi {
     }
   }
 
-  String? _asString(Object? v) => v == null ? null : v.toString();
+  String? _asString(Object? v) => v?.toString();
 }

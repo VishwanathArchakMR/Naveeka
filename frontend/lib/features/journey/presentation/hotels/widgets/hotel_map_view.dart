@@ -1,17 +1,15 @@
 // lib/features/journey/presentation/hotels/widgets/hotel_map_view.dart
 
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
 
 class HotelMapView extends StatelessWidget {
   const HotelMapView({
     super.key,
     required this.hotels,
     this.height = 280,
-    this.initialZoom = 12,
-    this.tileUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-    this.tileSubdomains = const ['a', 'b', 'c'],
+    this.initialZoom = 12, // kept for API compatibility
+    this.tileUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', // placeholder
+    this.tileSubdomains = const ['a', 'b', 'c'], // placeholder
     this.currency = '₹',
     this.onTapHotel,
     this.selectedHotelId,
@@ -22,9 +20,9 @@ class HotelMapView extends StatelessWidget {
   final List<Map<String, dynamic>> hotels;
 
   final double height;
-  final double initialZoom;
-  final String tileUrl;
-  final List<String> tileSubdomains;
+  final double initialZoom; // unused in placeholder
+  final String tileUrl; // unused in placeholder
+  final List<String> tileSubdomains; // unused in placeholder
   final String currency;
 
   /// Callback when a marker is tapped.
@@ -35,103 +33,74 @@ class HotelMapView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Convert hotel maps into LatLng points with safe parsing.
+    // Collect valid points.
     final points = <LatLng>[];
     for (final h in hotels) {
       final p = _toLatLng(h['lat'], h['lng']);
       if (p != null) points.add(p);
     }
 
-    // Fallback center if no valid coordinates.
-    final fallbackCenter = const LatLng(20.5937, 78.9629); // India centroid as neutral fallback
-
-    // Compute bounds for auto-fit on first paint; add tiny delta if only one point.
-    LatLngBounds? bounds;
-    if (points.isNotEmpty) {
-      if (points.length == 1) {
-        final p = points.first;
-        bounds = LatLngBounds.fromPoints([
-          p,
-          LatLng(p.latitude + 0.0005, p.longitude + 0.0005),
-        ]);
-      } else {
-        bounds = LatLngBounds.fromPoints(points);
-      }
-    }
+    // If no points, create a tiny bbox around India centroid for a neutral view.
+    const fallbackCenter = LatLng(20.5937, 78.9629);
+    final hasPoints = points.isNotEmpty;
 
     return SizedBox(
       height: height,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: FlutterMap(
-          options: MapOptions(
-            // Prefer CameraFit.bounds to auto-fit initial viewport to hotel markers.
-            cameraFit: bounds != null
-                ? CameraFit.bounds(
-                    bounds: bounds,
-                    padding: const EdgeInsets.all(28),
-                    maxZoom: 16,
-                  )
-                : CameraFit.coordinates(
-                    coordinates: [fallbackCenter],
-                    zoom: initialZoom,
-                  ),
-            initialZoom: initialZoom,
-            interactionOptions: const InteractionOptions(
-              flags: InteractiveFlag.pinchZoom |
-                  InteractiveFlag.drag |
-                  InteractiveFlag.doubleTapZoom,
-            ),
-          ), // CameraFit.* sets initial positioning with padding/limits for a clear view of all markers [9]
-          children: [
-            TileLayer(
-              urlTemplate: tileUrl,
-              subdomains: tileSubdomains,
-              userAgentPackageName: 'com.example.app',
-            ),
-            MarkerLayer(
-              markers: [
-                for (final h in hotels)
-                  if (_toLatLng(h['lat'], h['lng']) != null)
-                    _hotelMarker(
-                      context: context,
-                      hotel: h,
-                      point: _toLatLng(h['lat'], h['lng'])!,
-                      currency: currency,
-                      selected: selectedHotelId != null &&
-                          (h['id']?.toString() ?? '') == selectedHotelId,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final size = Size(constraints.maxWidth, height);
+
+          // Build projector from either hotel points or a small box around fallback.
+          final proj = hasPoints
+              ? _Projector.fromPoints(points, size)
+              : _Projector.fromPoints(
+                  [
+                    LatLng(fallbackCenter.latitude - 0.25, fallbackCenter.longitude - 0.25),
+                    LatLng(fallbackCenter.latitude + 0.25, fallbackCenter.longitude + 0.25),
+                  ],
+                  size,
+                );
+
+          return ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Stack(
+              children: [
+                // Backdrop (subtle grid/gradient)
+                CustomPaint(
+                  size: size,
+                  painter: _BackdropPainter(),
+                ),
+
+                // Hotel pins
+                ...hotels.map((h) {
+                  final p = _toLatLng(h['lat'], h['lng']);
+                  if (p == null) return const SizedBox.shrink();
+                  final o = proj.toOffset(p);
+                  final selected = selectedHotelId != null && (h['id']?.toString() ?? '') == selectedHotelId;
+                  final price = h['price'];
+                  final rating = h['rating'] is num ? (h['rating'] as num).toDouble() : null;
+                  final name = (h['name'] ?? '').toString();
+                  final label = price is num ? '$currency${price.toStringAsFixed(0)}' : (name.isNotEmpty ? name : 'Hotel');
+
+                  return Positioned(
+                    left: o.dx - 32, // center the 64px pin
+                    top: o.dy - 32,
+                    width: 64,
+                    height: 64,
+                    child: GestureDetector(
+                      onTap: onTapHotel != null ? () => onTapHotel!(h) : null,
+                      child: _PricePin(
+                        label: label,
+                        selected: selected,
+                        rating: rating,
+                      ),
                     ),
+                  );
+                }),
               ],
-            ), // MarkerLayer supports any Flutter widget as a marker with custom tap handling via GestureDetector [1][2]
-          ],
-        ),
-      ),
-    );
-  }
-
-  Marker _hotelMarker({
-    required BuildContext context,
-    required Map<String, dynamic> hotel,
-    required LatLng point,
-    required String currency,
-    required bool selected,
-  }) {
-    final price = hotel['price'];
-    final rating = hotel['rating'] is num ? (hotel['rating'] as num).toDouble() : null;
-    final name = (hotel['name'] ?? '').toString();
-
-    return Marker(
-      point: point,
-      width: 64,
-      height: 64,
-      alignment: Alignment.center,
-      child: GestureDetector(
-        onTap: onTapHotel != null ? () => onTapHotel!(hotel) : null,
-        child: _PricePin(
-          label: price is num ? '$currency${price.toStringAsFixed(0)}' : (name.isNotEmpty ? name : 'Hotel'),
-          selected: selected,
-          rating: rating,
-        ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -147,6 +116,117 @@ class HotelMapView extends StatelessWidget {
     if (la == null || ln == null) return null;
     return LatLng(la, ln);
   }
+}
+
+// Minimal LatLng to avoid external dependency
+class LatLng {
+  final double latitude;
+  final double longitude;
+  const LatLng(this.latitude, this.longitude);
+}
+
+// Projects geo bounds to canvas coordinates with padding
+class _Projector {
+  final double minLat, maxLat, minLng, maxLng;
+  final double sx, sy;
+  final double pad;
+  final Size size;
+
+  _Projector({
+    required this.minLat,
+    required this.maxLat,
+    required this.minLng,
+    required this.maxLng,
+    required this.sx,
+    required this.sy,
+    required this.pad,
+    required this.size,
+  });
+
+  factory _Projector.fromPoints(List<LatLng> pts, Size size, {double pad = 16}) {
+    if (pts.isEmpty) {
+      return _Projector(
+        minLat: 0,
+        maxLat: 1,
+        minLng: 0,
+        maxLng: 1,
+        sx: 1,
+        sy: 1,
+        pad: pad,
+        size: size,
+      );
+    }
+    double minLat = pts.first.latitude, maxLat = pts.first.latitude;
+    double minLng = pts.first.longitude, maxLng = pts.first.longitude;
+    for (final p in pts) {
+      if (p.latitude < minLat) minLat = p.latitude;
+      if (p.latitude > maxLat) maxLat = p.latitude;
+      if (p.longitude < minLng) minLng = p.longitude;
+      if (p.longitude > maxLng) maxLng = p.longitude;
+    }
+    // Avoid degenerate scale if bounds collapse
+    if ((maxLat - minLat).abs() < 1e-9) {
+      minLat -= 0.0001;
+      maxLat += 0.0001;
+    }
+    if ((maxLng - minLng).abs() < 1e-9) {
+      minLng -= 0.0001;
+      maxLng += 0.0001;
+    }
+    final dx = (maxLng - minLng).abs();
+    final dy = (maxLat - minLat).abs();
+    final sx = (size.width - 2 * pad) / dx;
+    final sy = (size.height - 2 * pad) / dy;
+    return _Projector(
+      minLat: minLat,
+      maxLat: maxLat,
+      minLng: minLng,
+      maxLng: maxLng,
+      sx: sx,
+      sy: sy,
+      pad: pad,
+      size: size,
+    );
+  }
+
+  Offset toOffset(LatLng p) {
+    final w = size.width, h = size.height;
+    final x = pad + (p.longitude - minLng) * sx;
+    final y = h - pad - (p.latitude - minLat) * sy; // invert Y for canvas
+    return Offset(x.clamp(0, w), y.clamp(0, h));
+  }
+}
+
+class _BackdropPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Gradient background
+    final bg = Paint()
+      ..shader = LinearGradient(
+        colors: [
+          Colors.white,
+          Colors.grey.shade100,
+        ],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ).createShader(Offset.zero & size);
+    canvas.drawRect(Offset.zero & size, bg);
+
+    // Subtle grid
+    final gridPaint = Paint()
+      ..color = Colors.black.withValues(alpha: 0.05)
+      ..strokeWidth = 1;
+    const pad = 16.0;
+    for (var x = pad; x < size.width - pad; x += 24) {
+      canvas.drawLine(Offset(x, pad), Offset(x, size.height - pad), gridPaint);
+    }
+    for (var y = pad; y < size.height - pad; y += 24) {
+      canvas.drawLine(Offset(pad, y), Offset(size.width - pad, y), gridPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _BackdropPainter oldDelegate) => false;
 }
 
 class _PricePin extends StatelessWidget {

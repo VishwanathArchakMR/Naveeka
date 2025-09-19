@@ -381,7 +381,7 @@ class _FavoritesByLocationState extends State<FavoritesByLocation> {
       }
     }
     final (fl, fn) = fallback ?? (null, null);
-    if (fl != null && fn != null) return (fl!, fn!);
+    if (fl != null && fn != null) return (fl, fn);
     return null;
   }
 
@@ -404,9 +404,9 @@ class _FavoritesByLocationState extends State<FavoritesByLocation> {
     return Container(
       color: cs.surfaceContainerHigh,
       alignment: Alignment.center,
-      child: Column(
+      child: const Column(
         mainAxisSize: MainAxisSize.min,
-        children: const [
+        children: [
           Icon(Icons.map_outlined, size: 40, color: Colors.black26),
           SizedBox(height: 8),
           Text('Map unavailable', style: TextStyle(color: Colors.black45)),

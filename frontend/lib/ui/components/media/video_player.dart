@@ -183,7 +183,7 @@ class _AppVideoPlayerState extends State<AppVideoPlayer> {
           return _LoadingShell(title: widget.title);
         }
         if (!_controller.value.isInitialized) {
-          return _ErrorShell(message: 'Failed to load video');
+          return const _ErrorShell(message: 'Failed to load video');
         }
 
         final ar = widget.aspectRatio ?? _controller.value.aspectRatio;

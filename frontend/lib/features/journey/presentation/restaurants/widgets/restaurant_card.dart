@@ -178,7 +178,7 @@ class _CoverImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ratio = 16 / 9.0;
+    const ratio = 16 / 9.0;
     return AspectRatio(
       aspectRatio: ratio,
       child: Stack(
@@ -217,7 +217,7 @@ class _CoverImage extends StatelessWidget {
                     if (reviewCount != null) ...[
                       const SizedBox(width: 6),
                       Text(
-                        '(${reviewCount})',
+                        '($reviewCount)',
                         style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.w600),
                       ),
                     ],
@@ -239,9 +239,9 @@ class _ImageFallback extends StatelessWidget {
     return Container(
       color: Theme.of(context).colorScheme.surfaceContainerHighest,
       alignment: Alignment.center,
-      child: Row(
+      child: const Row(
         mainAxisSize: MainAxisSize.min,
-        children: const [
+        children: [
           Icon(Icons.image_not_supported_outlined, color: Colors.black45),
           SizedBox(width: 6),
           Text('No image', style: TextStyle(color: Colors.black45)),

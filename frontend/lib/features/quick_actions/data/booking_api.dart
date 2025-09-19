@@ -158,7 +158,7 @@ class BookingApi {
     return _post<void>(
       path: '/v1/booking/reservations/$reservationId/cancel',
       body: {'reason': reason},
-      parse: (_) => null,
+      parse: (_) {},
       cancelToken: cancelToken,
       retries: 0,
     );
@@ -243,7 +243,7 @@ class BookingApi {
       } on DioException catch (e) {
         // If canceled, surface immediately.
         if (CancelToken.isCancel(e)) {
-          return ApiFailure<T>(ApiError(message: 'Cancelled', code: -1));
+          return ApiFailure<T>(const ApiError(message: 'Cancelled', code: -1));
         }
         attempt += 1;
         final transient = _isTransient(e);

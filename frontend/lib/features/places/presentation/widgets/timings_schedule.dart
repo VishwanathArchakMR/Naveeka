@@ -144,7 +144,7 @@ class TimingsSchedule extends StatelessWidget {
                 initiallyExpanded: true,
                 tilePadding: EdgeInsets.zero,
                 childrenPadding: EdgeInsets.zero,
-                title: Text('This week', style: const TextStyle(fontWeight: FontWeight.w700)),
+                title: const Text('This week', style: TextStyle(fontWeight: FontWeight.w700)),
                 children: weekly.map((d) {
                   final isToday = d.weekday == today?.weekday;
                   final hl = isToday ? (accentColor ?? Theme.of(context).colorScheme.primary) : Colors.transparent;
@@ -272,7 +272,7 @@ class TimingsSchedule extends StatelessWidget {
         nextClose = it.end;
         break;
       } else if (_before(local, it.start)) {
-        nextOpen = (nextOpen == null || _before(it.start, nextOpen!)) ? it.start : nextOpen;
+        nextOpen = (nextOpen == null || _before(it.start, nextOpen)) ? it.start : nextOpen;
       }
     }
 

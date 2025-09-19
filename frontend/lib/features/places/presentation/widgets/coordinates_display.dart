@@ -128,7 +128,7 @@ class CoordinatesDisplay extends StatelessWidget {
       final minFloat = (abs - deg) * 60;
       final min = minFloat.floor();
       final sec = ((minFloat - min) * 60);
-      return '$deg° ${min}\' ${sec.toStringAsFixed(2)}" $dir';
+      return '$deg° $min\' ${sec.toStringAsFixed(2)}" $dir';
     }
 
     final latDms = dms(lat, 'N', 'S');

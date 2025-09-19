@@ -239,7 +239,7 @@ class _PlaceFiltersSheetState extends State<PlaceFiltersSheet> {
                 ),
 
                 const SizedBox(height: 12),
-                _SectionHeader('Categories'),
+                const _SectionHeader('Categories'),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
@@ -256,7 +256,7 @@ class _PlaceFiltersSheetState extends State<PlaceFiltersSheet> {
                 ),
 
                 const SizedBox(height: 12),
-                _SectionHeader('Distance'),
+                const _SectionHeader('Distance'),
                 Row(
                   children: [
                     Expanded(
@@ -287,7 +287,7 @@ class _PlaceFiltersSheetState extends State<PlaceFiltersSheet> {
                 ),
 
                 const SizedBox(height: 8),
-                _SectionHeader('Rating'),
+                const _SectionHeader('Rating'),
                 Wrap(
                   spacing: 8,
                   children: [
@@ -299,7 +299,7 @@ class _PlaceFiltersSheetState extends State<PlaceFiltersSheet> {
                 ),
 
                 const SizedBox(height: 12),
-                _SectionHeader('Price'),
+                const _SectionHeader('Price'),
                 Wrap(
                   spacing: 8,
                   children: List.generate(4, (i) {
@@ -316,7 +316,7 @@ class _PlaceFiltersSheetState extends State<PlaceFiltersSheet> {
                 ),
 
                 const SizedBox(height: 12),
-                _SectionHeader('Amenities'),
+                const _SectionHeader('Amenities'),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
@@ -333,9 +333,9 @@ class _PlaceFiltersSheetState extends State<PlaceFiltersSheet> {
                 ),
 
                 const SizedBox(height: 12),
-                _SectionHeader('Sort by'),
+                const _SectionHeader('Sort by'),
                 DropdownButtonFormField<String>(
-                  value: _sortBy,
+                  initialValue: _sortBy,
                   isDense: true,
                   items: const [
                     DropdownMenuItem(value: 'distance', child: Text('Distance')),

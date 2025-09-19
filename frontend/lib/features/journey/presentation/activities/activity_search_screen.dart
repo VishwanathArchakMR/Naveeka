@@ -122,7 +122,7 @@ class _ActivitySearchScreenState extends State<ActivitySearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final chipsSpacing = 8.0;
+    const chipsSpacing = 8.0;
 
     return Scaffold(
       appBar: AppBar(

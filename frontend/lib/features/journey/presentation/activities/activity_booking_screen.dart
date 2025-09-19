@@ -3,8 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../../data/activities_api.dart';
-import '../../../../checkout/presentation/widgets/traveler_info.dart';
+import '../../data/activities_api.dart';
+import '../../../checkout/presentation/widgets/traveler_info.dart';
 
 class ActivityBookingScreen extends StatefulWidget {
   const ActivityBookingScreen({
@@ -109,7 +109,7 @@ class _ActivityBookingScreenState extends State<ActivityBookingScreen> {
       },
       onError: (err) {
         setState(() => _loadingSlots = false);
-        _snack(err.safeMessage ?? 'Failed to load availability');
+        _snack(err.safeMessage); // safeMessage is non-nullable; remove ?? fallback
       },
     );
   }
@@ -158,7 +158,7 @@ class _ActivityBookingScreenState extends State<ActivityBookingScreen> {
         Navigator.of(context).maybePop(data);
       },
       onError: (err) {
-        _snack(err.safeMessage ?? 'Booking failed');
+        _snack(err.safeMessage); // safeMessage is non-nullable; remove ?? fallback
       },
     );
 
@@ -234,7 +234,7 @@ class _ActivityBookingScreenState extends State<ActivityBookingScreen> {
                       children: [
                         Expanded(
                           child: DropdownButtonFormField<String>(
-                            value: _selectedSlot,
+                            initialValue: _selectedSlot,
                             items: _slots
                                 .map((s) => DropdownMenuItem<String>(
                                       value: s,

@@ -144,10 +144,10 @@ class MapButton extends StatelessWidget {
       position: position,
       items: <PopupMenuEntry<_MapMenuSelection>>[
         if (onOpenMap != null)
-          PopupMenuItem<_MapMenuSelection>(
-            value: const _MapMenuSelection.openMap(),
+          const PopupMenuItem<_MapMenuSelection>(
+            value: _MapMenuSelection.openMap(),
             child: Row(
-              children: const <Widget>[
+              children: <Widget>[
                 Icon(Icons.open_in_full_rounded, size: 18),
                 SizedBox(width: 8),
                 Text('Open map'),

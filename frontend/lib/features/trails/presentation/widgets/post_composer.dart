@@ -224,7 +224,7 @@ class _PostComposerState extends State<PostComposer> {
           padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
           children: [
             // Text field
-            _SectionHeader(label: 'Description'),
+            const _SectionHeader(label: 'Description'),
             TextField(
               controller: _text,
               focusNode: _focusText,
@@ -244,7 +244,7 @@ class _PostComposerState extends State<PostComposer> {
             const SizedBox(height: 12),
 
             // Photos
-            _SectionHeader(label: 'Photos'),
+            const _SectionHeader(label: 'Photos'),
             Row(
               children: [
                 if (widget.onPickFromCamera != null)
@@ -272,7 +272,7 @@ class _PostComposerState extends State<PostComposer> {
             const SizedBox(height: 12),
 
             // Tags
-            _SectionHeader(label: 'Tags'),
+            const _SectionHeader(label: 'Tags'),
             Row(
               children: [
                 Expanded(
@@ -316,7 +316,7 @@ class _PostComposerState extends State<PostComposer> {
             const SizedBox(height: 12),
 
             // Difficulty & Rating
-            _SectionHeader(label: 'Trail details'),
+            const _SectionHeader(label: 'Trail details'),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -359,7 +359,7 @@ class _PostComposerState extends State<PostComposer> {
             const SizedBox(height: 12),
 
             // Location
-            _SectionHeader(label: 'Location'),
+            const _SectionHeader(label: 'Location'),
             Row(
               children: [
                 Expanded(
@@ -387,7 +387,7 @@ class _PostComposerState extends State<PostComposer> {
             const SizedBox(height: 12),
 
             // Share toggles
-            _SectionHeader(label: 'Share'),
+            const _SectionHeader(label: 'Share'),
             SwitchListTile.adaptive(
               dense: true,
               title: const Text('Share to feed'),

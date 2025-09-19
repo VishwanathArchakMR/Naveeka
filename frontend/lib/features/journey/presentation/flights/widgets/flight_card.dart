@@ -226,7 +226,7 @@ class _LogoOrAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final radius = 18.0;
+    const radius = 18.0;
     if (logoUrl != null && logoUrl!.isNotEmpty) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(radius),

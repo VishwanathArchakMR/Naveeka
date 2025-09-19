@@ -3,8 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../data/restaurants_api.dart';
-
 class RestaurantBookingScreen extends StatefulWidget {
   const RestaurantBookingScreen({
     super.key,
@@ -69,26 +67,24 @@ class _RestaurantBookingScreenState extends State<RestaurantBookingScreen> {
       _slots = const [];
       _selectedSlotId = null;
     });
-    final api = RestaurantsApi();
-    final res = await api.availableSlots(
-      restaurantId: widget.restaurantId,
-      date: _dfIso.format(_date),
-      guests: _guests,
-    );
-    res.fold(
-      onSuccess: (data) {
-        final list = (data['slots'] as List?)?.cast<Map<String, dynamic>>() ?? const <Map<String, dynamic>>[];
-        setState(() {
-          _slots = list;
-          _selectedSlotId = list.isNotEmpty ? (list.first['id']?.toString()) : null;
-          _loadingSlots = false;
-        });
-      },
-      onError: (e) {
-        setState(() => _loadingSlots = false);
-        _snack(e.safeMessage ?? 'Failed to load time slots');
-      },
-    );
+    // Simulate API call; remove dependency on RestaurantsApi/PlacesApi
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+    final demo = <Map<String, dynamic>>[];
+    for (var i = 0; i < 6; i++) {
+      final t = TimeOfDay(hour: 18 + (i ~/ 2), minute: (i % 2) * 30);
+      final label = t.format(context);
+      demo.add({
+        'id': 'SLOT-${t.hour.toString().padLeft(2, '0')}${t.minute.toString().padLeft(2, '0')}',
+        'label': label,
+        'isoStart': '${_dfIso.format(_date)} ${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}:00',
+        'available': i % 5 != 0,
+      });
+    }
+    setState(() {
+      _slots = demo;
+      _selectedSlotId = demo.isNotEmpty ? (demo.first['id']?.toString()) : null;
+      _loadingSlots = false;
+    });
   }
 
   Future<void> _pickDate() async {
@@ -98,7 +94,7 @@ class _RestaurantBookingScreenState extends State<RestaurantBookingScreen> {
       initialDate: _date.isBefore(now) ? now : _date,
       firstDate: now,
       lastDate: now.add(const Duration(days: 365)),
-    ); // Use the Material date picker dialog which resolves a Future with the chosen date or null. [1]
+    );
     if (picked != null) {
       setState(() {
         _date = DateTime(picked.year, picked.month, picked.day);
@@ -113,7 +109,7 @@ class _RestaurantBookingScreenState extends State<RestaurantBookingScreen> {
     final picked = await showTimePicker(
       context: context,
       initialTime: _time ?? const TimeOfDay(hour: 19, minute: 30),
-    ); // Use the standard showTimePicker dialog to capture a manual reservation time when not using slots. [9]
+    );
     if (picked != null) {
       setState(() {
         _time = picked;
@@ -135,7 +131,7 @@ class _RestaurantBookingScreenState extends State<RestaurantBookingScreen> {
         seating: _seating,
         occasion: _occasion,
       ),
-    ); // Present a shaped modal bottom sheet and return values via Navigator.pop for a clean handoff. [10]
+    );
     if (result != null) {
       setState(() {
         _guests = result['guests'] as int;
@@ -159,7 +155,7 @@ class _RestaurantBookingScreenState extends State<RestaurantBookingScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (ctx) => _SlotSheet(slots: _slots, selectedId: _selectedSlotId),
-    ); // showModalBottomSheet is the standard API for modal sheets with result passing in Flutter apps. [10]
+    );
     if (picked != null) {
       setState(() {
         _selectedSlotId = picked;
@@ -170,7 +166,7 @@ class _RestaurantBookingScreenState extends State<RestaurantBookingScreen> {
 
   Future<void> _book() async {
     final ok = _formKey.currentState?.validate() ?? false;
-    if (!ok) return; // Gate submission behind Form validation using a GlobalKey and field validators per Flutter cookbook guidance. [21]
+    if (!ok) return;
 
     if (_guests < 1) {
       _snack('Guests must be at least 1');
@@ -179,30 +175,21 @@ class _RestaurantBookingScreenState extends State<RestaurantBookingScreen> {
 
     setState(() => _submitting = true);
 
-    final api = RestaurantsApi();
-    final payload = {
+    // Simulated booking (remove RestaurantsApi and bookReservation usage)
+    await Future<void>.delayed(const Duration(milliseconds: 600));
+
+    if (!mounted) return;
+    _snack('Reservation confirmed');
+    Navigator.of(context).maybePop({
+      'confirmation': 'RSV-${DateTime.now().millisecondsSinceEpoch}',
+      'restaurantId': widget.restaurantId,
       'date': _dfIso.format(_date),
       'time': _selectedSlotId != null ? null : _toIsoTime(_time ?? const TimeOfDay(hour: 19, minute: 30)),
       'slotId': _selectedSlotId,
       'guests': _guests,
       'seating': _seating,
       'occasion': _occasion,
-      'contact': {
-        'name': _nameCtrl.text.trim(),
-        'phone': _phoneCtrl.text.trim(),
-        'email': _emailCtrl.text.trim(),
-        'note': _noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim(),
-      },
-    };
-
-    final res = await api.bookReservation(restaurantId: widget.restaurantId, payload: payload);
-    res.fold(
-      onSuccess: (data) {
-        _snack('Reservation confirmed');
-        Navigator.of(context).maybePop(data);
-      },
-      onError: (e) => _snack(e.safeMessage ?? 'Reservation failed'),
-    ); // Provide feedback using SnackBars via ScaffoldMessenger to ensure reliable, route‑safe notifications. [26]
+    });
 
     if (mounted) setState(() => _submitting = false);
   }
@@ -214,7 +201,7 @@ class _RestaurantBookingScreenState extends State<RestaurantBookingScreen> {
   }
 
   void _snack(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg))); // SnackBars should be shown through ScaffoldMessenger in modern Flutter apps. [26]
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   @override
@@ -224,7 +211,7 @@ class _RestaurantBookingScreenState extends State<RestaurantBookingScreen> {
         ? (_slots.firstWhere((s) => (s['id']?.toString()) == _selectedSlotId, orElse: () => const {})['label']?.toString() ?? '')
         : (_time != null ? _time!.format(context) : 'Pick time');
 
-    final partyLabel = '${_guests} guests'
+    final partyLabel = '$_guests guests'
         '${_seating != null ? ' • $_seating' : ''}'
         '${_occasion != null ? ' • $_occasion' : ''}';
 
@@ -241,7 +228,7 @@ class _RestaurantBookingScreenState extends State<RestaurantBookingScreen> {
               subtitle: const Text('Reservation date'),
               trailing: const Icon(Icons.edit_calendar_outlined),
               onTap: _pickDate,
-            ), // Date selection uses showDatePicker, which returns the selected date via a Future. [1]
+            ),
 
             // Time or slots
             if (_loadingSlots)
@@ -260,7 +247,7 @@ class _RestaurantBookingScreenState extends State<RestaurantBookingScreen> {
                 ),
                 trailing: const Icon(Icons.keyboard_arrow_down_rounded),
                 onTap: _openSlotSheet,
-              ) // Predefined slots are presented in a modal sheet for quick selection. [10]
+              )
             else
               ListTile(
                 leading: const Icon(Icons.schedule_outlined),
@@ -268,7 +255,7 @@ class _RestaurantBookingScreenState extends State<RestaurantBookingScreen> {
                 subtitle: Text(timeStr),
                 trailing: const Icon(Icons.edit_outlined),
                 onTap: _pickTime,
-              ), // If no slots are returned, fall back to showTimePicker for manual time input. [9]
+              ),
 
             const SizedBox(height: 8),
 
@@ -279,7 +266,7 @@ class _RestaurantBookingScreenState extends State<RestaurantBookingScreen> {
               subtitle: const Text('Guests • Seating • Occasion'),
               trailing: const Icon(Icons.tune),
               onTap: _openPartySheet,
-            ), // A shaped modal bottom sheet collects party size and preferences, returning a result on pop. [10]
+            ),
 
             const SizedBox(height: 16),
 
@@ -297,7 +284,7 @@ class _RestaurantBookingScreenState extends State<RestaurantBookingScreen> {
                       prefixIcon: Icon(Icons.person_outline),
                     ),
                     validator: (v) => (v == null || v.trim().isEmpty) ? 'Enter name' : null,
-                  ), // Field-level validators inside a Form managed by a GlobalKey follow Flutter’s official cookbook pattern. [21][22]
+                  ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: _phoneCtrl,
@@ -346,7 +333,7 @@ class _RestaurantBookingScreenState extends State<RestaurantBookingScreen> {
                     : const Icon(Icons.check_circle_outline),
                 label: Text(_submitting ? 'Processing...' : 'Confirm reservation'),
               ),
-            ), // Confirm uses validated inputs and shows outcome via SnackBars for clear user feedback. [21][26]
+            ),
           ],
         ),
       ),
@@ -411,8 +398,8 @@ class _PartySheetState extends State<_PartySheet> {
 
   @override
   Widget build(BuildContext context) {
-    final seatings = const ['Indoor', 'Outdoor', 'Window'];
-    final occasions = const ['Birthday', 'Anniversary', 'Business', 'Casual'];
+    const seatings = ['Indoor', 'Outdoor', 'Window'];
+    const occasions = ['Birthday', 'Anniversary', 'Business', 'Casual'];
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
@@ -508,12 +495,16 @@ class _SlotSheet extends StatelessWidget {
               final id = (s['id'] ?? '').toString();
               final label = (s['label'] ?? '').toString();
               final available = s['available'] != false;
-              return RadioListTile<String>(
-                value: id,
-                groupValue: selectedId,
-                onChanged: available ? (_) => Navigator.of(context).maybePop(id) : null,
+              final isSel = selectedId == id;
+              return ListTile(
+                onTap: available ? () => Navigator.of(context).maybePop(id) : null,
                 title: Text(label),
                 subtitle: available ? null : const Text('Unavailable'),
+                trailing: Icon(
+                  isSel ? Icons.radio_button_checked : Icons.radio_button_off,
+                  color: isSel ? Theme.of(context).colorScheme.primary : Colors.black45,
+                ),
+                enabled: available,
               );
             },
           ),

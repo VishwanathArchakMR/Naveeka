@@ -118,7 +118,7 @@ class JourneyTopNavScaffold extends StatelessWidget {
           label: 'Flights',
           icon: Icons.flight_takeoff_outlined,
           badge: 'New',
-          builder: (_) => FlightSearchScreen(),
+          builder: (_) => const FlightSearchScreen(),
         ),
         JourneyTopTab(
           label: 'Hotels',

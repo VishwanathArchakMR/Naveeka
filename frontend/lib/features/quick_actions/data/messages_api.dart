@@ -144,7 +144,7 @@ class MessagesApi {
   }) async {
     return _delete<void>(
       path: '/v1/messages/conversations/$conversationId',
-      parse: (_) => null,
+      parse: (_) {},
       cancelToken: cancelToken,
     ); // DELETE is idempotent on the server and returns void for simpler UI flows. [3]
   }
@@ -227,7 +227,7 @@ class MessagesApi {
       return _parseResponse<Message>(res, (data) => Message.fromJson(data as Map<String, dynamic>));
     } on DioException catch (e) {
       if (CancelToken.isCancel(e)) {
-        return ApiFailure<Message>(ApiError(message: 'Cancelled', code: -1));
+        return const ApiFailure<Message>(ApiError(message: 'Cancelled', code: -1));
       }
       return ApiFailure<Message>(_mapDioError(e));
     }
@@ -242,7 +242,7 @@ class MessagesApi {
     return _post<void>(
       path: '/v1/messages/conversations/$conversationId/read',
       body: {'messageId': messageId, 'at': (at ?? DateTime.now()).toIso8601String()},
-      parse: (_) => null,
+      parse: (_) {},
       cancelToken: cancelToken,
       retries: 0,
     ); // Read receipts send ISO‑8601 timestamps using DateTime.toIso8601String for portable serialization. [7]
@@ -256,7 +256,7 @@ class MessagesApi {
     return _post<void>(
       path: '/v1/messages/conversations/$conversationId/typing',
       body: {'typing': isTyping},
-      parse: (_) => null,
+      parse: (_) {},
       cancelToken: cancelToken,
       retries: 0,
     ); // Typing indicators are short‑lived POSTs that the server can broadcast to other participants. [3]
@@ -269,7 +269,7 @@ class MessagesApi {
   }) async {
     return _delete<void>(
       path: '/v1/messages/conversations/$conversationId/messages/$messageId',
-      parse: (_) => null,
+      parse: (_) {},
       cancelToken: cancelToken,
     ); // Message deletion is idempotent server‑side and returns void for simpler UI handling. [3]
   }
@@ -341,7 +341,7 @@ class MessagesApi {
         return await request();
       } on DioException catch (e) {
         if (CancelToken.isCancel(e)) {
-          return ApiFailure<T>(ApiError(message: 'Cancelled', code: -1));
+          return ApiFailure<T>(const ApiError(message: 'Cancelled', code: -1));
         }
         attempt += 1;
         final transient = _isTransient(e);

@@ -90,7 +90,7 @@ class BusCard extends StatelessWidget {
                     const Icon(Icons.star_rate_rounded, size: 18, color: Colors.amber),
                     const SizedBox(width: 4),
                     Text(
-                      rating!.toStringAsFixed(1) + (ratingCount != null ? ' (${ratingCount})' : ''),
+                      rating!.toStringAsFixed(1) + (ratingCount != null ? ' ($ratingCount)' : ''),
                       style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                   ],
@@ -174,7 +174,7 @@ class BusCard extends StatelessWidget {
                 children: [
                   if (seatsLeft != null)
                     Text(
-                      seatsLeft! > 0 ? '${seatsLeft} seats left' : 'Sold out',
+                      seatsLeft! > 0 ? '$seatsLeft seats left' : 'Sold out',
                       style: TextStyle(
                         color: seatsLeft! > 0 ? Colors.green : Colors.red,
                         fontWeight: FontWeight.w600,

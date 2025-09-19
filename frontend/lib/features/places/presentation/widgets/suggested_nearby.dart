@@ -132,7 +132,7 @@ class _NearbyCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final img = _coverUrl(place);
-    final name = (place.name ?? '').trim().isEmpty ? 'Place' : place.name!.trim();
+    final name = (place.name ?? '').trim().isEmpty ? 'Place' : place.name.trim();
     final hasCoords = place.lat != null && place.lng != null;
 
     return SizedBox(

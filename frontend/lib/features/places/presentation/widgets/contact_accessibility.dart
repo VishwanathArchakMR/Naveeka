@@ -35,33 +35,47 @@ class ContactAccessibility extends StatelessWidget {
     this.showTitle = true,
   });
 
-  /// Convenience factory to build from your app's Place model.
-  /// Only uses fields that exist; missing fields are ignored to avoid breakages.
-  factory ContactAccessibility.fromPlace(Place p, {Key? key, bool showTitle = true}) {
+  /// Convenience factory to build from your app's Place model without compile-time
+  /// dependencies on optional fields; missing fields resolve to null safely.
+  factory ContactAccessibility.fromPlace(
+    Place p, {
+    Key? key,
+    bool showTitle = true,
+  }) {
+    final d = p as dynamic;
+
+    T? _try<T>(T? Function() f) {
+      try {
+        return f();
+      } catch (_) {
+        return null;
+      }
+    }
+
     return ContactAccessibility(
       key: key,
       showTitle: showTitle,
-      phone: p.phone,
-      email: p.email, // If your Place doesn’t have email, this will be null safely.
-      website: p.website,
-      openingHours: p.openingHours, // Optional in your model.
-      whatsapp: p.whatsapp,
-      instagram: p.instagram,
-      facebook: p.facebook,
-      twitter: p.twitter,
-      tiktok: p.tiktok,
-      wheelchairAccessible: p.wheelchairAccessible,
-      accessibleParking: p.accessibleParking,
-      accessibleRestroom: p.accessibleRestroom,
-      elevator: p.elevator,
-      brailleMenu: p.brailleMenu,
-      signLanguage: p.signLanguage,
-      serviceAnimalsAllowed: p.serviceAnimalsAllowed,
-      familyFriendly: p.familyFriendly,
-      smokeFree: p.smokeFree,
-      hearingLoop: p.hearingLoop,
-      highContrast: p.highContrast,
-      largePrint: p.largePrint,
+      phone: _try<String?>(() => d.phone as String?),
+      email: _try<String?>(() => d.email as String?),
+      website: _try<String?>(() => d.website as String?),
+      openingHours: _try<String?>(() => d.openingHours as String?),
+      whatsapp: _try<String?>(() => d.whatsapp as String?),
+      instagram: _try<String?>(() => d.instagram as String?),
+      facebook: _try<String?>(() => d.facebook as String?),
+      twitter: _try<String?>(() => d.twitter as String?),
+      tiktok: _try<String?>(() => d.tiktok as String?),
+      wheelchairAccessible: _try<bool?>(() => d.wheelchairAccessible as bool?),
+      accessibleParking: _try<bool?>(() => d.accessibleParking as bool?),
+      accessibleRestroom: _try<bool?>(() => d.accessibleRestroom as bool?),
+      elevator: _try<bool?>(() => d.elevator as bool?),
+      brailleMenu: _try<bool?>(() => d.brailleMenu as bool?),
+      signLanguage: _try<bool?>(() => d.signLanguage as bool?),
+      serviceAnimalsAllowed: _try<bool?>(() => d.serviceAnimalsAllowed as bool?),
+      familyFriendly: _try<bool?>(() => d.familyFriendly as bool?),
+      smokeFree: _try<bool?>(() => d.smokeFree as bool?),
+      hearingLoop: _try<bool?>(() => d.hearingLoop as bool?),
+      highContrast: _try<bool?>(() => d.highContrast as bool?),
+      largePrint: _try<bool?>(() => d.largePrint as bool?),
     );
   }
 
@@ -97,14 +111,26 @@ class ContactAccessibility extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final actions = <_RowAction>[
-      if (_nonEmpty(phone)) _RowAction(Icons.call_outlined, 'Call', () => _launch(Uri(scheme: 'tel', path: _trim(phone))), semantic: 'Call phone'),
-      if (_nonEmpty(email)) _RowAction(Icons.mail_outline, 'Email', () => _openEmail(_trim(email)), semantic: 'Send email'),
-      if (_nonEmpty(website)) _RowAction(Icons.public_outlined, 'Website', () => _openWeb(_trim(website)), semantic: 'Open website'),
-      if (_nonEmpty(whatsapp)) _RowAction(Icons.whatsapp, 'WhatsApp', () => _openWhatsApp(_trim(whatsapp)), semantic: 'Open WhatsApp'),
-      if (_nonEmpty(instagram)) _RowAction(Icons.camera_alt_outlined, 'Instagram', () => _openSocial(_trim(instagram), 'https://instagram.com/'), semantic: 'Open Instagram'),
-      if (_nonEmpty(facebook)) _RowAction(Icons.facebook_outlined, 'Facebook', () => _openSocial(_trim(facebook), 'https://facebook.com/'), semantic: 'Open Facebook'),
-      if (_nonEmpty(twitter)) _RowAction(Icons.alternate_email, 'Twitter', () => _openSocial(_trim(twitter), 'https://twitter.com/'), semantic: 'Open Twitter'),
-      if (_nonEmpty(tiktok)) _RowAction(Icons.movie_creation_outlined, 'TikTok', () => _openSocial(_trim(tiktok), 'https://tiktok.com/@'), semantic: 'Open TikTok'),
+      if (_nonEmpty(phone))
+        _RowAction(Icons.call_outlined, 'Call', () => _launch(Uri(scheme: 'tel', path: _trim(phone))), semantic: 'Call phone'),
+      if (_nonEmpty(email))
+        _RowAction(Icons.mail_outline, 'Email', () => _openEmail(_trim(email)), semantic: 'Send email'),
+      if (_nonEmpty(website))
+        _RowAction(Icons.public_outlined, 'Website', () => _openWeb(_trim(website)), semantic: 'Open website'),
+      if (_nonEmpty(whatsapp))
+        _RowAction(Icons.chat_outlined, 'WhatsApp', () => _openWhatsApp(_trim(whatsapp)), semantic: 'Open WhatsApp'),
+      if (_nonEmpty(instagram))
+        _RowAction(Icons.camera_alt_outlined, 'Instagram', () => _openSocial(_trim(instagram), 'https://instagram.com/'),
+            semantic: 'Open Instagram'),
+      if (_nonEmpty(facebook))
+        _RowAction(Icons.facebook_outlined, 'Facebook', () => _openSocial(_trim(facebook), 'https://facebook.com/'),
+            semantic: 'Open Facebook'),
+      if (_nonEmpty(twitter))
+        _RowAction(Icons.alternate_email, 'Twitter', () => _openSocial(_trim(twitter), 'https://twitter.com/'),
+            semantic: 'Open Twitter'),
+      if (_nonEmpty(tiktok))
+        _RowAction(Icons.movie_creation_outlined, 'TikTok', () => _openSocial(_trim(tiktok), 'https://tiktok.com/@'),
+            semantic: 'Open TikTok'),
     ];
 
     final amenities = <_Amenity>[
@@ -154,17 +180,19 @@ class ContactAccessibility extends StatelessWidget {
                 subtitle: Text(openingHours!.trim()),
               ),
             if (actions.isNotEmpty)
-              ...actions.map((a) => Semantics(
-                    label: a.semantic,
-                    button: true,
-                    child: ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: Icon(a.icon),
-                      title: Text(a.label),
-                      trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
-                      onTap: a.onTap,
-                    ),
-                  )),
+              ...actions.map(
+                (a) => Semantics(
+                  label: a.semantic,
+                  button: true,
+                  child: ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: Icon(a.icon),
+                    title: Text(a.label),
+                    trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                    onTap: a.onTap,
+                  ),
+                ),
+              ),
             if (amenities.isNotEmpty) ...[
               const SizedBox(height: 8),
               Text('Accessibility', style: Theme.of(context).textTheme.labelLarge),
@@ -195,14 +223,11 @@ class ContactAccessibility extends StatelessWidget {
   String _trim(String? s) => (s ?? '').trim();
 
   Future<void> _openEmail(String to) async {
-    // Prefer Uri construction for mailto with encoded parameters.
     final uri = Uri(
       scheme: 'mailto',
       path: to,
-      queryParameters: {
-        // Add defaults if desired; keep empty to avoid confusing user.
-        // 'subject': 'Inquiry',
-        // 'body': '',
+      queryParameters: const {
+        // Add defaults if desired.
       },
     );
     await _launch(uri);
@@ -214,14 +239,12 @@ class ContactAccessibility extends StatelessWidget {
   }
 
   Future<void> _openWhatsApp(String msisdn) async {
-    // Normalize phone digits for wa.me link.
     final digits = msisdn.replaceAll(RegExp(r'[^0-9]'), '');
     final uri = Uri.parse('https://wa.me/$digits');
     await _launch(uri);
   }
 
   Future<void> _openSocial(String input, String base) async {
-    // If full URL passed, launch directly; else treat as handle and combine with base.
     if (input.startsWith('http://') || input.startsWith('https://')) {
       await _launch(Uri.parse(input));
       return;

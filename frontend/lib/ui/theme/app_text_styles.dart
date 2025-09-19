@@ -22,7 +22,7 @@ class AppTypography {
     final base = Typography.material2021(platform: TargetPlatform.android).black;
 
     // Helper to apply family and color to a style.
-    TextStyle _s(TextStyle? t, {bool title = false, bool label = false, double? ls, double? lh}) {
+    TextStyle s(TextStyle? t, {bool title = false, bool label = false, double? ls, double? lh}) {
       final weight = title && boldTitles
           ? FontWeight.w700
           : (label ? FontWeight.w600 : (t?.fontWeight ?? FontWeight.w400));
@@ -36,7 +36,7 @@ class AppTypography {
     }
 
     // Secondary color style for "variant" text
-    TextStyle _variant(TextStyle? t, {bool label = false}) {
+    TextStyle variant(TextStyle? t, {bool label = false}) {
       return (t ?? const TextStyle()).copyWith(
         fontFamily: fontSans,
         color: colors.onSurfaceVariant,
@@ -47,7 +47,7 @@ class AppTypography {
     }
 
     // Emphasis helpers
-    TextStyle _emph(TextStyle? t) => (t ?? const TextStyle()).copyWith(
+    TextStyle emph(TextStyle? t) => (t ?? const TextStyle()).copyWith(
           fontFamily: fontSans,
           color: colors.onSurface.withValues(alpha: 0.92),
           fontWeight: FontWeight.w800,
@@ -56,29 +56,29 @@ class AppTypography {
     // Build the full set, nudging titles for brand emphasis and readability.
     return TextTheme(
       // Display — large hero text, keep default scale but ensure color/weight.
-      displayLarge: _s(base.displayLarge),
-      displayMedium: _s(base.displayMedium),
-      displaySmall: _s(base.displaySmall),
+      displayLarge: s(base.displayLarge),
+      displayMedium: s(base.displayMedium),
+      displaySmall: s(base.displaySmall),
 
       // Headline — section and large content headers.
-      headlineLarge: _s(base.headlineLarge, title: true),
-      headlineMedium: _s(base.headlineMedium, title: true),
-      headlineSmall: _s(base.headlineSmall, title: true),
+      headlineLarge: s(base.headlineLarge, title: true),
+      headlineMedium: s(base.headlineMedium, title: true),
+      headlineSmall: s(base.headlineSmall, title: true),
 
       // Title — app bars, cards, and list titles (strong emphasis).
-      titleLarge: _emph(base.titleLarge),
-      titleMedium: _s(base.titleMedium, title: true),
-      titleSmall: _s(base.titleSmall, title: true),
+      titleLarge: emph(base.titleLarge),
+      titleMedium: s(base.titleMedium, title: true),
+      titleSmall: s(base.titleSmall, title: true),
 
       // Body — paragraphs and supporting text (variant for secondary).
-      bodyLarge: _s(base.bodyLarge),
-      bodyMedium: _s(base.bodyMedium),
-      bodySmall: _variant(base.bodySmall),
+      bodyLarge: s(base.bodyLarge),
+      bodyMedium: s(base.bodyMedium),
+      bodySmall: variant(base.bodySmall),
 
       // Label — component text (buttons/chips/inputs).
-      labelLarge: _s(base.labelLarge, label: true),
-      labelMedium: _s(base.labelMedium, label: true),
-      labelSmall: _variant(base.labelSmall, label: true),
+      labelLarge: s(base.labelLarge, label: true),
+      labelMedium: s(base.labelMedium, label: true),
+      labelSmall: variant(base.labelSmall, label: true),
     ).apply(
       // Optional monospace for code fragments via theme extension if needed.
       // Use copyWith on specific widgets for mono when required.

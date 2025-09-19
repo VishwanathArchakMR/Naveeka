@@ -250,7 +250,7 @@ class _InteractiveMapState extends State<InteractiveMap> {
               Icon(Icons.zoom_in_map_rounded, size: widget.compact ? 16 : 18, color: cs.onSurfaceVariant),
               const SizedBox(width: 6),
               Text(
-                'z ${_camera.zoom.toStringAsFixed(1)} • ${_mapType}',
+                'z ${_camera.zoom.toStringAsFixed(1)} • $_mapType',
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       color: cs.onSurface,
                       fontWeight: FontWeight.w700,

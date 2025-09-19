@@ -209,7 +209,7 @@ class _NotificationSettingsState extends State<NotificationSettings> with Widget
             const SizedBox(height: 12),
 
             // Categories
-            _SectionHeader(text: 'Categories'),
+            const _SectionHeader(text: 'Categories'),
             _SwitchTile(
               icon: Icons.chat_bubble_outline,
               title: 'Messages',
@@ -250,7 +250,7 @@ class _NotificationSettingsState extends State<NotificationSettings> with Widget
             const SizedBox(height: 12),
 
             // Preferences
-            _SectionHeader(text: 'Preferences'),
+            const _SectionHeader(text: 'Preferences'),
             _SwitchTile(
               icon: Icons.volume_up_outlined,
               title: 'Sounds',

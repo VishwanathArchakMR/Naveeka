@@ -245,7 +245,7 @@ class _ModeChips extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final all = TransportMode.values;
+    const all = TransportMode.values;
 
     return Wrap(
       spacing: 8,

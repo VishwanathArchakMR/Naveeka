@@ -61,9 +61,9 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
           bottom: const TabBar(
             isScrollable: false,
             tabs: [
-              Tab(icon: Icon(Icons.event_upcoming), text: 'Upcoming'),
+              Tab(icon: Icon(Icons.event_available), text: 'Upcoming'),
               Tab(icon: Icon(Icons.history), text: 'Past'),
-              Tab(icon: Icon(Icons.receipt_refund_outlined), text: 'Refunds'),
+              Tab(icon: Icon(Icons.receipt_long_outlined), text: 'Refunds'),
             ],
           ),
         ),

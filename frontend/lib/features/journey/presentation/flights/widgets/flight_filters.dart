@@ -174,7 +174,7 @@ class _FlightFiltersState extends State<FlightFilters> {
 
   @override
   Widget build(BuildContext context) {
-    final spacing = 8.0;
+    const spacing = 8.0;
 
     return SafeArea(
       top: false,
@@ -207,7 +207,7 @@ class _FlightFiltersState extends State<FlightFilters> {
             const SizedBox(height: 8),
 
             // Price range
-            _SectionTitle('Price'),
+            const _SectionTitle('Price'),
             Row(
               children: [
                 Expanded(
@@ -236,7 +236,7 @@ class _FlightFiltersState extends State<FlightFilters> {
             const SizedBox(height: 12),
 
             // Departure window
-            _SectionTitle('Departure time'),
+            const _SectionTitle('Departure time'),
             RangeSlider(
               values: _departHours,
               min: 0,
@@ -256,7 +256,7 @@ class _FlightFiltersState extends State<FlightFilters> {
             const SizedBox(height: 12),
 
             // Stops
-            _SectionTitle('Stops'),
+            const _SectionTitle('Stops'),
             Wrap(
               spacing: spacing,
               runSpacing: spacing,
@@ -270,7 +270,7 @@ class _FlightFiltersState extends State<FlightFilters> {
             const SizedBox(height: 12),
 
             // Cabins
-            _SectionTitle('Cabin'),
+            const _SectionTitle('Cabin'),
             Wrap(
               spacing: spacing,
               runSpacing: spacing,
@@ -294,7 +294,7 @@ class _FlightFiltersState extends State<FlightFilters> {
 
             // Airlines
             if (widget.airlines.isNotEmpty) ...[
-              _SectionTitle('Airlines'),
+              const _SectionTitle('Airlines'),
               SizedBox(
                 height: 120,
                 child: SingleChildScrollView(

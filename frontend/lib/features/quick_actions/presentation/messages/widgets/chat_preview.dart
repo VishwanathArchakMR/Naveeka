@@ -90,7 +90,7 @@ class ChatPreview extends StatelessWidget {
               duration: const Duration(milliseconds: 180),
               transitionBuilder: (child, anim) => ScaleTransition(scale: anim, child: child),
               child: data.isTyping
-                  ? _TypingPill(key: const ValueKey('typing'))
+                  ? const _TypingPill(key: ValueKey('typing'))
                   : _Snippet(
                       key: const ValueKey('snippet'),
                       sender: data.lastMessageSender,

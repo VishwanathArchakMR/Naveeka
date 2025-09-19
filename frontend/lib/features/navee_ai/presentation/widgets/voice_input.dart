@@ -272,7 +272,7 @@ class _VoiceInputSheetState extends State<VoiceInputSheet> {
               SizedBox(
                 width: 180,
                 child: DropdownButtonFormField<String>(
-                  value: _localeId,
+                  initialValue: _localeId,
                   isDense: true,
                   decoration: const InputDecoration(
                     labelText: 'Language',

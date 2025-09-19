@@ -112,7 +112,7 @@ class TrailsListController extends AsyncNotifier<PagedState<TrailSummary>> {
       limit: 20,
       cursor: null,
     );
-    state = AsyncData(PagedState<TrailSummary>(items: page.items, cursor: page.nextCursor, loading: false)).value!;
+    state = AsyncData(PagedState<TrailSummary>(items: page.items, cursor: page.nextCursor, loading: false)).value;
   } // AsyncNotifier + explicit refresh for pull-to-refresh UX. [1]
 
   Future<void> loadMore() async {
@@ -182,7 +182,7 @@ class TrailReviewsController extends AsyncNotifier<PagedState<TrailReview>> {
   Future<void> refresh({String? sort}) async {
     state = const AsyncLoading();
     final page = await _api.getReviews(trailId: _trailId, limit: 20, cursor: null, sort: sort);
-    state = AsyncData(PagedState<TrailReview>(items: page.items, cursor: page.nextCursor, loading: false)).value!;
+    state = AsyncData(PagedState<TrailReview>(items: page.items, cursor: page.nextCursor, loading: false)).value;
   }
 
   Future<void> loadMore({String? sort}) async {

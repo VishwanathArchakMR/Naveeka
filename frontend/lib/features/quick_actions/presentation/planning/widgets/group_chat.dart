@@ -349,7 +349,7 @@ class _ModeChips extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final items = const [
+    const items = [
       (_GroupMode.chat, 'Chat', Icons.chat_bubble_outline),
       (_GroupMode.polls, 'Polls', Icons.how_to_vote_outlined),
       (_GroupMode.schedule, 'Schedule', Icons.event_outlined),
@@ -401,9 +401,9 @@ class _PlanSummaryPanelState extends State<_PlanSummaryPanel> {
         ExpansionPanel(
           isExpanded: _open,
           canTapOnHeader: true,
-          headerBuilder: (_, __) => ListTile(
+          headerBuilder: (_, __) => const ListTile(
             contentPadding: EdgeInsets.zero,
-            title: const Text('Plan summary', style: TextStyle(fontWeight: FontWeight.w800)),
+            title: Text('Plan summary', style: TextStyle(fontWeight: FontWeight.w800)),
           ),
           body: Container(
             width: double.infinity,

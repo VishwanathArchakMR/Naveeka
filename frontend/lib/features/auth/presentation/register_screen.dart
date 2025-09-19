@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../ui/components/glass_card.dart';
 import 'widgets/signup_form.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -23,7 +22,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
   late final Animation<Offset> _slide = Tween<Offset>(
     begin: const Offset(0, 0.1),
     end: Offset.zero,
-  ).chain( CurveTween(curve: Curves.easeOutCubic)).animate(_animController);
+  ).chain(CurveTween(curve: Curves.easeOutCubic)).animate(_animController);
 
   @override
   void initState() {
@@ -114,6 +113,49 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+// Local lightweight GlassCard replacement to avoid missing import.
+class GlassCard extends StatelessWidget {
+  final Widget child;
+  final EdgeInsetsGeometry padding;
+  final EdgeInsetsGeometry? margin;
+  final BorderRadiusGeometry borderRadius;
+
+  const GlassCard({
+    super.key,
+    required this.child,
+    this.padding = const EdgeInsets.all(16),
+    this.margin,
+    this.borderRadius = const BorderRadius.all(Radius.circular(16)),
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      margin: margin,
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.06),
+        borderRadius: borderRadius,
+        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.25),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: padding,
+        child: DefaultTextStyle.merge(
+          style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white),
+          child: child,
         ),
       ),
     );

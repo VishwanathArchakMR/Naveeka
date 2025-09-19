@@ -360,8 +360,8 @@ class _RailPainter extends CustomPainter {
       ..strokeWidth = 2;
 
     final centerX = size.width / 2;
-    final dotRadius = 12 / 2;
-    final topY = 0;
+    const dotRadius = 12 / 2;
+    const topY = 0;
     final centerY = size.height / 2;
     if (drawTop) {
       canvas.drawLine(

@@ -137,7 +137,7 @@ class FavoritePlace {
   // -------- JSON --------
 
   factory FavoritePlace.fromJson(Map<String, dynamic> json) {
-    FavoriteSource _parseSource(Object? v) {
+    FavoriteSource parseSource(Object? v) {
       final s = (v ?? 'manual').toString();
       try {
         return FavoriteSource.values.byName(s);
@@ -146,7 +146,7 @@ class FavoritePlace {
       }
     }
 
-    FavoritePrivacy _parsePrivacy(Object? v) {
+    FavoritePrivacy parsePrivacy(Object? v) {
       final s = (v ?? 'private').toString();
       try {
         return FavoritePrivacy.values.byName(s);
@@ -155,7 +155,7 @@ class FavoritePlace {
       }
     }
 
-    Coordinates? _parseCoords(Object? v) {
+    Coordinates? parseCoords(Object? v) {
       if (v is Map<String, dynamic>) return Coordinates.fromJson(v);
       return null;
     }
@@ -167,14 +167,14 @@ class FavoritePlace {
       name: (json['name'] ?? '').toString(),
       category: (json['category'] as String?)?.toString(),
       address: (json['address'] as String?)?.toString(),
-      coordinates: _parseCoords(json['coordinates'] ?? json['coord']),
+      coordinates: parseCoords(json['coordinates'] ?? json['coord']),
       coverImageUrl: (json['coverImageUrl'] as String?)?.toString(),
       rating: (json['rating'] as num?)?.toDouble(),
       tags: ((json['tags'] as List?) ?? const <dynamic>[]).map((e) => e.toString()).toList(growable: false),
       notes: (json['notes'] as String?)?.toString(),
       isPinned: (json['isPinned'] as bool?) ?? false,
-      source: _parseSource(json['source']),
-      privacy: _parsePrivacy(json['privacy']),
+      source: parseSource(json['source']),
+      privacy: parsePrivacy(json['privacy']),
       createdAt: DateTime.parse(json['createdAt'].toString()),
       updatedAt: json['updatedAt'] != null ? DateTime.tryParse(json['updatedAt'].toString()) : null,
       metadata: (json['metadata'] is Map<String, dynamic>) ? Map<String, dynamic>.from(json['metadata'] as Map) : null,

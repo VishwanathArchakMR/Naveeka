@@ -118,7 +118,7 @@ class HotelCard extends StatelessWidget {
                         ),
                         if (reviewCount != null) ...[
                           const SizedBox(width: 6),
-                          Text('(${reviewCount})', style: const TextStyle(color: Colors.black54)),
+                          Text('($reviewCount)', style: const TextStyle(color: Colors.black54)),
                         ],
                       ],
                       const Spacer(),
@@ -214,7 +214,7 @@ class _CoverImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ratio = 16 / 9.0;
+    const ratio = 16 / 9.0;
     return AspectRatio(
       aspectRatio: ratio,
       child: imageUrl != null && imageUrl!.isNotEmpty
@@ -222,7 +222,7 @@ class _CoverImage extends StatelessWidget {
               imageUrl!,
               fit: BoxFit.cover,
               errorBuilder: (_, __, ___) {
-                return _ImageFallback();
+                return const _ImageFallback();
               },
               loadingBuilder: (ctx, child, progress) {
                 if (progress == null) return child;
@@ -242,9 +242,9 @@ class _ImageFallback extends StatelessWidget {
     return Container(
       color: Theme.of(context).colorScheme.surfaceContainerHighest,
       alignment: Alignment.center,
-      child: Row(
+      child: const Row(
         mainAxisSize: MainAxisSize.min,
-        children: const [
+        children: [
           Icon(Icons.image_not_supported_outlined, color: Colors.black45),
           SizedBox(width: 6),
           Text('No image', style: TextStyle(color: Colors.black45)),

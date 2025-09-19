@@ -203,7 +203,7 @@ class FavoritesController extends AsyncNotifier<FavoritesState> {
           tags: _q.tags.isEmpty ? null : _q.tags,
           query: ( _q.search ?? '').trim().isEmpty ? null : _q.search!.trim(),
         ));
-    state = res.whenData((page) => AsyncData(FavoritesState(items: page.items, cursor: page.nextCursor, loading: false)).value!);
+    state = res.whenData((page) => AsyncData(FavoritesState(items: page.items, cursor: page.nextCursor, loading: false)).value);
   }
 
   Future<void> loadMore() async {

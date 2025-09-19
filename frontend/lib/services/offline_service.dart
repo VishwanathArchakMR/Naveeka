@@ -633,7 +633,7 @@ class OfflineService {
 
   int _expoBackoffWithJitter(int initialMs, int attempts) {
     final base = initialMs * math.pow(2, attempts).toInt();
-    final cap = 60 * 1000; // cap at 60s
+    const cap = 60 * 1000; // cap at 60s
     final bounded = math.min(base, cap);
     final jitter = math.Random().nextInt((bounded * 0.2).toInt() + 1); // +/-20% jitter
     return (bounded * 0.9).toInt() + jitter;

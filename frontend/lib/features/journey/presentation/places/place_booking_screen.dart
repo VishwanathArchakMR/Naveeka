@@ -74,7 +74,11 @@ class _PlaceBookingScreenState extends State<PlaceBookingScreen> {
     );
     res.fold(
       onSuccess: (data) {
-        final list = (data['slots'] as List?)?.cast<Map<String, dynamic>>() ?? const <Map<String, dynamic>>[];
+        final list = (data['slots'] as List?)
+                ?.map((e) => Map<String, dynamic>.from(e as Map))
+                .toList() ??
+            const <Map<String, dynamic>>[];
+        if (!mounted) return;
         setState(() {
           _slots = list;
           _selectedSlotId = list.isNotEmpty ? (list.first['id']?.toString()) : null;
@@ -92,7 +96,7 @@ class _PlaceBookingScreenState extends State<PlaceBookingScreen> {
       initialDate: _date.isBefore(now) ? now : _date,
       firstDate: now,
       lastDate: now.add(const Duration(days: 365)),
-    ); // Use Material date picker for selecting the experience date with future bounds [4]
+    );
     if (picked != null) {
       setState(() {
         _date = DateTime(picked.year, picked.month, picked.day);
@@ -107,7 +111,7 @@ class _PlaceBookingScreenState extends State<PlaceBookingScreen> {
     final picked = await showTimePicker(
       context: context,
       initialTime: _time ?? const TimeOfDay(hour: 10, minute: 0),
-    ); // showTimePicker presents a Material time dialog when slots aren’t used [1]
+    );
     if (picked != null) {
       setState(() {
         _time = picked;
@@ -126,7 +130,7 @@ class _PlaceBookingScreenState extends State<PlaceBookingScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (ctx) => _TicketSheet(adults: _adults, children: _children, seniors: _seniors),
-    ); // showModalBottomSheet returns data on pop to keep flows modular and predictable [15][12]
+    );
     if (result != null) {
       setState(() {
         _adults = result['adults'] ?? _adults;
@@ -146,9 +150,7 @@ class _PlaceBookingScreenState extends State<PlaceBookingScreen> {
     final api = PlacesApi();
     final body = {
       'date': _dfIso.format(_date),
-      'time': _selectedSlotId != null
-          ? null
-          : (_time != null ? _toIsoTime(_time!) : null),
+      'time': _selectedSlotId != null ? null : (_time != null ? _toIsoTime(_time!) : null),
       'slotId': _selectedSlotId,
       'tickets': {
         'adults': _adults,
@@ -159,11 +161,15 @@ class _PlaceBookingScreenState extends State<PlaceBookingScreen> {
 
     final res = await api.price(placeId: widget.placeId, payload: body);
     res.fold(
-      onSuccess: (data) => setState(() {
-        _fare = data;
-        _pricing = false;
-      }),
+      onSuccess: (data) {
+        if (!mounted) return;
+        setState(() {
+          _fare = data;
+          _pricing = false;
+        });
+      },
       onError: (e) {
+        if (!mounted) return;
         setState(() => _pricing = false);
         _snack(e.safeMessage ?? 'Failed to fetch price');
       },
@@ -171,7 +177,7 @@ class _PlaceBookingScreenState extends State<PlaceBookingScreen> {
   }
 
   Future<void> _book() async {
-    final ok = _formKey.currentState?.validate() ?? false; // Validate via Form key as per cookbook pattern [7]
+    final ok = _formKey.currentState?.validate() ?? false;
     if (!ok) return;
 
     if (_adults + _children + _seniors <= 0) {
@@ -184,9 +190,7 @@ class _PlaceBookingScreenState extends State<PlaceBookingScreen> {
     final api = PlacesApi();
     final payload = {
       'date': _dfIso.format(_date),
-      'time': _selectedSlotId != null
-          ? null
-          : (_time != null ? _toIsoTime(_time!) : null),
+      'time': _selectedSlotId != null ? null : (_time != null ? _toIsoTime(_time!) : null),
       'slotId': _selectedSlotId,
       'tickets': {
         'adults': _adults,
@@ -211,7 +215,7 @@ class _PlaceBookingScreenState extends State<PlaceBookingScreen> {
         Navigator.of(context).maybePop(data);
       },
       onError: (e) => _snack(e.safeMessage ?? 'Booking failed'),
-    ); // Feedback via SnackBars shown through ScaffoldMessenger for route-safe UX [7]
+    );
 
     if (mounted) setState(() => _submitting = false);
   }
@@ -223,14 +227,20 @@ class _PlaceBookingScreenState extends State<PlaceBookingScreen> {
   }
 
   void _snack(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg))); // Use ScaffoldMessenger for reliable SnackBars in modern Flutter apps [7]
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   @override
   Widget build(BuildContext context) {
     final dateStr = _dfLong.format(_date);
     final timeStr = _selectedSlotId != null
-        ? (_slots.firstWhere((s) => (s['id']?.toString()) == _selectedSlotId, orElse: () => const {}).putIfAbsent('label', () => '')?.toString() ?? '')
+        ? (() {
+            final slot = _slots.firstWhere(
+              (s) => (s['id']?.toString()) == _selectedSlotId,
+              orElse: () => <String, dynamic>{},
+            );
+            return (slot['label'] ?? '').toString();
+          })()
         : (_time != null ? _time!.format(context) : 'Any time');
 
     return Scaffold(
@@ -246,7 +256,7 @@ class _PlaceBookingScreenState extends State<PlaceBookingScreen> {
               subtitle: const Text('Experience date'),
               trailing: const Icon(Icons.edit_calendar_outlined),
               onTap: _pickDate,
-            ), // Date is selected using the standard Material date picker dialog [4]
+            ),
 
             // Slot or time
             if (_slots.isNotEmpty)
@@ -256,7 +266,13 @@ class _PlaceBookingScreenState extends State<PlaceBookingScreen> {
                 subtitle: Text(
                   _selectedSlotId == null
                       ? 'Select timeslot'
-                      : (_slots.firstWhere((s) => (s['id']?.toString()) == _selectedSlotId, orElse: () => const {})['label']?.toString() ?? ''),
+                      : (() {
+                          final slot = _slots.firstWhere(
+                            (s) => (s['id']?.toString()) == _selectedSlotId,
+                            orElse: () => <String, dynamic>{},
+                          );
+                          return (slot['label'] ?? '').toString();
+                        })(),
                 ),
                 trailing: const Icon(Icons.keyboard_arrow_down_rounded),
                 onTap: () async {
@@ -277,7 +293,7 @@ class _PlaceBookingScreenState extends State<PlaceBookingScreen> {
                     await _reprice();
                   }
                 },
-              ) // Slots use a modal bottom sheet that returns the selection via Navigator.pop for a clean handoff [15][12]
+              )
             else
               ListTile(
                 leading: const Icon(Icons.schedule_outlined),
@@ -285,18 +301,18 @@ class _PlaceBookingScreenState extends State<PlaceBookingScreen> {
                 subtitle: Text(timeStr),
                 trailing: const Icon(Icons.edit_outlined),
                 onTap: _pickTimeManually,
-              ), // If no pre-defined slots, fall back to showTimePicker for manual time choice [1]
+              ),
 
             const SizedBox(height: 8),
 
             // Tickets
             ListTile(
               leading: const Icon(Icons.confirmation_number_outlined),
-              title: Text('${_adults} Adults${_children > 0 ? ' • ${_children} Children' : ''}${_seniors > 0 ? ' • ${_seniors} Seniors' : ''}'),
+              title: Text('$_adults Adults${_children > 0 ? ' • $_children Children' : ''}${_seniors > 0 ? ' • $_seniors Seniors' : ''}'),
               subtitle: const Text('Tickets'),
               trailing: const Icon(Icons.tune),
               onTap: _openTicketSheet,
-            ), // Ticket quantities edited in a modal bottom sheet for concise input [15]
+            ),
 
             const SizedBox(height: 12),
 
@@ -325,7 +341,7 @@ class _PlaceBookingScreenState extends State<PlaceBookingScreen> {
                       prefixIcon: Icon(Icons.person_outline),
                     ),
                     validator: (v) => (v == null || v.trim().isEmpty) ? 'Enter name' : null,
-                  ), // Form and field-level validators follow Flutter’s cookbook guidance for reliability [7][10]
+                  ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: _emailCtrl,
@@ -374,7 +390,7 @@ class _PlaceBookingScreenState extends State<PlaceBookingScreen> {
                     : const Icon(Icons.check_circle_outline),
                 label: Text(_submitting ? 'Processing...' : 'Confirm booking'),
               ),
-            ), // Submit button triggers booking and reports outcome via SnackBars, keeping UI responsive and clear [7]
+            ),
           ],
         ),
       ),
@@ -435,33 +451,38 @@ class _TicketSheetState extends State<_TicketSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            children: [
-              const Expanded(child: Text('Tickets', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16))),
-              IconButton(onPressed: _close, icon: const Icon(Icons.close)),
-            ],
-          ),
-          const SizedBox(height: 8),
-          _row('Adults', _adults, () => setState(() => _adults += 1), () => setState(() => _adults = _adults > 0 ? _adults - 1 : 0)),
-          const SizedBox(height: 8),
-          _row('Children', _children, () => setState(() => _children += 1), () => setState(() => _children = _children > 0 ? _children - 1 : 0)),
-          const SizedBox(height: 8),
-          _row('Seniors', _seniors, () => setState(() => _seniors += 1), () => setState(() => _seniors = _seniors > 0 ? _seniors - 1 : 0)),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton.icon(
-              onPressed: _close,
-              icon: const Icon(Icons.check_circle_outline),
-              label: const Text('Done'),
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                const Expanded(child: Text('Tickets', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16))),
+                IconButton(onPressed: _close, icon: const Icon(Icons.close)),
+              ],
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            _row('Adults', _adults, () => setState(() => _adults += 1),
+                () => setState(() => _adults = _adults > 0 ? _adults - 1 : 0)),
+            const SizedBox(height: 8),
+            _row('Children', _children, () => setState(() => _children += 1),
+                () => setState(() => _children = _children > 0 ? _children - 1 : 0)),
+            const SizedBox(height: 8),
+            _row('Seniors', _seniors, () => setState(() => _seniors += 1),
+                () => setState(() => _seniors = _seniors > 0 ? _seniors - 1 : 0)),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: _close,
+                icon: const Icon(Icons.check_circle_outline),
+                label: const Text('Done'),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -475,38 +496,44 @@ class _SlotSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            children: [
-              const Expanded(child: Text('Select timeslot', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16))),
-              IconButton(onPressed: () => Navigator.of(context).maybePop(), icon: const Icon(Icons.close)),
-            ],
-          ),
-          const SizedBox(height: 8),
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: slots.length,
-            separatorBuilder: (_, __) => const Divider(height: 1),
-            itemBuilder: (context, i) {
-              final s = slots[i];
-              final id = (s['id'] ?? '').toString();
-              final label = (s['label'] ?? '').toString();
-              final available = s['available'] != false;
-              return RadioListTile<String>(
-                value: id,
-                groupValue: selectedId,
-                onChanged: available ? (_) => Navigator.of(context).maybePop(s['id']?.toString()) : null,
-                title: Text(label),
-                subtitle: available ? null : const Text('Unavailable'),
-              );
-            },
-          ),
-        ],
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                const Expanded(child: Text('Select timeslot', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16))),
+                IconButton(onPressed: () => Navigator.of(context).maybePop(), icon: const Icon(Icons.close)),
+              ],
+            ),
+            const SizedBox(height: 8),
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: slots.length,
+              separatorBuilder: (_, __) => const Divider(height: 1),
+              itemBuilder: (context, i) {
+                final s = slots[i];
+                final id = (s['id'] ?? '').toString();
+                final label = (s['label'] ?? '').toString();
+                final available = s['available'] != false;
+                final selected = id == selectedId;
+                return ListTile(
+                  onTap: available ? () => Navigator.of(context).maybePop(id) : null,
+                  title: Text(label),
+                  subtitle: available ? null : const Text('Unavailable'),
+                  leading: Icon(
+                    selected ? Icons.radio_button_checked : Icons.radio_button_off,
+                    color: selected ? Theme.of(context).colorScheme.primary : null,
+                  ),
+                  trailing: available ? null : const Icon(Icons.block),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -569,5 +596,5 @@ class _FareSummary extends StatelessWidget {
     if (v is num) return v;
     if (v is String) return num.tryParse(v);
     return null;
-  }
+    }
 }

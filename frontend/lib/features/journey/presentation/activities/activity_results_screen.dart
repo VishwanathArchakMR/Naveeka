@@ -1,7 +1,6 @@
 // lib/features/journey/presentation/activities/activity_results_screen.dart
 
 import 'package:flutter/material.dart';
-import 'package:latlong2/latlong.dart';
 
 import '../../data/activities_api.dart';
 import 'widgets/activity_card.dart';
@@ -151,7 +150,7 @@ class _ActivityResultsScreenState extends State<ActivityResultsScreen> {
           _loadMore = false;
           _hasMore = false;
         });
-        _snack(err.safeMessage ?? 'Failed to load activities');
+        _snack(err.safeMessage); // safeMessage treated as non-nullable
       },
     );
   }
@@ -300,7 +299,7 @@ class _ActivityResultsScreenState extends State<ActivityResultsScreen> {
           SizedBox(
             width: 180,
             child: DropdownButtonFormField<String>(
-              value: _sort,
+              initialValue: _sort,
               icon: const Icon(Icons.sort),
               onChanged: (v) async {
                 setState(() => _sort = v);
@@ -384,4 +383,11 @@ class _ActivityResultsScreenState extends State<ActivityResultsScreen> {
     }
     return null;
   }
+}
+
+// Minimal local LatLng replacement to avoid external package dependency.
+class LatLng {
+  final double latitude;
+  final double longitude;
+  const LatLng(this.latitude, this.longitude);
 }

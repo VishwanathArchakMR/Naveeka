@@ -173,7 +173,7 @@ class _PrivacySecurityState extends State<PrivacySecurity> with WidgetsBindingOb
                   const SizedBox(height: 6),
                   ListTile(
                     contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                    leading: _LeadingIcon(icon: Icons.lock_outline),
+                    leading: const _LeadingIcon(icon: Icons.lock_outline),
                     title: Text(widget.appLockEnabled ? 'Enabled' : 'Disabled', style: const TextStyle(fontWeight: FontWeight.w800)),
                     subtitle: Text(
                       'Use biometrics or device credentials to unlock the app',

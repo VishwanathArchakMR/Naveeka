@@ -59,7 +59,7 @@ class _LoginFormState extends ConsumerState<LoginForm> {
 
     try {
       // Call the notifier's login; it should return ApiResult or throw AppException. [20]
-      final result = await ref.read(authStateProvider.notifier).login(email, password) as ApiResult<Map<String, dynamic>>;
+      final result = await ref.read(authStateProvider.notifier).login(email, password);
 
       if (!mounted) return;
       result.fold(

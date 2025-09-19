@@ -101,8 +101,9 @@ class LocationUtils {
     final parts = s.split(RegExp(r'\s*,\s*'));
     if (parts.length != 2) return null;
 
-    final lat = double.tryParse(parts);
-    final lon = double.tryParse(parts);
+    // Use parts[0] and parts[1] as Strings for parsing
+    final lat = double.tryParse(parts[0]);
+    final lon = double.tryParse(parts[1]);
     if (lat == null || lon == null) return null;
 
     if (!isValidLatitude(lat) || !isValidLongitude(lon)) return null;
@@ -142,7 +143,7 @@ class LocationUtils {
 
     if (parts.length == 1) {
       // Decimal-only fallback
-      final dd = double.tryParse(parts);
+      final dd = double.tryParse(parts[0]);
       if (dd == null) return null;
       final val = dd * sign;
       if (isLatitude && !isValidLatitude(val)) return null;
@@ -150,11 +151,10 @@ class LocationUtils {
       return val;
     }
 
-    degrees = double.tryParse(
-      
-    ) ?? 0;
-    if (parts.length >= 2) minutes = double.tryParse(parts) ?? 0;
-    if (parts.length >= 3) seconds = double.tryParse(parts) ?? 0;
+    // Parse components by indexing the list of strings
+    degrees = double.tryParse(parts[0]) ?? 0;
+    if (parts.length >= 2) minutes = double.tryParse(parts[1]) ?? 0;
+    if (parts.length >= 3) seconds = double.tryParse(parts[2]) ?? 0;
 
     // Decimal Degrees = d + m/60 + s/3600
     double dd = degrees + (minutes / 60.0) + (seconds / 3600.0);
@@ -173,8 +173,9 @@ class LocationUtils {
     final parts = input.split(RegExp(r'\s*,\s*'));
     if (parts.length != 2) return null;
 
-    final lat = parseDmsSingle(parts, isLatitude: true);
-    final lon = parseDmsSingle(parts, isLatitude: false);
+    // Pass each token string to parseDmsSingle
+    final lat = parseDmsSingle(parts[0], isLatitude: true);
+    final lon = parseDmsSingle(parts[1], isLatitude: false);
     if (lat == null || lon == null) return null;
     return Coordinates(latitude: lat, longitude: lon);
   }

@@ -263,9 +263,9 @@ class _JourneyCard extends StatelessWidget {
     return Container(
       color: Theme.of(context).colorScheme.surfaceContainerHighest,
       alignment: Alignment.center,
-      child: Row(
+      child: const Row(
         mainAxisSize: MainAxisSize.min,
-        children: const [
+        children: [
           Icon(Icons.image_not_supported_outlined, color: Colors.black45),
           SizedBox(width: 6),
           Text('No image', style: TextStyle(color: Colors.black45)),

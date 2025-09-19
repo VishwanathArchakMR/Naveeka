@@ -335,7 +335,7 @@ class _PlanningScreenState extends State<PlanningScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Column(
             children: [
-              InviteFriendsCard(suggested: const []),
+              const InviteFriendsCard(suggested: []),
               const SizedBox(height: 12),
               PlanningSearchButton(
                 onApply: (params) async {

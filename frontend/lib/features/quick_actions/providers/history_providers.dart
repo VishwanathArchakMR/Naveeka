@@ -235,7 +235,7 @@ class PointsController extends AsyncNotifier<PagedState<HistoryPoint>> {
     final repo = ref.read(historyRepositoryProvider);
     state = const AsyncLoading();
     final res = await AsyncValue.guard(() => repo.listPoints(filters: _filters, cursor: null));
-    state = res.whenData((page) => AsyncData(PagedState<HistoryPoint>(items: page.items, cursor: page.nextCursor, loading: false)).value!);
+    state = res.whenData((page) => AsyncData(PagedState<HistoryPoint>(items: page.items, cursor: page.nextCursor, loading: false)).value);
   }
 
   Future<void> loadMore() async {
@@ -270,7 +270,7 @@ class RouteController extends AsyncNotifier<PagedState<RouteHistoryItem>> {
     final repo = ref.read(historyRepositoryProvider);
     state = const AsyncLoading();
     final res = await AsyncValue.guard(() => repo.listRoute(filters: _filters, cursor: null));
-    state = res.whenData((page) => AsyncData(PagedState<RouteHistoryItem>(items: page.items, cursor: page.nextCursor, loading: false)).value!);
+    state = res.whenData((page) => AsyncData(PagedState<RouteHistoryItem>(items: page.items, cursor: page.nextCursor, loading: false)).value);
   }
 
   Future<void> loadMore() async {
@@ -331,7 +331,7 @@ class TransportController extends AsyncNotifier<PagedState<TransportSegment>> {
     final repo = ref.read(historyRepositoryProvider);
     state = const AsyncLoading();
     final res = await AsyncValue.guard(() => repo.listTransport(filters: _filters, cursor: null));
-    state = res.whenData((page) => AsyncData(PagedState<TransportSegment>(items: page.items, cursor: page.nextCursor, loading: false)).value!);
+    state = res.whenData((page) => AsyncData(PagedState<TransportSegment>(items: page.items, cursor: page.nextCursor, loading: false)).value);
   }
 
   Future<void> loadMore() async {
@@ -388,7 +388,7 @@ class PlacesController extends AsyncNotifier<PagedState<VisitedPlaceRow>> {
     final repo = ref.read(historyRepositoryProvider);
     state = const AsyncLoading();
     final res = await AsyncValue.guard(() => repo.listPlaces(filters: _filters, cursor: null));
-    state = res.whenData((page) => AsyncData(PagedState<VisitedPlaceRow>(items: page.items, cursor: page.nextCursor, loading: false)).value!);
+    state = res.whenData((page) => AsyncData(PagedState<VisitedPlaceRow>(items: page.items, cursor: page.nextCursor, loading: false)).value);
   }
 
   Future<void> loadMore() async {

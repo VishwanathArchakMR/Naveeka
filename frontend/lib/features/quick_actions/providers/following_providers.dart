@@ -157,7 +157,7 @@ class FollowController extends AsyncNotifier<FollowState> {
           limit: q.pageSize,
           query: (q.search ?? '').trim().isEmpty ? null : q.search!.trim(),
         ));
-    state = res.whenData((page) => AsyncData(FollowState(items: page.items, cursor: page.nextCursor, loading: false)).value!);
+    state = res.whenData((page) => AsyncData(FollowState(items: page.items, cursor: page.nextCursor, loading: false)).value);
   } // AsyncValue.guard simplifies try/catch and maps to AsyncData/AsyncError consistently for UI. [1][14]
 
   Future<void> loadMore() async {

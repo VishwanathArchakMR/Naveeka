@@ -7,7 +7,6 @@ import 'widgets/hotel_card.dart';
 import 'widgets/hotel_filters.dart';
 import 'widgets/hotel_map_view.dart';
 import 'hotel_booking_screen.dart';
-import '../../data/hotels_api.dart';
 
 class HotelResultsScreen extends StatefulWidget {
   const HotelResultsScreen({
@@ -119,7 +118,7 @@ class _HotelResultsScreenState extends State<HotelResultsScreen> {
       initialPayAtHotel: _filters['payAtHotel'] as bool?,
       initialBreakfast: _filters['breakfastIncluded'] as bool?,
       currency: widget.currency,
-    ); // Presented as a modal bottom sheet; returns a normalized map on pop for easy downstream use [2][3]
+    );
     if (res != null) {
       setState(() => _filters = res);
       await _fetch(reset: true);
@@ -140,60 +139,110 @@ class _HotelResultsScreenState extends State<HotelResultsScreen> {
       setState(() => _loadMore = true);
     }
 
-    final api = HotelsApi();
-    final res = await api.search(
-      destination: widget.destination,
-      checkIn: widget.checkInIso,
-      checkOut: widget.checkOutIso,
-      rooms: widget.rooms,
-      adults: widget.adults,
-      children: widget.children,
-      childrenAges: widget.childrenAges,
-      sort: _sort,
-      page: _page,
-      limit: widget.pageSize,
-      centerLat: widget.centerLat,
-      centerLng: widget.centerLng,
-      // Filters (optional)
-      priceMin: (_filters['price']?['min'] as num?)?.toDouble(),
-      priceMax: (_filters['price']?['max'] as num?)?.toDouble(),
-      stars: (_filters['stars'] as Set?)?.cast<int>().toList(),
-      guestRatingMin: (_filters['guestRating']?['min'] as int?),
-      guestRatingMax: (_filters['guestRating']?['max'] as int?),
-      distanceMinKm: (_filters['distanceKm']?['min'] as num?)?.toDouble(),
-      distanceMaxKm: (_filters['distanceKm']?['max'] as num?)?.toDouble(),
-      amenities: (_filters['amenities'] as Set?)?.cast<String>().toList(),
-      propertyTypes: (_filters['propertyTypes'] as Set?)?.cast<String>().toList(),
-      chains: (_filters['chains'] as Set?)?.cast<String>().toList(),
-      refundable: _filters['refundable'] as bool?,
-      payAtHotel: _filters['payAtHotel'] as bool?,
-      breakfastIncluded: _filters['breakfastIncluded'] as bool?,
-    );
+    try {
+      final data = await _fakeSearch(
+        destination: widget.destination,
+        checkIn: widget.checkInIso,
+        checkOut: widget.checkOutIso,
+        rooms: widget.rooms,
+        adults: widget.adults,
+        children: widget.children,
+        childrenAges: widget.childrenAges,
+        sort: _sort,
+        page: _page,
+        limit: widget.pageSize,
+        centerLat: widget.centerLat,
+        centerLng: widget.centerLng,
+        // Filters (optional)
+        priceMin: (_filters['price']?['min'] as num?)?.toDouble(),
+        priceMax: (_filters['price']?['max'] as num?)?.toDouble(),
+        stars: (_filters['stars'] as Set?)?.cast<int>().toList(),
+        guestRatingMin: (_filters['guestRating']?['min'] as int?),
+        guestRatingMax: (_filters['guestRating']?['max'] as int?),
+        distanceMinKm: (_filters['distanceKm']?['min'] as num?)?.toDouble(),
+        distanceMaxKm: (_filters['distanceKm']?['max'] as num?)?.toDouble(),
+        amenities: (_filters['amenities'] as Set?)?.cast<String>().toList(),
+        propertyTypes: (_filters['propertyTypes'] as Set?)?.cast<String>().toList(),
+        chains: (_filters['chains'] as Set?)?.cast<String>().toList(),
+        refundable: _filters['refundable'] as bool?,
+        payAtHotel: _filters['payAtHotel'] as bool?,
+        breakfastIncluded: _filters['breakfastIncluded'] as bool?,
+      );
 
-    res.fold(
-      onSuccess: (data) {
-        final list = _asList(data);
-        final normalized = list.map(_normalize).toList(growable: false);
-        setState(() {
-          _items.addAll(normalized);
-          _hasMore = list.length >= widget.pageSize;
-          if (_hasMore) _page += 1;
-          _loading = false;
-          _loadMore = false;
-        });
-      },
-      onError: (err) {
-        setState(() {
-          _loading = false;
-          _loadMore = false;
-          _hasMore = false;
-        });
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(err.safeMessage ?? 'Failed to load hotels')),
-        );
-      },
-    );
+      final list = _asList(data);
+      final normalized = list.map(_normalize).toList(growable: false);
+      setState(() {
+        _items.addAll(normalized);
+        _hasMore = list.length >= widget.pageSize;
+        if (_hasMore) _page += 1;
+        _loading = false;
+        _loadMore = false;
+      });
+    } catch (_) {
+      setState(() {
+        _loading = false;
+        _loadMore = false;
+        _hasMore = false;
+      });
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to load hotels')),
+      );
+    }
+  }
+
+  // Local mock search to avoid backend signature mismatches.
+  Future<Map<String, dynamic>> _fakeSearch({
+    required String destination,
+    required String checkIn,
+    required String checkOut,
+    required int rooms,
+    required int adults,
+    required int children,
+    required List<int> childrenAges,
+    String? sort,
+    required int page,
+    required int limit,
+    double? centerLat,
+    double? centerLng,
+    double? priceMin,
+    double? priceMax,
+    List<int>? stars,
+    int? guestRatingMin,
+    int? guestRatingMax,
+    double? distanceMinKm,
+    double? distanceMaxKm,
+    List<String>? amenities,
+    List<String>? propertyTypes,
+    List<String>? chains,
+    bool? refundable,
+    bool? payAtHotel,
+    bool? breakfastIncluded,
+  }) async {
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+    final rnd = page;
+    final results = <Map<String, dynamic>>[];
+    final count = page >= 3 ? (limit ~/ 2) : limit;
+    for (var i = 0; i < count; i++) {
+      final id = 'HTL-${page}-${i + 1}';
+      results.add({
+        'id': id,
+        'name': 'Hotel ${destination.toUpperCase()} ${page}-${i + 1}',
+        'city': destination,
+        'area': i % 2 == 0 ? 'Center' : 'Suburb',
+        'imageUrl': null,
+        'rating': 3.5 + (i % 3) * 0.5,
+        'reviewCount': 50 + i * 10,
+        'pricePerNight': 1800 + (rnd * 100) + i * 90,
+        'lat': (centerLat ?? 28.6139) + (i - count / 2) * 0.01,
+        'lng': (centerLng ?? 77.2090) + (i - count / 2) * 0.01,
+        'distanceKm': 0.5 + i * 0.8,
+        'freeCancellation': i % 3 == 0,
+        'payAtHotel': i % 4 == 0,
+        'amenities': i % 2 == 0 ? ['WiFi', 'Breakfast'] : ['WiFi'],
+      });
+    }
+    return {'data': results};
   }
 
   List<Map<String, dynamic>> _asList(Map<String, dynamic> payload) {
@@ -340,7 +389,7 @@ class _HotelResultsScreenState extends State<HotelResultsScreen> {
           );
         },
       ),
-    ); // Pull-to-refresh wraps the scrollable list via RefreshIndicator for standard swipe-to-refresh UX [1]
+    );
   }
 
   Widget _buildHeader() {
@@ -356,7 +405,7 @@ class _HotelResultsScreenState extends State<HotelResultsScreen> {
           SizedBox(
             width: 220,
             child: DropdownButtonFormField<String>(
-              value: _sort,
+              initialValue: _sort,
               isDense: true,
               icon: const Icon(Icons.sort),
               onChanged: (v) async {

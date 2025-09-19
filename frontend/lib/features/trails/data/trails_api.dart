@@ -154,7 +154,7 @@ class _EtagStore {
 
 /// Simple in-memory TTL cache for JSON-decoded responses.
 class _MemCache {
-  _MemCache({this.ttl = const Duration(minutes: 2)});
+  _MemCache();
   final Duration ttl;
   final Map<String, ({DateTime at, Object data})> _store = <String, ({DateTime, Object})>{};
 

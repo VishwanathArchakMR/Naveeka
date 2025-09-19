@@ -3,7 +3,6 @@
 import 'dart:async';
 import 'dart:collection';
 
-import 'package:flutter/foundation.dart';
 
 import '../models/favorite_place.dart';
 import '../models/coordinates.dart';

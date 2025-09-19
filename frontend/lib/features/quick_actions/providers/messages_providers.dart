@@ -196,7 +196,7 @@ class ConversationsController extends AsyncNotifier<PagedState<ConversationSumma
     final repo = ref.read(messagesRepositoryProvider);
     state = const AsyncLoading();
     final res = await AsyncValue.guard(() => repo.listConversations(cursor: null, limit: _q.pageSize, query: ( _q.query ?? '').trim().isEmpty ? null : _q.query!.trim()));
-    state = res.whenData((page) => AsyncData(PagedState<ConversationSummary>(items: page.items, cursor: page.nextCursor, loading: false)).value!);
+    state = res.whenData((page) => AsyncData(PagedState<ConversationSummary>(items: page.items, cursor: page.nextCursor, loading: false)).value);
   }
 
   Future<void> loadMore() async {
@@ -353,7 +353,7 @@ class ThreadsController extends AsyncNotifier<ThreadStore> {
         // Remove echo on failure
         final after = _get(conversationId);
         _put(conversationId, after.copy(items: after.items.where((m) => m.id != echo.id).toList()));
-        throw e!;
+        throw e;
       },
     );
   } // Optimistic send improves perceived latency and aligns with mutation best practices. [6][9]
@@ -382,7 +382,7 @@ class ThreadsController extends AsyncNotifier<ThreadStore> {
       error: (e, st) {
         final after = _get(conversationId);
         _put(conversationId, after.copy(items: after.items.where((m) => m.id != echo.id).toList()));
-        throw e!;
+        throw e;
       },
     );
   }
@@ -411,7 +411,7 @@ class ThreadsController extends AsyncNotifier<ThreadStore> {
       error: (e, st) {
         final after = _get(conversationId);
         _put(conversationId, after.copy(items: after.items.where((m) => m.id != echo.id).toList()));
-        throw e!;
+        throw e;
       },
     );
   }

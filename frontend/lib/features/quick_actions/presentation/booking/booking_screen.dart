@@ -52,10 +52,10 @@ class _BookingScreenState extends State<BookingScreen> {
 
   // Data (wire these to Riverpod providers / APIs in real app)
   bool _loading = false;
-  List<Place> _nearby = <Place>[]; // map + suggestions source
-  List<Place> _suggested = <Place>[]; // horizontal carousel
-  List<BookingRow> _recent = <BookingRow>[]; // recent bookings
-  bool _hasMoreRecent = false;
+  final List<Place> _nearby = <Place>[]; // map + suggestions source
+  final List<Place> _suggested = <Place>[]; // horizontal carousel
+  final List<BookingRow> _recent = <BookingRow>[]; // recent bookings
+  final bool _hasMoreRecent = false;
 
   // Auxiliary maps for booking info
   final Map<String, DateTime> _nextAvailable = <String, DateTime>{};

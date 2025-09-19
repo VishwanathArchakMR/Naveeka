@@ -116,17 +116,17 @@ class _HeroImage extends StatelessWidget {
           else
             Container(
               height: 160,
-              color: Theme.of(context).colorScheme.surfaceVariant,
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
               alignment: Alignment.center,
               child: const Icon(Icons.image_not_supported_outlined, size: 28, color: Colors.black45),
             ),
-          Positioned.fill(
+          const Positioned.fill(
             child: DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: const [
+                  colors: [
                     Colors.black26,
                     Colors.transparent,
                     Colors.transparent,
@@ -235,7 +235,7 @@ class _InfoRow extends StatelessWidget {
               const Icon(Icons.star_rate_rounded, size: 18, color: Colors.amber),
               const SizedBox(width: 4),
               Text(
-                rating!.toStringAsFixed(1) + (ratingCount != null ? ' (${ratingCount})' : ''),
+                rating!.toStringAsFixed(1) + (ratingCount != null ? ' ($ratingCount)' : ''),
                 style: const TextStyle(fontWeight: FontWeight.w600),
               ),
             ],

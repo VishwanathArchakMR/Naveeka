@@ -94,7 +94,7 @@ class CabOptionCard extends StatelessWidget {
                           const Icon(Icons.timer_outlined, size: 16, color: Colors.black54),
                           const SizedBox(width: 4),
                           Text(
-                            etaText ?? '${etaMinutes} min',
+                            etaText ?? '$etaMinutes min',
                             style: const TextStyle(color: Colors.black54),
                           ),
                         ],

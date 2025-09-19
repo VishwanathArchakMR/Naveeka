@@ -150,7 +150,7 @@ class HistoryApi {
   }) async {
     return _delete<void>(
       path: '/v1/history/$id',
-      parse: (_) => null,
+      parse: (_) {},
       cancelToken: cancelToken,
     ); // DELETE is idempotent and returns void on success to simplify UI handling. [3]
   }
@@ -258,7 +258,7 @@ class HistoryApi {
         return await request();
       } on DioException catch (e) {
         if (CancelToken.isCancel(e)) {
-          return ApiFailure<T>(ApiError(message: 'Cancelled', code: -1));
+          return ApiFailure<T>(const ApiError(message: 'Cancelled', code: -1));
         }
         attempt += 1;
         final transient = _isTransient(e);

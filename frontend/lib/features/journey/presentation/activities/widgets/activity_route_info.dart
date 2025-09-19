@@ -111,7 +111,7 @@ class _ActivityRouteInfoState extends State<ActivityRouteInfo> {
   }
 
   Future<void> _openDirections() async {
-    final origin = (_fromLat != null && _fromLng != null) ? '${_fromLat},${_fromLng}' : 'Current+Location';
+    final origin = (_fromLat != null && _fromLng != null) ? '$_fromLat,$_fromLng' : 'Current+Location';
     final destination = '${widget.targetLat},${widget.targetLng}';
     final mode = switch (widget.travelMode) {
       TravelMode.walking => 'walking',

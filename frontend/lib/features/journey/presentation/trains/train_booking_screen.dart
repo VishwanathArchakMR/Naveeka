@@ -497,7 +497,7 @@ class _PaxTileState extends State<_PaxTile> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    value: _gender,
+                    initialValue: _gender,
                     decoration: const InputDecoration(labelText: 'Gender'),
                     items: const [
                       DropdownMenuItem(value: 'M', child: Text('Male')),

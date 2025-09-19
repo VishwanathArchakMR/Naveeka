@@ -239,7 +239,7 @@ class _HotelFiltersState extends State<HotelFilters> {
 
   @override
   Widget build(BuildContext context) {
-    final chipSpace = 8.0;
+    const chipSpace = 8.0;
 
     return SafeArea(
       top: false,
@@ -265,7 +265,7 @@ class _HotelFiltersState extends State<HotelFilters> {
             const SizedBox(height: 8),
 
             // Price
-            _Section('Price'),
+            const _Section('Price'),
             RangeSlider(
               values: _price,
               min: widget.minPrice,
@@ -288,7 +288,7 @@ class _HotelFiltersState extends State<HotelFilters> {
             const SizedBox(height: 12),
 
             // Stars
-            _Section('Star rating'),
+            const _Section('Star rating'),
             Wrap(
               spacing: chipSpace,
               runSpacing: chipSpace,
@@ -312,7 +312,7 @@ class _HotelFiltersState extends State<HotelFilters> {
             const SizedBox(height: 12),
 
             // Guest rating
-            _Section('Guest rating'),
+            const _Section('Guest rating'),
             RangeSlider(
               values: _guestRating,
               min: 0,
@@ -332,7 +332,7 @@ class _HotelFiltersState extends State<HotelFilters> {
             const SizedBox(height: 12),
 
             // Distance
-            _Section('Distance from center'),
+            const _Section('Distance from center'),
             RangeSlider(
               values: _distance,
               min: widget.minDistanceKm,
@@ -356,7 +356,7 @@ class _HotelFiltersState extends State<HotelFilters> {
 
             // Amenities
             if (widget.amenities.isNotEmpty) ...[
-              _Section('Amenities'),
+              const _Section('Amenities'),
               SizedBox(
                 height: 120,
                 child: SingleChildScrollView(
@@ -384,7 +384,7 @@ class _HotelFiltersState extends State<HotelFilters> {
             ],
 
             // Property types
-            _Section('Property type'),
+            const _Section('Property type'),
             Wrap(
               spacing: chipSpace,
               runSpacing: chipSpace,
@@ -408,7 +408,7 @@ class _HotelFiltersState extends State<HotelFilters> {
 
             // Chains
             if (widget.chains.isNotEmpty) ...[
-              _Section('Chains'),
+              const _Section('Chains'),
               SizedBox(
                 height: 120,
                 child: SingleChildScrollView(
@@ -436,7 +436,7 @@ class _HotelFiltersState extends State<HotelFilters> {
             ],
 
             // Tri‑state toggles
-            _Section('Payment & policies'),
+            const _Section('Payment & policies'),
             Row(
               children: [
                 const Icon(Icons.currency_exchange, size: 18, color: Colors.black54),

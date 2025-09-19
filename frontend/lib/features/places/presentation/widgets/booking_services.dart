@@ -3,8 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../../models/place.dart';
-
 /// A single booking/action item that can either launch a URL or run a custom tap handler.
 class BookingAction {
   const BookingAction({
@@ -36,9 +34,9 @@ class BookingAction {
   final String? confirmMessage;
 }
 
-/// A compact action bar for booking/interacting with a Place:
+/// A compact action bar for booking/interacting with a Place-like object:
 /// - Use [actions] for custom entries.
-/// - Or call [BookingServices.defaultActionsFromPlace] to derive sensible defaults from a Place.
+/// - Or call [BookingServices.defaultActionsFromPlace] to derive sensible defaults from a place-like map/object.
 class BookingServices extends StatelessWidget {
   const BookingServices({
     super.key,
@@ -55,10 +53,10 @@ class BookingServices extends StatelessWidget {
   final double wrapSpacing;
   final double runSpacing;
 
-  /// Derive default actions (Directions, Call, Website) from a Place plus optional booking URLs.
-  /// The optional URLs are only used when provided; this avoids assumptions about your Place fields.
+  /// Derive default actions (Directions, Call, Website) from a place-like object plus optional booking URLs.
+  /// Accepts either a Map<String,dynamic> or any dynamic object with optional fields: website/url, phone/tel, lat/latitude, lng/longitude.
   static List<BookingAction> defaultActionsFromPlace(
-    Place p, {
+    dynamic place, {
     Uri? reserveUrl,
     Uri? bookingUrl,
     Uri? orderUrl,
@@ -95,24 +93,27 @@ class BookingServices extends StatelessWidget {
       ));
     }
 
-    if ((p.website ?? '').trim().isNotEmpty) {
+    final website = _pickWebsite(place);
+    if (website != null && website.trim().isNotEmpty) {
       out.add(BookingAction(
         label: 'Website',
         icon: Icons.public_outlined,
-        url: _ensureHttp((p.website ?? '').trim()),
+        url: _ensureHttp(website.trim()),
       ));
     }
 
-    if ((p.phone ?? '').trim().isNotEmpty) {
+    final phone = _pickPhone(place);
+    if (phone != null && phone.trim().isNotEmpty) {
       out.add(BookingAction(
         label: 'Call',
         icon: Icons.call_outlined,
-        url: Uri(scheme: 'tel', path: (p.phone ?? '').trim()),
+        url: Uri(scheme: 'tel', path: phone.trim()),
       ));
     }
 
-    if (p.lat != null && p.lng != null) {
-      final q = '${p.lat!.toStringAsFixed(6)},${p.lng!.toStringAsFixed(6)}';
+    final coords = _pickLatLng(place);
+    if (coords != null) {
+      final q = '${coords.$1.toStringAsFixed(6)},${coords.$2.toStringAsFixed(6)}';
       out.add(BookingAction(
         label: 'Directions',
         icon: Icons.map_outlined,
@@ -153,9 +154,7 @@ class BookingServices extends StatelessWidget {
                         onPressed: () => _tap(context, a),
                         icon: Icon(a.icon),
                         label: Text(a.label),
-                        style: a.color != null
-                            ? FilledButton.styleFrom(backgroundColor: a.color)
-                            : null,
+                        style: a.color != null ? FilledButton.styleFrom(backgroundColor: a.color) : null,
                       )
                     : OutlinedButton.icon(
                         onPressed: () => _tap(context, a),
@@ -180,10 +179,11 @@ class BookingServices extends StatelessWidget {
       return;
     }
     if (a.url != null) {
+      final http = a.url!.scheme.startsWith('http');
       final ok = await launchUrl(
         a.url!,
-        mode: a.url!.scheme.startsWith('http') ? LaunchMode.externalApplication : LaunchMode.platformDefault,
-      ); // url_launcher supports http(s) in an external browser and custom schemes like tel: or sms: through the platform handler. [1][4]
+        mode: http ? LaunchMode.externalApplication : LaunchMode.platformDefault,
+      );
       if (!ok && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Could not launch ${a.label.toLowerCase()}')),
@@ -239,12 +239,100 @@ class BookingServices extends StatelessWidget {
           ),
         );
       },
-    ); // showModalBottomSheet is a focused, modal surface that returns a Future resolved via Navigator.pop, ideal for short confirmations. [13][7]
+    );
   }
 
   static Uri _ensureHttp(String raw) {
     final s = raw.trim();
     if (s.startsWith('http://') || s.startsWith('https://')) return Uri.parse(s);
     return Uri.parse('https://$s');
+  }
+
+  // ---- Safe extractors for dynamic or Map-based place data ----
+
+  static String? _pickWebsite(dynamic p) {
+    try {
+      final v = (p.website as String?);
+      if (v != null) return v;
+    } catch (_) {}
+    try {
+      final v = (p.url as String?);
+      if (v != null) return v;
+    } catch (_) {}
+    if (p is Map) {
+      return p['website']?.toString() ??
+          p['url']?.toString() ??
+          p['site']?.toString() ??
+          p['link']?.toString();
+    }
+    return null;
+  }
+
+  static String? _pickPhone(dynamic p) {
+    try {
+      final v = (p.phone as String?);
+      if (v != null) return v;
+    } catch (_) {}
+    try {
+      final v = (p.tel as String?);
+      if (v != null) return v;
+    } catch (_) {}
+    if (p is Map) {
+      return p['phone']?.toString() ??
+          p['tel']?.toString() ??
+          p['telephone']?.toString() ??
+          p['mobile']?.toString();
+    }
+    return null;
+  }
+
+  // Returns (lat, lng) as a record if both present
+  static (double, double)? _pickLatLng(dynamic p) {
+    double? parseDouble(dynamic v) {
+      if (v is double) return v;
+      if (v is int) return v.toDouble();
+      if (v is String) return double.tryParse(v);
+      return null;
+    }
+
+    double? lat;
+    double? lng;
+
+    // Try direct properties
+    try {
+      lat = parseDouble(p.lat);
+    } catch (_) {}
+    try {
+      lng = parseDouble(p.lng);
+    } catch (_) {}
+
+    // Try alternate property names
+    if (lat == null) {
+      try {
+        lat = parseDouble(p.latitude);
+      } catch (_) {}
+    }
+    if (lng == null) {
+      try {
+        lng = parseDouble(p.longitude);
+      } catch (_) {}
+    }
+
+    // Try map-based
+    if (p is Map) {
+      lat ??= parseDouble(p['lat']) ?? parseDouble(p['latitude']);
+      lng ??= parseDouble(p['lng']) ?? parseDouble(p['longitude']);
+      // nested geo {lat,lng}
+      if (lat == null || lng == null) {
+        final geo = p['geo'];
+        if (geo is Map) {
+          lat ??= parseDouble(geo['lat']) ?? parseDouble(geo['latitude']);
+          lng ??= parseDouble(geo['lng']) ?? parseDouble(geo['longitude']);
+        }
+      }
+    }
+
+    if (lat != null && lng != null) return (lat, lng);
+    return null;
   }
 }

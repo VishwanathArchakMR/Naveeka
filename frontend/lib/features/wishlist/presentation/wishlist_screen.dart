@@ -49,7 +49,7 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
         builder: (context) {
           // Loading grid skeleton
           if (state.loading && state.items.isEmpty) {
-            return _SkeletonGrid(
+            return const _SkeletonGrid(
               itemCount: 6,
             );
           }

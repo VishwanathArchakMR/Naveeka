@@ -185,9 +185,9 @@ class _TrailsTopBarState extends State<TrailsTopBar> {
       searchController: _searchCtrl,
       barLeading: const Icon(Icons.search),
       barHintText: 'Search trails, parks, regions',
-      barBackgroundColor: MaterialStateProperty.all(cs.surfaceContainerHigh.withValues(alpha: 1.0)),
-      barElevation: MaterialStateProperty.all(0),
-      barShape: MaterialStateProperty.all(
+      barBackgroundColor: WidgetStateProperty.all(cs.surfaceContainerHigh.withValues(alpha: 1.0)),
+      barElevation: WidgetStateProperty.all(0),
+      barShape: WidgetStateProperty.all(
         RoundedRectangleBorder(borderRadius: BorderRadius.circular(999), side: BorderSide.none),
       ),
       onChanged: (q) => widget.onQueryChanged?.call(q),

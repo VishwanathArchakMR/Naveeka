@@ -280,7 +280,7 @@ class _TrailsScreenState extends ConsumerState<TrailsScreen> {
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
           sliver: SliverGrid(
-            gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
               maxCrossAxisExtent: 420,
               mainAxisSpacing: 12,
               crossAxisSpacing: 12,

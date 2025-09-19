@@ -545,7 +545,7 @@ class _CountryDropdownState extends State<_CountryDropdown> {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
-      value: _selected != null && widget.items.contains(_selected) ? _selected : null,
+      initialValue: _selected != null && widget.items.contains(_selected) ? _selected : null,
       items: widget.items
           .map((c) => DropdownMenuItem<String>(
                 value: c,

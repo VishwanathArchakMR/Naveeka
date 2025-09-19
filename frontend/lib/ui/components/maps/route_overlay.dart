@@ -128,9 +128,9 @@ class _RoutePalette {
       case TrafficSeverity.free:
         return base;
       case TrafficSeverity.slow:
-        return base.blend(Color(0xFFF6C445), 0.35); // amber-ish
+        return base.blend(const Color(0xFFF6C445), 0.35); // amber-ish
       case TrafficSeverity.heavy:
-        return base.blend(Color(0xFFE57373), 0.45); // red-ish
+        return base.blend(const Color(0xFFE57373), 0.45); // red-ish
       case TrafficSeverity.closed:
         return const Color(0xFF9E9E9E); // neutral gray for closures
     }

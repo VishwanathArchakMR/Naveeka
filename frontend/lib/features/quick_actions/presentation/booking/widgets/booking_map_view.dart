@@ -180,9 +180,9 @@ class _BookingMapViewState extends State<BookingMapView> {
     return Container(
       color: Theme.of(context).colorScheme.surfaceContainerHigh,
       alignment: Alignment.center,
-      child: Column(
+      child: const Column(
         mainAxisSize: MainAxisSize.min,
-        children: const [
+        children: [
           Icon(Icons.map_outlined, size: 40, color: Colors.black26),
           SizedBox(height: 8),
           Text('Map unavailable', style: TextStyle(color: Colors.black45)),

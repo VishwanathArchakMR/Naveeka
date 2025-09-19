@@ -1,8 +1,6 @@
 // lib/main.dart
-
 import 'dart:async';
 import 'dart:ui' show PlatformDispatcher;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -10,7 +8,7 @@ import 'app/app.dart';
 import 'app/bootstrap.dart';
 
 Future<void> main() async {
-  // Guard the entire startup to capture uncaught async errors. 
+  // Guard the entire startup to capture uncaught async/platform errors.
   runZonedGuarded<Future<void>>(
     () async {
       // Ensure binding is ready before any async/platform work.
@@ -35,9 +33,6 @@ Future<void> main() async {
         // Preserve previous decision or mark as handled.
         return prevPlatformOnError?.call(error, stack) ?? true;
       };
-
-      // Finish all startup tasks before showing UI.
-      await bootstrap();
 
       // Minimal fallback widget for build-time errors (debug friendly).
       ErrorWidget.builder = (FlutterErrorDetails details) {
@@ -64,11 +59,24 @@ Future<void> main() async {
         );
       };
 
-      // Launch the app with Riverpod at the root.
-      runApp(
-        const ProviderScope(
-          child: App(),
-        ),
+      // 1) Show an immediate full-screen loading UI
+      runApp(const _SplashApp());
+
+      // 2) Do app bootstrap in the background, then swap in the real app
+      //    (keeps UI responsive while heavy init runs).
+      unawaited(
+        Future<void>(() async {
+          try {
+            await bootstrap();
+            runApp(
+              const ProviderScope(
+                child: App(),
+              ),
+            );
+          } catch (e, st) {
+            Zone.current.handleUncaughtError(e, st);
+          }
+        }),
       );
     },
     (Object error, StackTrace stack) {
@@ -79,5 +87,57 @@ Future<void> main() async {
   );
 }
 
+// A minimal full-screen splash/loading app shown immediately at startup.
+class _SplashApp extends StatelessWidget {
+  const _SplashApp();
 
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Naveeka',
+      theme: ThemeData(
+        useMaterial3: true,
+        colorSchemeSeed: const Color(0xFF246EE9),
+        brightness: Brightness.light,
+      ),
+      home: const _SplashScreen(),
+      debugShowCheckedModeBanner: false,
+    );
+  }
+}
 
+class _SplashScreen extends StatelessWidget {
+  const _SplashScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Scaffold(
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        color: theme.colorScheme.surface,
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(
+                width: 48,
+                height: 48,
+                child: CircularProgressIndicator(strokeWidth: 4),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Loading Naveeka…',
+                style: theme.textTheme.titleMedium,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Small helper to silence unawaited futures without importing a package.
+void unawaited(Future<void> f) {}

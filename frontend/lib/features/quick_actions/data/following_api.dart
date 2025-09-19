@@ -166,7 +166,7 @@ class FollowingApi {
   }) async {
     return _delete<void>(
       path: '/v1/follow/$targetId',
-      parse: (_) => null,
+      parse: (_) {},
       cancelToken: cancelToken,
     ); // DELETE is idempotent; no retries to avoid masking errors. [3]
   }
@@ -253,7 +253,7 @@ class FollowingApi {
         return await request();
       } on DioException catch (e) {
         if (CancelToken.isCancel(e)) {
-          return ApiFailure<T>(ApiError(message: 'Cancelled', code: -1));
+          return ApiFailure<T>(const ApiError(message: 'Cancelled', code: -1));
         }
         attempt += 1;
         final transient = _isTransient(e);

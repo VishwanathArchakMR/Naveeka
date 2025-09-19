@@ -270,7 +270,7 @@ class ChatMessage {
   }
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) {
-    ChatMessageType _parseType(Object? v) {
+    ChatMessageType parseType(Object? v) {
       final s = (v ?? 'text').toString();
       try {
         return ChatMessageType.values.byName(s);
@@ -288,7 +288,7 @@ class ChatMessage {
       }
     } // [12][6]
 
-    ChatMessageStatus _parseStatus(Object? v) {
+    ChatMessageStatus parseStatus(Object? v) {
       final s = (v ?? 'sent').toString();
       try {
         return ChatMessageStatus.values.byName(s);
@@ -324,14 +324,14 @@ class ChatMessage {
       id: (json['id'] ?? '').toString(),
       conversationId: (json['conversationId'] ?? '').toString(),
       senderId: (json['senderId'] ?? '').toString(),
-      type: _parseType(json['type']),
+      type: parseType(json['type']),
       createdAt: DateTime.parse(json['createdAt'].toString()),
       updatedAt: json['updatedAt'] != null ? DateTime.tryParse(json['updatedAt'].toString()) : null,
       text: (json['text'] as String?)?.toString(),
       attachments: atts,
       location: json['location'] != null ? ChatLocation.fromJson((json['location'] as Map).cast<String, dynamic>()) : null,
       replyToId: (json['replyToId'] as String?)?.toString(),
-      status: _parseStatus(json['status']),
+      status: parseStatus(json['status']),
       readBy: ((json['readBy'] as List?) ?? const <dynamic>[]).map((e) => e.toString()).toList(growable: false),
       deliveredTo: ((json['deliveredTo'] as List?) ?? const <dynamic>[]).map((e) => e.toString()).toList(growable: false),
       reactions: reacts,

@@ -362,7 +362,7 @@ class _PaxCabinSheetState extends State<_PaxCabinSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final cabins = const ['Economy', 'Premium', 'Business', 'First'];
+    const cabins = ['Economy', 'Premium', 'Business', 'First'];
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
       child: Column(
@@ -402,7 +402,7 @@ class _PaxCabinSheetState extends State<_PaxCabinSheet> {
           ),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
-            value: _cabin,
+            initialValue: _cabin,
             decoration: const InputDecoration(labelText: 'Cabin'),
             items: cabins.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
             onChanged: (v) => setState(() => _cabin = v ?? _cabin),

@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/storage/token_storage.dart';
 import '../../../core/network/api_result.dart';
-import '../../../core/errors/app_exception.dart';
 import '../data/auth_api.dart';
 import '../../../models/user.dart';
 

@@ -38,7 +38,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _notifBadges = true;
   bool _notifPreviews = true;
 
-  bool _locationServiceEnabled = false; // display only; managed by Geolocator externally
+  final bool _locationServiceEnabled = false; // display only; managed by Geolocator externally
   bool _appLockEnabled = false;
   bool _appLockRequireOnLaunch = false;
   bool _screenSecure = false;
@@ -48,7 +48,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   // Storage mock
   int _bytesUsed = 280 * 1024 * 1024; // 280 MB
-  int _bytesCap = 8 * 1024 * 1024 * 1024; // 8 GB
+  final int _bytesCap = 8 * 1024 * 1024 * 1024; // 8 GB
 
   @override
   Widget build(BuildContext context) {

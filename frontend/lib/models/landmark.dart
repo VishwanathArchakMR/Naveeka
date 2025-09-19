@@ -388,9 +388,7 @@ class Landmark {
       reviewCount: (json['reviewCount'] as num?)?.toInt(),
       savedCount: (json['savedCount'] as num?)?.toInt(),
       ticketFrom: json['ticketFrom'] != null ? Money.fromJson((json['ticketFrom'] as Map).cast<String, dynamic>()) : null,
-      openingHours: rawHours == null
-          ? null
-          : rawHours.map((k, v) => MapEntry(k, v?.toString() ?? '')),
+      openingHours: rawHours?.map((k, v) => MapEntry(k, v?.toString() ?? '')),
       accessibility: json['accessibility'] != null
           ? LandmarkAccessibility.fromJson((json['accessibility'] as Map).cast<String, dynamic>())
           : const LandmarkAccessibility(),

@@ -268,7 +268,7 @@ class _BusResultsScreenState extends State<BusResultsScreen> {
           SizedBox(
             width: 200,
             child: DropdownButtonFormField<String>(
-              value: _sort,
+              initialValue: _sort,
               isDense: true,
               icon: const Icon(Icons.sort),
               onChanged: (v) async {

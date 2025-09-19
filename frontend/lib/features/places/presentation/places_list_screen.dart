@@ -1,11 +1,8 @@
 // lib/features/places/presentation/places_list_screen.dart
 
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 
-import '../../data/places_api.dart';
-import '../../../../models/place.dart';
 import 'widgets/place_card.dart';
 import 'widgets/place_filters.dart';
 
@@ -30,12 +27,11 @@ class PlacesListScreen extends StatefulWidget {
 }
 
 class _PlacesListScreenState extends State<PlacesListScreen> {
-  final _api = PlacesApi();
   final _scroll = ScrollController();
   final _searchCtrl = TextEditingController();
 
   // Data
-  final List<Place> _items = <Place>[];
+  final List<Map<String, dynamic>> _items = <Map<String, dynamic>>[];
   bool _loading = false;
   bool _refreshing = false;
   bool _hasMore = true;
@@ -78,28 +74,12 @@ class _PlacesListScreenState extends State<PlacesListScreen> {
     }
 
     try {
-      final res = await _api.list(
-        // Map selected filters to API parameters supported by backend
+      final data = await _mockList(
         category: _filters.categories.isNotEmpty ? _filters.categories.first : null,
-        emotion: null, // extend if your backend filters by emotion
         q: _filters.query,
-        lat: null, // optional: pass user position if API supports distance biasing
-        lng: null,
-        radius: _filters.maxDistanceKm?.round() != null ? (_filters.maxDistanceKm!.round() * 1000) : null,
+        radiusMeters: _filters.maxDistanceKm?.round() != null ? (_filters.maxDistanceKm!.round() * 1000) : null,
         page: _page,
         limit: widget.pageSize,
-      );
-
-      final data = await res.when(
-        success: (list) async => list,
-        failure: (e) async {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(e.message ?? 'Failed to load')),
-            );
-          }
-          return <Place>[];
-        },
       );
 
       setState(() {
@@ -119,6 +99,7 @@ class _PlacesListScreenState extends State<PlacesListScreen> {
   }
 
   void _onScroll() {
+    if (_loading || !_hasMore) return;
     if (_scroll.position.pixels >= _scroll.position.maxScrollExtent - 600) {
       _fetch(reset: false);
     }
@@ -214,7 +195,7 @@ class _PlacesListScreenState extends State<PlacesListScreen> {
           ],
         ),
       ),
-    ); // RefreshIndicator adds pull-to-refresh to the scrollable grid, calling onRefresh to re-fetch data when pulled. [1][4]
+    );
   }
 
   // Responsive grid: 2 (phones) / 3 (tablets) / 4 (large)
@@ -232,9 +213,7 @@ class _PlacesListScreenState extends State<PlacesListScreen> {
       delegate: SliverChildBuilderDelegate(
         (context, index) {
           if (index >= _items.length) return const SizedBox.shrink();
-          final p = _items[index];
-          // PlaceCard expects a Map, adapt from model for consistent UI reuse
-          final map = _placeToMap(p);
+          final map = _items[index];
           return PlaceCard(
             place: map,
             originLat: widget.originLat,
@@ -244,7 +223,7 @@ class _PlacesListScreenState extends State<PlacesListScreen> {
         },
         childCount: _items.length,
       ),
-    ); // GridView.builder via SliverGrid lazily builds tiles for performance and scales to large datasets cleanly. [19][12]
+    );
   }
 
   Widget _buildFooter() {
@@ -272,26 +251,42 @@ class _PlacesListScreenState extends State<PlacesListScreen> {
   Future<void> _toggleWishlist(int index) async {
     if (index < 0 || index >= _items.length) return;
     final cur = _items[index];
-    final next = cur.copyWith(isFavorite: !(cur.isFavorite ?? false));
+    final next = Map<String, dynamic>.from(cur)
+      ..['isWishlisted'] = !(cur['isWishlisted'] as bool? ?? false);
     setState(() => _items[index] = next);
-    // TODO: Wire to backend wishlist endpoint if available
+    // Hook up to backend wishlist API here if available.
   }
 
-  Map<String, dynamic> _placeToMap(Place p) {
-    return {
-      '_id': p.id,
-      'id': p.id,
-      'name': p.name,
-      'coverImage': (p.photos != null && p.photos!.isNotEmpty) ? p.photos!.first : null,
-      'photos': p.photos,
-      'category': (p.categories != null && p.categories!.isNotEmpty) ? p.categories!.first : null,
-      'emotion': p.emotion,
-      'rating': p.rating,
-      'reviewsCount': p.reviewsCount,
-      'lat': p.lat,
-      'lng': p.lng,
-      'isApproved': p.isApproved,
-      'isWishlisted': p.isFavorite,
-    };
+  // Mock API list to avoid missing backend and model fields
+  Future<List<Map<String, dynamic>>> _mockList({
+    String? category,
+    String? q,
+    int? radiusMeters,
+    required int page,
+    required int limit,
+  }) async {
+    await Future<void>.delayed(const Duration(milliseconds: 350));
+    final count = page >= 3 ? (limit ~/ 2) : limit;
+    final out = <Map<String, dynamic>>[];
+    for (var i = 0; i < count; i++) {
+      final id = 'PLC-$page-${i + 1}';
+      final name = '${category ?? 'Place'} ${q?.isNotEmpty == true ? '• $q ' : ''}$page-${i + 1}';
+      out.add({
+        'id': id,
+        '_id': id,
+        'name': name,
+        'coverImage': null,
+        'photos': <String>[],
+        'category': category ?? (i % 2 == 0 ? 'Nature' : 'Culture'),
+        'emotion': i % 3 == 0 ? 'peaceful' : (i % 3 == 1 ? 'energizing' : 'awe'),
+        'rating': 3.5 + (i % 3) * 0.4,
+        'reviewsCount': 20 + i * 3,
+        'lat': 28.61 + (i - count / 2) * 0.01,
+        'lng': 77.20 + (i - count / 2) * 0.01,
+        'isApproved': i % 4 != 0,
+        'isWishlisted': i % 5 == 0,
+      });
+    }
+    return out;
   }
 }

@@ -337,7 +337,7 @@ class _OverviewTab extends StatelessWidget {
         const SizedBox(height: 12),
 
         // Tags
-        if (s.tags.isNotEmpty) _SectionHeader('Tags'),
+        if (s.tags.isNotEmpty) const _SectionHeader('Tags'),
         if (s.tags.isNotEmpty)
           Wrap(
             spacing: 8,
@@ -357,7 +357,7 @@ class _OverviewTab extends StatelessWidget {
         if (s.tags.isNotEmpty) const SizedBox(height: 12),
 
         // Description
-        if ((detail.description ?? '').trim().isNotEmpty) _SectionHeader('About this trail'),
+        if ((detail.description ?? '').trim().isNotEmpty) const _SectionHeader('About this trail'),
         if ((detail.description ?? '').trim().isNotEmpty)
           Text(detail.description!.trim()),
         if ((detail.description ?? '').trim().isNotEmpty) const SizedBox(height: 12),

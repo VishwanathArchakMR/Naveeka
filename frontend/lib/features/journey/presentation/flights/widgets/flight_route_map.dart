@@ -2,8 +2,6 @@
 
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
 
 class FlightRouteMap extends StatelessWidget {
   const FlightRouteMap({
@@ -16,9 +14,9 @@ class FlightRouteMap extends StatelessWidget {
     this.toCode,
     this.layovers = const <Map<String, dynamic>>[], // [{lat,lng,code?}]
     this.height = 220,
-    this.initialZoom = 3,
-    this.tileUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-    this.tileSubdomains = const ['a', 'b', 'c'],
+    this.initialZoom = 3, // kept for API compatibility
+    this.tileUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', // placeholder
+    this.tileSubdomains = const ['a', 'b', 'c'], // placeholder
     this.curveSamples = 64, // points per great-circle segment
   });
 
@@ -34,9 +32,9 @@ class FlightRouteMap extends StatelessWidget {
   final List<Map<String, dynamic>> layovers;
 
   final double height;
-  final double initialZoom;
-  final String tileUrl;
-  final List<String> tileSubdomains;
+  final double initialZoom; // unused in placeholder
+  final String tileUrl; // unused in placeholder
+  final List<String> tileSubdomains; // unused in placeholder
 
   /// Number of interpolation points per segment when drawing great‑circle arcs.
   final int curveSamples;
@@ -58,58 +56,61 @@ class FlightRouteMap extends StatelessWidget {
       final a = stops[i];
       final b = stops[i + 1];
       polyPoints.addAll(_greatCircle(a, b, samples: curveSamples));
-    } // Polyline points are consumed by PolylineLayer to render the route path efficiently [3][1]
-
-    // Bounds for auto-fit
-    final bounds = LatLngBounds.fromPoints([
-      ...stops,
-      ...polyPoints,
-    ]);
+    }
 
     return SizedBox(
       height: height,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: FlutterMap(
-          options: MapOptions(
-            // Auto-fit on first paint; padding ensures pins/curve are comfortably visible
-            cameraFit: CameraFit.bounds(
-              bounds: bounds,
-              padding: const EdgeInsets.all(24),
-              maxZoom: 8,
-            ), // CameraFit.bounds sets initial view to include the provided bounds with padding and optional maxZoom [9][6]
-            initialZoom: initialZoom,
-            interactionOptions: const InteractionOptions(
-              flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag | InteractiveFlag.doubleTapZoom,
-            ),
-          ),
-          children: [
-            TileLayer(
-              urlTemplate: tileUrl,
-              subdomains: tileSubdomains,
-              userAgentPackageName: 'com.example.app',
-            ),
-            PolylineLayer(
-              polylines: [
-                Polyline(
-                  points: polyPoints,
-                  strokeWidth: 3,
-                  color: Theme.of(context).colorScheme.primary,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final size = Size(constraints.maxWidth, height);
+          final projector = _Projector.fromPoints([...stops, ...polyPoints], size);
+
+          // Compute pin positions
+          final originO = projector.toOffset(origin);
+          final destO = projector.toOffset(dest);
+          final layoverOffsets = <Offset, String>{};
+          for (final m in layovers) {
+            final p = _toLatLng(m['lat'], m['lng']);
+            if (p != null) {
+              layoverOffsets[projector.toOffset(p)] = (m['code'] ?? 'LAY').toString();
+            }
+          }
+
+          return ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Stack(
+              children: [
+                // Route painter
+                CustomPaint(
+                  size: size,
+                  painter: _FlightArcPainter(
+                    projector: projector,
+                    points: polyPoints,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+
+                // Airport pins
+                Positioned(
+                  left: originO.dx - 27,
+                  top: originO.dy - 20,
+                  child: _AirportPin(code: fromCode ?? 'FROM'),
+                ),
+                for (final e in layoverOffsets.entries)
+                  Positioned(
+                    left: e.key.dx - 27,
+                    top: e.key.dy - 20,
+                    child: _AirportPin(code: e.value),
+                  ),
+                Positioned(
+                  left: destO.dx - 27,
+                  top: destO.dy - 20,
+                  child: _AirportPin(code: toCode ?? 'TO'),
                 ),
               ],
-              polylineCulling: true,
-            ), // PolylineLayer draws lines from LatLng points; enable culling for perf outside viewport [3][2]
-            MarkerLayer(
-              markers: [
-                _airportMarker(origin, code: fromCode ?? 'FROM'),
-                for (final m in layovers)
-                  if (_toLatLng(m['lat'], m['lng']) != null)
-                    _airportMarker(_toLatLng(m['lat'], m['lng'])!, code: (m['code'] ?? 'LAY').toString()),
-                _airportMarker(dest, code: toCode ?? 'TO'),
-              ],
-            ), // MarkerLayer places arbitrary widgets as markers for airports and layovers [1]
-          ],
-        ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -128,7 +129,6 @@ class FlightRouteMap extends StatelessWidget {
   }
 
   // Great-circle interpolation between two coordinates using spherical linear interpolation (slerp).
-  // This approximates the geodesic arc on a sphere; sufficient for preview-scale mapping. [10][15]
   List<LatLng> _greatCircle(LatLng a, LatLng b, {int samples = 64}) {
     // Convert to radians
     final lat1 = _degToRad(a.latitude);
@@ -136,21 +136,20 @@ class FlightRouteMap extends StatelessWidget {
     final lat2 = _degToRad(b.latitude);
     final lon2 = _degToRad(b.longitude);
 
-    // Compute the angular distance using the haversine formula
+    // Angular distance via haversine
     final dLat = lat2 - lat1;
     final dLon = lon2 - lon1;
     final sinDLat2 = math.sin(dLat / 2);
     final sinDLon2 = math.sin(dLon / 2);
     final h = sinDLat2 * sinDLat2 + math.cos(lat1) * math.cos(lat2) * sinDLon2 * sinDLon2;
-    final ang = 2 * math.atan2(math.sqrt(h), math.sqrt(math.max(0.0, 1 - h))); // central angle [15][7]
+    final ang = 2 * math.atan2(math.sqrt(h), math.sqrt(math.max(0.0, 1 - h)));
 
-    // If nearly zero distance, just return endpoints
     if (ang.abs() < 1e-9) return [a, b];
 
     final sinAng = math.sin(ang);
 
-    List<LatLng> pts = [];
-    final n = math.max(2, samples); // at least endpoints
+    final pts = <LatLng>[];
+    final n = math.max(2, samples);
     for (int i = 0; i <= n; i++) {
       final f = i / n;
       final A = math.sin((1 - f) * ang) / sinAng;
@@ -171,15 +170,145 @@ class FlightRouteMap extends StatelessWidget {
 
   double _degToRad(double d) => d * math.pi / 180.0;
   double _radToDeg(double r) => r * 180.0 / math.pi;
+}
 
-  Marker _airportMarker(LatLng p, {required String code}) {
-    return Marker(
-      point: p,
-      width: 54,
-      height: 54,
-      alignment: Alignment.center,
-      child: _AirportPin(code: code),
+// Minimal LatLng type to avoid external dependency
+class LatLng {
+  final double latitude;
+  final double longitude;
+  const LatLng(this.latitude, this.longitude);
+}
+
+// Projects geo bounds to canvas coordinates with padding
+class _Projector {
+  final double minLat, maxLat, minLng, maxLng;
+  final double sx, sy;
+  final double pad;
+  final Size size;
+
+  _Projector({
+    required this.minLat,
+    required this.maxLat,
+    required this.minLng,
+    required this.maxLng,
+    required this.sx,
+    required this.sy,
+    required this.pad,
+    required this.size,
+  });
+
+  factory _Projector.fromPoints(List<LatLng> pts, Size size, {double pad = 16}) {
+    if (pts.isEmpty) {
+      return _Projector(
+        minLat: 0,
+        maxLat: 1,
+        minLng: 0,
+        maxLng: 1,
+        sx: 1,
+        sy: 1,
+        pad: pad,
+        size: size,
+      );
+    }
+    double minLat = pts.first.latitude, maxLat = pts.first.latitude;
+    double minLng = pts.first.longitude, maxLng = pts.first.longitude;
+    for (final p in pts) {
+      if (p.latitude < minLat) minLat = p.latitude;
+      if (p.latitude > maxLat) maxLat = p.latitude;
+      if (p.longitude < minLng) minLng = p.longitude;
+      if (p.longitude > maxLng) maxLng = p.longitude;
+    }
+    // Avoid degenerate scale if bounds collapse
+    if ((maxLat - minLat).abs() < 1e-9) {
+      minLat -= 0.0001;
+      maxLat += 0.0001;
+    }
+    if ((maxLng - minLng).abs() < 1e-9) {
+      minLng -= 0.0001;
+      maxLng += 0.0001;
+    }
+    final dx = (maxLng - minLng).abs();
+    final dy = (maxLat - minLat).abs();
+    final sx = (size.width - 2 * pad) / dx;
+    final sy = (size.height - 2 * pad) / dy;
+    return _Projector(
+      minLat: minLat,
+      maxLat: maxLat,
+      minLng: minLng,
+      maxLng: maxLng,
+      sx: sx,
+      sy: sy,
+      pad: pad,
+      size: size,
     );
+  }
+
+  Offset toOffset(LatLng p) {
+    final w = size.width, h = size.height;
+    final x = pad + (p.longitude - minLng) * sx;
+    final y = h - pad - (p.latitude - minLat) * sy; // invert Y for canvas
+    return Offset(x.clamp(0, w), y.clamp(0, h));
+  }
+}
+
+class _FlightArcPainter extends CustomPainter {
+  _FlightArcPainter({
+    required this.projector,
+    required this.points,
+    required this.color,
+  });
+
+  final _Projector projector;
+  final List<LatLng> points;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Background gradient + subtle grid
+    final bg = Paint()
+      ..shader = LinearGradient(
+        colors: [
+          Colors.white,
+          Colors.grey.shade100,
+        ],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ).createShader(Offset.zero & size);
+    canvas.drawRect(Offset.zero & size, bg);
+
+    final gridPaint = Paint()
+      ..color = Colors.black.withValues(alpha: 0.05)
+      ..strokeWidth = 1;
+    const pad = 16.0;
+    for (var x = pad; x < size.width - pad; x += 24) {
+      canvas.drawLine(Offset(x, pad), Offset(x, size.height - pad), gridPaint);
+    }
+    for (var y = pad; y < size.height - pad; y += 24) {
+      canvas.drawLine(Offset(pad, y), Offset(size.width - pad, y), gridPaint);
+    }
+
+    if (points.isEmpty) return;
+
+    final routePaint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final path = Path();
+    final first = projector.toOffset(points.first);
+    path.moveTo(first.dx, first.dy);
+    for (var i = 1; i < points.length; i++) {
+      final o = projector.toOffset(points[i]);
+      path.lineTo(o.dx, o.dy);
+    }
+    canvas.drawPath(path, routePaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _FlightArcPainter old) {
+    return points != old.points || color != old.color || projector.size != old.projector.size;
   }
 }
 

@@ -150,7 +150,7 @@ class FavoritesApi {
   }) async {
     return _delete<void>(
       path: '/v1/favorites/$placeId',
-      parse: (_) => null,
+      parse: (_) {},
       cancelToken: cancelToken,
     ); // DELETE is idempotent; no retries by default to avoid masking client/server errors. [3]
   }
@@ -237,7 +237,7 @@ class FavoritesApi {
         return await request();
       } on DioException catch (e) {
         if (CancelToken.isCancel(e)) {
-          return ApiFailure<T>(ApiError(message: 'Cancelled', code: -1));
+          return ApiFailure<T>(const ApiError(message: 'Cancelled', code: -1));
         }
         attempt += 1;
         final transient = _isTransient(e);

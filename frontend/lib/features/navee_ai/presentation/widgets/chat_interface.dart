@@ -283,10 +283,10 @@ class _TypingIndicator extends StatelessWidget {
   const _TypingIndicator();
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: const Icon(Icons.smart_toy_outlined),
+    return const ListTile(
+      leading: Icon(Icons.smart_toy_outlined),
       title: Row(
-        children: const [
+        children: [
           _Dot(),
           SizedBox(width: 4),
           _Dot(delay: Duration(milliseconds: 200)),

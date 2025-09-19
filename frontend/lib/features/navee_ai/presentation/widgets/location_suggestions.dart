@@ -3,7 +3,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 
-import '../../../core/storage/location_cache.dart';
+import '../../../journey/core/storage/location_cache.dart';
 
 /// A debounced, bottom-sheet-friendly location suggester with:
 /// - Debounced text search via a callback
@@ -45,10 +45,10 @@ class LocationSuggestions extends StatefulWidget {
       String query, {
       double? lat,
       double? lng,
-    }) searchLocations,
+    })
+        searchLocations,
     List<Map<String, dynamic>> popular = const <Map<String, dynamic>>[],
-    Future<Map<String, dynamic>?> Function(double lat, double lng)?
-        reverseGeocode,
+    Future<Map<String, dynamic>?> Function(double lat, double lng)? reverseGeocode,
     String title = 'Pick a location',
     String initialQuery = '',
   }) {
@@ -108,8 +108,7 @@ class _LocationSuggestionsState extends State<LocationSuggestions> {
   }
 
   Future<void> _seedLastKnown() async {
-    final snap = await LocationCache.instance
-        .getLast(maxAge: const Duration(minutes: 10));
+    final snap = await LocationCache.instance.getLast(maxAge: const Duration(minutes: 10));
     if (!mounted || snap == null) return;
     setState(() {
       _hintLat = snap.latitude;
@@ -134,8 +133,7 @@ class _LocationSuggestionsState extends State<LocationSuggestions> {
       _results = const [];
     });
     try {
-      final list =
-          await widget.searchLocations(q, lat: _hintLat, lng: _hintLng);
+      final list = await widget.searchLocations(q, lat: _hintLat, lng: _hintLng);
       if (!mounted) return;
       setState(() {
         _results = list;
@@ -144,22 +142,18 @@ class _LocationSuggestionsState extends State<LocationSuggestions> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _loading = false);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text(
-              'Failed to load locations'))); // SnackBars give simple, route-safe feedback for failed network calls. [1]
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to load locations'))); // SnackBars give simple, route-safe feedback for failed network calls. [1]
     }
   }
 
   Future<void> _useMyLocation() async {
     setState(() => _loading = true);
     try {
-      final snap = await LocationCache.instance
-          .getLast(maxAge: const Duration(minutes: 10));
+      final snap = await LocationCache.instance.getLast(maxAge: const Duration(minutes: 10));
       if (!mounted) return;
       if (snap == null) {
         setState(() => _loading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Location not available yet')));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Location not available yet')));
         return;
       }
       _hintLat = snap.latitude;
@@ -175,8 +169,7 @@ class _LocationSuggestionsState extends State<LocationSuggestions> {
       }
 
       // Fallback: run an empty query to fetch nearby suggestions
-      final list = await widget.searchLocations('',
-          lat: snap.latitude, lng: snap.longitude);
+      final list = await widget.searchLocations('', lat: snap.latitude, lng: snap.longitude);
       if (!mounted) return;
       setState(() {
         _results = list;
@@ -185,8 +178,7 @@ class _LocationSuggestionsState extends State<LocationSuggestions> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _loading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to use current location')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to use current location')));
     }
   }
 
@@ -238,13 +230,9 @@ class _LocationSuggestionsState extends State<LocationSuggestions> {
             child: Row(
               children: [
                 Expanded(
-                  child: Text(widget.title,
-                      style: const TextStyle(
-                          fontWeight: FontWeight.w700, fontSize: 16)),
+                  child: Text(widget.title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
                 ),
-                IconButton(
-                    onPressed: () => Navigator.of(context).maybePop(),
-                    icon: const Icon(Icons.close)),
+                IconButton(onPressed: () => Navigator.of(context).maybePop(), icon: const Icon(Icons.close)),
               ],
             ),
           ),
@@ -292,10 +280,7 @@ class _LocationSuggestionsState extends State<LocationSuggestions> {
             ),
 
           // Popular chips (when idle)
-          if (!_loading &&
-              _results.isEmpty &&
-              widget.popular.isNotEmpty &&
-              query.isEmpty)
+          if (!_loading && _results.isEmpty && widget.popular.isNotEmpty && query.isEmpty)
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
               child: Align(
@@ -307,8 +292,7 @@ class _LocationSuggestionsState extends State<LocationSuggestions> {
                     final name = (m['name'] ?? '').toString();
                     final secondary = (m['secondary'] ?? '').toString();
                     return ActionChip(
-                      label:
-                          Text(secondary.isEmpty ? name : '$name • $secondary'),
+                      label: Text(secondary.isEmpty ? name : '$name • $secondary'),
                       onPressed: () => _pick(m),
                     );
                   }).toList(growable: false),
@@ -348,18 +332,9 @@ class _LocationSuggestionsState extends State<LocationSuggestions> {
 
                       return ListTile(
                         leading: const Icon(Icons.place_outlined),
-                        title: Text(
-                            name.isEmpty
-                                ? (city.isEmpty ? 'Location' : city)
-                                : name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis),
-                        subtitle: subtitle.isEmpty
-                            ? null
-                            : Text(subtitle,
-                                maxLines: 2, overflow: TextOverflow.ellipsis),
-                        trailing: const Icon(Icons.arrow_forward_ios_rounded,
-                            size: 16),
+                        title: Text(name.isEmpty ? (city.isEmpty ? 'Location' : city) : name, maxLines: 1, overflow: TextOverflow.ellipsis),
+                        subtitle: subtitle.isEmpty ? null : Text(subtitle, maxLines: 2, overflow: TextOverflow.ellipsis),
+                        trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
                         onTap: () => _pick(m),
                       );
                     },

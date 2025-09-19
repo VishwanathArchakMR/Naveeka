@@ -123,9 +123,9 @@ class LocationCard extends StatelessWidget {
       return _FavoriteOverlay(
         size: size,
         borderRadius: 12,
-        child: placeholder,
         isFavorite: data.isFavorite,
         onFavoriteToggle: onFavoriteToggle,
+        child: placeholder,
       );
     }
 
@@ -147,9 +147,9 @@ class LocationCard extends StatelessWidget {
     return _FavoriteOverlay(
       size: size,
       borderRadius: 12,
-      child: withHero,
       isFavorite: data.isFavorite,
       onFavoriteToggle: onFavoriteToggle,
+      child: withHero,
     );
   }
 
@@ -319,7 +319,7 @@ class _ChipsRow extends StatelessWidget {
       items.add(_Chip(
         label: distanceText!,
         icon: Icons.place_rounded,
-        bg: cs.surfaceVariant.withValues(alpha: 0.9),
+        bg: cs.surfaceContainerHighest.withValues(alpha: 0.9),
         fg: cs.onSurfaceVariant,
         dense: dense,
       ));
@@ -340,7 +340,7 @@ class _ChipsRow extends StatelessWidget {
       items.add(_Chip(
         label: priceLevel!,
         icon: Icons.payments_rounded,
-        bg: cs.surfaceVariant.withValues(alpha: 0.9),
+        bg: cs.surfaceContainerHighest.withValues(alpha: 0.9),
         fg: cs.onSurfaceVariant,
         dense: dense,
       ));
@@ -466,7 +466,7 @@ class _TagsWrap extends StatelessWidget {
         return Container(
           padding: EdgeInsets.symmetric(horizontal: padH, vertical: padV),
           decoration: BoxDecoration(
-            color: cs.surfaceVariant.withValues(alpha: 0.9),
+            color: cs.surfaceContainerHighest.withValues(alpha: 0.9),
             borderRadius: BorderRadius.circular(999),
             border: Border.all(color: cs.outlineVariant),
           ),

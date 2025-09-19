@@ -290,7 +290,7 @@ class _WedgePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2 + 2);
     final path = Path();
-    final double a = 38 * math.pi / 180.0; // wedge spread
+    const double a = 38 * math.pi / 180.0; // wedge spread
     path.moveTo(center.dx, center.dy - radius);
     path.lineTo(center.dx - radius * math.sin(a), center.dy - radius * math.cos(a));
     path.arcToPoint(
@@ -350,7 +350,7 @@ class UserLocationIcon {
     // Heading wedge
     if (headingDegrees != null) {
       final double r = ringDp * dpr * 0.60;
-      final double a = 38 * math.pi / 180.0;
+      const double a = 38 * math.pi / 180.0;
       final double rot = headingDegrees * math.pi / 180.0;
 
       canvas.save();

@@ -264,12 +264,12 @@ class CheckoutNotifier extends StateNotifier<CheckoutState> {
   Future<ApiResult<Map<String, dynamic>>> submit() async {
     if (!validateTraveler()) {
       return ApiResult.fail(
-        AppException(message: 'Invalid traveler details', safeMessage: 'Please check traveler details.'),
+        const AppException(message: 'Invalid traveler details', safeMessage: 'Please check traveler details.'),
       );
     }
     if (!validatePayment()) {
       return ApiResult.fail(
-        AppException(message: 'Invalid payment details', safeMessage: 'Please check payment details and terms.'),
+        const AppException(message: 'Invalid payment details', safeMessage: 'Please check payment details and terms.'),
       );
     }
 

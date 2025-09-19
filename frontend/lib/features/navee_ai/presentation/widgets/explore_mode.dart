@@ -1,6 +1,6 @@
 // lib/features/navee_ai/presentation/widgets/explore_mode.dart
 
-import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 
 import '../../data/navee_ai_api.dart';
@@ -72,7 +72,7 @@ class _ExploreModeState extends State<ExploreMode> {
       });
       await _fetch();
     }
-  } // Refinement uses a shaped modal bottom sheet via showModalBottomSheet and returns values with Navigator.pop for clean state handoff. [21]
+  } // showModalBottomSheet returns a Future with the value passed to Navigator.pop, enabling simple state handoff [web:5748][web:5764]
 
   Future<void> _fetch() async {
     final city = _destCtrl.text.trim();
@@ -100,12 +100,12 @@ class _ExploreModeState extends State<ExploreMode> {
         setState(() => _loading = false);
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.safeMessage)));
       },
-    ); // Results are shown after the Future resolves, with errors surfaced via SnackBars for clear feedback on network issues. [22]
+    );
   }
 
   Future<void> _onRefresh() async {
     await _fetch();
-  } // Pull-to-refresh is implemented by wrapping the scrollable content in RefreshIndicator and providing an async onRefresh handler. [1]
+  }
 
   void _usePrompt(_Prompt p) {
     final city = _destCtrl.text.trim();
@@ -115,14 +115,16 @@ class _ExploreModeState extends State<ExploreMode> {
     }
     setState(() => _loading = true);
     final text = p.render(city: city, days: _days);
-    widget.api.chat(
+    widget.api
+        .chat(
       messages: [
         {'role': 'system', 'content': 'You are Navee, output STRICT JSON arrays of ideas only.'},
         {'role': 'user', 'content': 'Suggest itinerary ideas for: $text\nReturn JSON array [{"title":"","days":3,"highlights":["",""],"budgetFrom":null}] only.'},
       ],
       temperature: 0.8,
       maxTokens: 800,
-    ).then((res) {
+    )
+        .then((res) {
       res.fold(
         onSuccess: (data) {
           final content = _firstMessage(data) ?? '[]';
@@ -138,7 +140,7 @@ class _ExploreModeState extends State<ExploreMode> {
         },
       );
     });
-  } // Prompt chips trigger a chat completion and parse JSON array content into suggestion maps for display. [9]
+  }
 
   String? _firstMessage(Map<String, dynamic> data) {
     try {
@@ -151,25 +153,22 @@ class _ExploreModeState extends State<ExploreMode> {
     }
   }
 
+  // Robustly extract a JSON array from plain text or fenced `````` blocks and decode it.
   List<dynamic>? _tryDecodeList(String s) {
     try {
       final t = s.trim();
-      if (t.startsWith('```
-        final m = RegExp(r'^```(?:json)?\s*([\s\S]*?)\s*```
-        if (m != null && m.groupCount >= 1) {
-          return _tryDecodeList(m.group(1)!);
-        }
-      }
-      final v = t.isEmpty ? [] : (t.startsWith('[') ? t : '[]');
-      return v == '[]' ? <dynamic>[] : (List<dynamic>.from((v == t ? (List<dynamic>.from([])) : [])));
+      // If fenced, extract inner content; supports `````` or ``````
+      final fence = RegExp(r'^``````$', multiLine: true);
+      final m = fence.firstMatch(t);
+      final body = m != null ? m.group(1)!.trim() : t;
+      final jsonStr = body.startsWith('[') ? body : '[]';
+      final decoded = jsonDecode(jsonStr);
+      if (decoded is List) return decoded;
+      return null;
     } catch (_) {
-      try {
-        return List<dynamic>.from((s.startsWith('[') ? (List<dynamic>.from([])) : []));
-      } catch (_) {
-        return null;
-      }
+      return null;
     }
-  }
+  } // Strips triple‑backtick code fences before jsonDecode to avoid syntax errors with fenced content [web:5759][web:5765]
 
   @override
   Widget build(BuildContext context) {
@@ -207,7 +206,7 @@ class _ExploreModeState extends State<ExploreMode> {
                 SizedBox(
                   width: 90,
                   child: DropdownButtonFormField<int>(
-                    value: _days,
+                    initialValue: _days,
                     isDense: true,
                     decoration: const InputDecoration(
                       labelText: 'Days',
@@ -272,7 +271,7 @@ class _ExploreModeState extends State<ExploreMode> {
                     ),
                   );
                 },
-              ), // Choice-like prompt tiles offer compact, tappable options; chips/tiles are ideal for quick actions per Material chips guidance and grids for dense layout.[2][3]
+              ),
 
               const SizedBox(height: 16),
 
@@ -363,7 +362,7 @@ class _RefineSheetState extends State<_RefineSheet> {
             children: [
               Expanded(
                 child: DropdownButtonFormField<int>(
-                  value: _days,
+                  initialValue: _days,
                   isDense: true,
                   decoration: const InputDecoration(
                     labelText: 'Days',

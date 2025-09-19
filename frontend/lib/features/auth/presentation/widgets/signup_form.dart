@@ -95,7 +95,7 @@ class _SignupFormState extends ConsumerState<SignupForm> {
     try {
       final result = await ref
           .read(authStateProvider.notifier)
-          .register(payload) as ApiResult<Map<String, dynamic>>; // [9]
+          .register(payload); // [9]
 
       if (!mounted) return;
       result.fold(
@@ -166,7 +166,7 @@ class _SignupFormState extends ConsumerState<SignupForm> {
           const SizedBox(height: 16),
           // Role
           DropdownButtonFormField<String>(
-            value: _role,
+            initialValue: _role,
             items: const [
               DropdownMenuItem(value: 'user', child: Text('User')),
               DropdownMenuItem(value: 'partner', child: Text('Partner')),

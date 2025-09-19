@@ -181,7 +181,7 @@ class BookingController extends AsyncNotifier<BookingFlowState> {
     state = const AsyncValue.loading();
     try {
       // stage: quoting
-      final quoting = const BookingFlowState.quoting();
+      const quoting = BookingFlowState.quoting();
       state = AsyncValue.data(quoting);
       final q = await repo.createQuote(
         placeId: placeId,

@@ -94,7 +94,7 @@ class PaymentMethods extends StatelessWidget {
 
         if (showNet) ...[
           DropdownButtonFormField<String>(
-            value: selectedBank,
+            initialValue: selectedBank,
             items: bankNames
                 .map((b) => DropdownMenuItem<String>(value: b, child: Text(b)))
                 .toList(growable: false),

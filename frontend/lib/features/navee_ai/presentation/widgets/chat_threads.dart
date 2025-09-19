@@ -213,17 +213,17 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return const Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.forum_outlined, size: 48, color: Colors.black26),
-            const SizedBox(height: 12),
-            const Text('No conversations yet', style: TextStyle(fontWeight: FontWeight.w700)),
-            const SizedBox(height: 4),
-            const Text('Start a new chat to plan trips, ideas, or itineraries', style: TextStyle(color: Colors.black54)),
+            SizedBox(height: 12),
+            Text('No conversations yet', style: TextStyle(fontWeight: FontWeight.w700)),
+            SizedBox(height: 4),
+            Text('Start a new chat to plan trips, ideas, or itineraries', style: TextStyle(color: Colors.black54)),
           ],
         ),
       ),

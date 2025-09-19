@@ -39,7 +39,7 @@ class PlaceHeaderSliver extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final img = _coverUrl(place);
-    final title = (place.name ?? '').trim().isEmpty ? 'Place' : place.name!.trim();
+    final title = (place.name ?? '').trim().isEmpty ? 'Place' : place.name.trim();
 
     return SliverAppBar(
       pinned: true,
@@ -165,7 +165,7 @@ class PlaceHeaderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final img = _coverUrl(place);
-    final title = (place.name ?? '').trim().isEmpty ? 'Place' : place.name!.trim();
+    final title = (place.name ?? '').trim().isEmpty ? 'Place' : place.name.trim();
     final cats = _categories(place);
     final rating = place.rating;
 
@@ -239,7 +239,7 @@ class PlaceHeaderCard extends StatelessWidget {
                 const SizedBox(height: 6),
 
                 // Rating
-                if (showRating && rating != null)
+                if (showRating)
                   Row(
                     children: [
                       _stars(rating),

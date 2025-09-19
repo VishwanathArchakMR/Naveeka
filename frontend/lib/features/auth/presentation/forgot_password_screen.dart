@@ -47,7 +47,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         // Common REST pattern: POST /api/auth/password/reset-request { email }.
         // If your backend differs, adjust the endpoint accordingly.
         final dio = DioClient.instance.dio;
-        final path = '${AppConstants.apiAuth}/password/reset-request';
+        const path = '${AppConstants.apiAuth}/password/reset-request';
         final res = await dio.post(path, data: {'email': email});
         return Map<String, dynamic>.from(res.data as Map);
       });

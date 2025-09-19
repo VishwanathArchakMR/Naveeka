@@ -327,7 +327,7 @@ class _PlaceResultsScreenState extends State<PlaceResultsScreen> {
           SizedBox(
             width: 240,
             child: DropdownButtonFormField<String>(
-              value: _sort,
+              initialValue: _sort,
               isDense: true,
               icon: const Icon(Icons.sort),
               onChanged: (v) async {

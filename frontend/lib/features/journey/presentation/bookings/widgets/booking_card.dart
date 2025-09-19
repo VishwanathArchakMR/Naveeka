@@ -233,7 +233,7 @@ class _LeadingVisual extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = 70.0;
+    const size = 70.0;
     return Container(
       width: size,
       height: size,

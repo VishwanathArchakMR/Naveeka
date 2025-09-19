@@ -667,17 +667,15 @@ class Booking {
       bs = BookingStatus.pending;
     }
 
-    List<Traveler> _trav(List? raw) => (raw ?? const <dynamic>[])
+    List<Traveler> trav(List? raw) => (raw ?? const <dynamic>[])
         .whereType<Map<String, dynamic>>()
         .map(Traveler.fromJson)
         .toList(growable: false);
 
-    List<FlightSegment>? _seg(List? raw) => raw == null
-        ? null
-        : raw.whereType<Map<String, dynamic>>().map(FlightSegment.fromJson).toList(growable: false);
+    List<FlightSegment>? seg(List? raw) => raw?.whereType<Map<String, dynamic>>().map(FlightSegment.fromJson).toList(growable: false);
 
-    List<ActivityItem>? _acts(List? raw) =>
-        raw == null ? null : raw.whereType<Map<String, dynamic>>().map(ActivityItem.fromJson).toList(growable: false);
+    List<ActivityItem>? acts(List? raw) =>
+        raw?.whereType<Map<String, dynamic>>().map(ActivityItem.fromJson).toList(growable: false);
 
     return Booking(
       id: (json['id'] ?? '').toString(),
@@ -690,16 +688,16 @@ class Booking {
       recordLocator: (json['recordLocator'] as String?)?.toString(),
       contactEmail: (json['contactEmail'] as String?)?.toString(),
       contactPhone: (json['contactPhone'] as String?)?.toString(),
-      travelers: _trav(json['travelers'] as List?),
+      travelers: trav(json['travelers'] as List?),
       baseFare: json['baseFare'] != null ? Money.fromJson(json['baseFare'] as Map<String, dynamic>) : null,
       taxes: json['taxes'] != null ? Money.fromJson(json['taxes'] as Map<String, dynamic>) : null,
       total: json['total'] != null ? Money.fromJson(json['total'] as Map<String, dynamic>) : null,
       currency: (json['currency'] as String?)?.toUpperCase(),
       payment: json['payment'] != null ? PaymentInfo.fromJson(json['payment'] as Map<String, dynamic>) : null,
-      flightSegments: _seg(json['flightSegments'] as List?),
+      flightSegments: seg(json['flightSegments'] as List?),
       hotelStay: json['hotelStay'] != null ? HotelStay.fromJson(json['hotelStay'] as Map<String, dynamic>) : null,
       carRental: json['carRental'] != null ? CarRental.fromJson(json['carRental'] as Map<String, dynamic>) : null,
-      activities: _acts(json['activities'] as List?),
+      activities: acts(json['activities'] as List?),
       notes: (json['notes'] as String?)?.toString(),
       metadata: (json['metadata'] is Map<String, dynamic>) ? Map<String, dynamic>.from(json['metadata'] as Map) : null,
     );

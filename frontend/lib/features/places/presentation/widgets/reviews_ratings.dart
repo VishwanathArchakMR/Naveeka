@@ -163,7 +163,7 @@ class _ReviewsRatingsState extends State<ReviewsRatings> {
                 const SizedBox(width: 6),
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    value: _sortBy,
+                    initialValue: _sortBy,
                     isDense: true,
                     items: const [
                       DropdownMenuItem(value: 'recent', child: Text('Most recent')),

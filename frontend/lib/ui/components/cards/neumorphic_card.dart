@@ -216,7 +216,7 @@ class _NeumorphicCardState extends State<NeumorphicCard> {
         return Container(
           padding: EdgeInsets.symmetric(horizontal: padH, vertical: padV),
           decoration: BoxDecoration(
-            color: cs.surfaceVariant.withValues(alpha: 0.9),
+            color: cs.surfaceContainerHighest.withValues(alpha: 0.9),
             borderRadius: BorderRadius.circular(999),
             border: Border.all(color: cs.outlineVariant),
           ),

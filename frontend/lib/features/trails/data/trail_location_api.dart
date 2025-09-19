@@ -151,7 +151,7 @@ abstract class TrailLocationApi {
 
 /// Minimal in-memory TTL cache for GET responses.
 class _MemCache {
-  _MemCache({this.ttl = const Duration(minutes: 3)});
+  _MemCache();
 
   final Duration ttl;
   final Map<String, ({DateTime at, Object data})> _store = <String, ({DateTime, Object})>{};
@@ -302,7 +302,7 @@ class TrailLocationApiDio implements TrailLocationApi {
   /// Great-circle distance using the Haversine formula (km). [5][2]
   double _haversineKm(GeoPoint a, GeoPoint b) {
     const r = 6371.0; // km
-    final p = math.pi / 180.0;
+    const p = math.pi / 180.0;
     final dLat = (b.lat - a.lat) * p;
     final dLon = (b.lng - a.lng) * p;
     final lat1 = a.lat * p;

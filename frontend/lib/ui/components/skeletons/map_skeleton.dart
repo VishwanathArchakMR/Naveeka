@@ -112,8 +112,6 @@ class _MapTilesPainter extends CustomPainter {
   _MapTilesPainter({
     required this.tileColor1,
     required this.tileColor2,
-    this.tile = 56,
-    this.gap = 2,
   });
 
   final Color tileColor1;

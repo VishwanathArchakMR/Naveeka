@@ -337,7 +337,7 @@ final profileBundleProvider =
     counts: results as ProfileCounts,
     travel: results as TravelStatsData,
     visitedPlaces: results as List<Place>,
-    contribPlaces: results as List<Place>,
+    contribPlaces: results,
     contribReviews: results as List<ContributionReview>,
     contribPhotos: results as List<String>,
     journeys: results as List<JourneyDto>,

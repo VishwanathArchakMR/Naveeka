@@ -1,8 +1,6 @@
 // lib/features/journey/presentation/bookings/widgets/booking_route_map.dart
 
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class BookingRouteMap extends StatelessWidget {
@@ -14,9 +12,9 @@ class BookingRouteMap extends StatelessWidget {
     required this.destinationLng,
     this.routePoints, // optional decoded route to draw as polyline
     this.height = 260,
-    this.initialZoom = 12,
-    this.tileUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-    this.tileSubdomains = const ['a', 'b', 'c'],
+    this.initialZoom = 12, // kept for API compatibility
+    this.tileUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', // placeholder
+    this.tileSubdomains = const ['a', 'b', 'c'], // placeholder
     this.onOpenExternalDirections,
     this.showDirectionsButton = true,
   });
@@ -30,9 +28,9 @@ class BookingRouteMap extends StatelessWidget {
   final List<LatLng>? routePoints;
 
   final double height;
-  final double initialZoom;
-  final String tileUrl;
-  final List<String> tileSubdomains;
+  final double initialZoom; // unused in placeholder
+  final String tileUrl; // unused in placeholder
+  final List<String> tileSubdomains; // unused in placeholder
 
   final VoidCallback? onOpenExternalDirections;
   final bool showDirectionsButton;
@@ -54,64 +52,15 @@ class BookingRouteMap extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         child: Stack(
           children: [
-            FlutterMap(
-              options: MapOptions(
-                // Auto-fit camera to include origin, destination, and the route with padding
-                cameraFit: CameraFit.bounds(
-                  bounds: LatLngBounds.fromPoints(allPoints),
-                  padding: const EdgeInsets.all(28),
-                ),
-                initialZoom: initialZoom,
-                interactionOptions: const InteractionOptions(
-                  flags: InteractiveFlag.pinchZoom |
-                      InteractiveFlag.drag |
-                      InteractiveFlag.doubleTapZoom,
-                ),
+            // Placeholder “map-like” canvas with scaled route
+            CustomPaint(
+              size: Size(double.infinity, height),
+              painter: _RoutePainter(
+                points: allPoints,
+                origin: origin,
+                destination: destination,
+                primary: Theme.of(context).colorScheme.primary,
               ),
-              children: [
-                TileLayer(
-                  urlTemplate: tileUrl,
-                  subdomains: tileSubdomains,
-                  userAgentPackageName: 'com.example.app',
-                ),
-                PolylineLayer(
-                  polylines: [
-                    Polyline(
-                      points: polyline,
-                      strokeWidth: 4,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ],
-                  // Enable culling to skip drawing outside viewport for performance
-                  polylineCulling: true,
-                ),
-                MarkerLayer(
-                  markers: [
-                    Marker(
-                      point: origin,
-                      width: 44,
-                      height: 44,
-                      alignment: Alignment.center,
-                      child: _MarkerPin(
-                        color: Colors.green,
-                        icon: Icons.radio_button_checked,
-                        tooltip: 'Origin',
-                      ),
-                    ),
-                    Marker(
-                      point: destination,
-                      width: 44,
-                      height: 44,
-                      alignment: Alignment.center,
-                      child: _MarkerPin(
-                        color: Colors.red,
-                        icon: Icons.place,
-                        tooltip: 'Destination',
-                      ),
-                    ),
-                  ],
-                ),
-              ],
             ),
             if (showDirectionsButton)
               Positioned(
@@ -149,37 +98,127 @@ class BookingRouteMap extends StatelessWidget {
   }
 }
 
-class _MarkerPin extends StatelessWidget {
-  const _MarkerPin({
-    required this.color,
-    required this.icon,
-    required this.tooltip,
+// Minimal LatLng type to avoid external dependency
+class LatLng {
+  final double latitude;
+  final double longitude;
+  const LatLng(this.latitude, this.longitude);
+}
+
+class _RoutePainter extends CustomPainter {
+  _RoutePainter({
+    required this.points,
+    required this.origin,
+    required this.destination,
+    required this.primary,
   });
 
-  final Color color;
-  final IconData icon;
-  final String tooltip;
+  final List<LatLng> points;
+  final LatLng origin;
+  final LatLng destination;
+  final Color primary;
 
   @override
-  Widget build(BuildContext context) {
-    return Tooltip(
-      message: tooltip,
-      child: Container(
-        width: 28,
-        height: 28,
-        decoration: BoxDecoration(
-          color: color,
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.25),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
-            ),
-          ],
+  void paint(Canvas canvas, Size size) {
+    if (points.isEmpty) return;
+
+    // Compute bounds
+    double minLat = points.first.latitude, maxLat = points.first.latitude;
+    double minLng = points.first.longitude, maxLng = points.first.longitude;
+    for (final p in points) {
+      if (p.latitude < minLat) minLat = p.latitude;
+      if (p.latitude > maxLat) maxLat = p.latitude;
+      if (p.longitude < minLng) minLng = p.longitude;
+      if (p.longitude > maxLng) maxLng = p.longitude;
+    }
+
+    // Padding for aesthetics
+    const pad = 16.0;
+    final w = size.width;
+    final h = size.height;
+    final dx = (maxLng - minLng).abs();
+    final dy = (maxLat - minLat).abs();
+    final sx = dx == 0 ? 1.0 : (w - 2 * pad) / dx;
+    final sy = dy == 0 ? 1.0 : (h - 2 * pad) / dy;
+
+    Offset toOffset(LatLng p) {
+      // y inverted to put higher latitudes near the top
+      final x = pad + (p.longitude - minLng) * sx;
+      final y = h - pad - (p.latitude - minLat) * sy;
+      return Offset(x.clamp(0, w), y.clamp(0, h));
+    }
+
+    // Background grid
+    final gridPaint = Paint()
+      ..color = Colors.black.withValues(alpha: 0.05)
+      ..strokeWidth = 1;
+    for (var x = pad; x < w - pad; x += 24) {
+      canvas.drawLine(Offset(x, pad), Offset(x, h - pad), gridPaint);
+    }
+    for (var y = pad; y < h - pad; y += 24) {
+      canvas.drawLine(Offset(pad, y), Offset(w - pad, y), gridPaint);
+    }
+
+    // Route polyline
+    final routePaint = Paint()
+      ..color = primary
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final path = Path();
+    final first = toOffset(points.first);
+    path.moveTo(first.dx, first.dy);
+    for (var i = 1; i < points.length; i++) {
+      final o = toOffset(points[i]);
+      path.lineTo(o.dx, o.dy);
+    }
+    canvas.drawPath(path, routePaint);
+
+    // Origin pin
+    final o = toOffset(origin);
+    _drawPin(canvas, o, Colors.green, Icons.radio_button_checked);
+
+    // Destination pin
+    final d = toOffset(destination);
+    _drawPin(canvas, d, Colors.red, Icons.place);
+  }
+
+  void _drawPin(Canvas canvas, Offset at, Color color, IconData icon) {
+    final r = 14.0;
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 0);
+    // Shadow
+    final shadow = Paint()
+      ..color = Colors.black.withValues(alpha: 0.25)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
+    canvas.drawCircle(at.translate(0, 2), r, shadow);
+    // Circle
+    canvas.drawCircle(at, r, paint);
+    // Icon
+    final tp = TextPainter(
+      text: TextSpan(
+        text: String.fromCharCode(icon.codePoint),
+        style: TextStyle(
+          fontSize: 14,
+          fontFamily: icon.fontFamily,
+          package: icon.fontPackage,
+          color: Colors.white,
         ),
-        child: Icon(icon, color: Colors.white, size: 16),
       ),
-    );
+      textDirection: TextDirection.ltr,
+    )..layout();
+    tp.paint(canvas, at - Offset(tp.width / 2, tp.height / 2));
+  }
+
+  @override
+  bool shouldRepaint(covariant _RoutePainter oldDelegate) {
+    return points != oldDelegate.points ||
+        origin != oldDelegate.origin ||
+        destination != oldDelegate.destination ||
+        primary != oldDelegate.primary;
   }
 }

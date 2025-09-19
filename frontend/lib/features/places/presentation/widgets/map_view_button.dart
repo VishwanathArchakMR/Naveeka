@@ -60,7 +60,7 @@ class MapViewButton extends StatelessWidget {
   Widget build(BuildContext context) {
     if (lat == null || lng == null) return const SizedBox.shrink();
 
-    final onPress = () => _openMap(context);
+    Future<void> onPress() => _openMap(context);
 
     return extended
         ? FilledButton.icon(

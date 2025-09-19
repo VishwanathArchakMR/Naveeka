@@ -124,7 +124,7 @@ class _AtlasMapViewState extends State<AtlasMapView> {
           duration: const Duration(milliseconds: 200),
           transform: Matrix4.identity()
             ..scale(isSelected ? 1.2 : 1.0),
-          child: Container(
+          child: SizedBox(
             width: 40,
             height: 50,
             child: Stack(
@@ -213,7 +213,7 @@ class _AtlasMapViewState extends State<AtlasMapView> {
             ),
           ],
         ),
-        child: Icon(
+        child: const Icon(
           Icons.my_location_rounded,
           size: 16,
           color: Colors.white,

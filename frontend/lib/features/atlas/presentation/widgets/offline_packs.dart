@@ -35,7 +35,7 @@ class OfflinePackInfo {
       sizeMB > 0 ? (downloadedMB.clamp(0, sizeMB) / sizeMB) : 0.0;
   String get progressText =>
       sizeMB > 0 ? '${((progress) * 100).toStringAsFixed(0)}%' : '0%';
-  String get sizeText => '${sizeMB} MB';
+  String get sizeText => '$sizeMB MB';
 }
 
 class OfflinePacksSection extends StatelessWidget {

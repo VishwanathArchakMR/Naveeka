@@ -488,7 +488,7 @@ class _RadiusField extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Text(v == 0 ? 'Off' : '${v.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.w800)),
+              Text(v == 0 ? 'Off' : v.toStringAsFixed(0), style: const TextStyle(fontWeight: FontWeight.w800)),
             ],
           ),
         ),

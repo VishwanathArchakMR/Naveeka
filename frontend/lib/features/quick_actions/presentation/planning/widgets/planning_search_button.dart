@@ -263,7 +263,7 @@ class _PlanningSearchSheetState extends State<_PlanningSearchSheet> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    final categories = const <(String, IconData)>[
+    const categories = <(String, IconData)>[
       ('food', Icons.restaurant_menu),
       ('coffee', Icons.coffee_outlined),
       ('outdoors', Icons.park_outlined),
@@ -563,7 +563,7 @@ class _RadiusField extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Text(v == 0 ? 'Off' : '${v.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.w800)),
+              Text(v == 0 ? 'Off' : v.toStringAsFixed(0), style: const TextStyle(fontWeight: FontWeight.w800)),
             ],
           ),
         ),

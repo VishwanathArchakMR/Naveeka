@@ -78,7 +78,7 @@ class NearbyAttractions extends StatelessWidget {
       final hasCoords = lat != null && lng != null;
       final dist = (m['distanceKm'] is num)
           ? (m['distanceKm'] as num).toDouble()
-          : (hasCoords ? _haversineKm(hotel.lat, hotel.lng, lat!, lng!) : null);
+          : (hasCoords ? _haversineKm(hotel.lat, hotel.lng, lat, lng) : null);
       return {
         ...m,
         'distanceKm': dist,
@@ -252,8 +252,9 @@ class _TypeIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = type.toLowerCase();
     IconData icon = Icons.place_outlined;
-    if (t.contains('museum')) icon = Icons.museum_outlined;
-    else if (t.contains('park')) icon = Icons.park_outlined;
+    if (t.contains('museum')) {
+      icon = Icons.museum_outlined;
+    } else if (t.contains('park')) icon = Icons.park_outlined;
     else if (t.contains('temple') || t.contains('church') || t.contains('mosque')) icon = Icons.account_balance_outlined;
     else if (t.contains('mall') || t.contains('market')) icon = Icons.store_mall_directory_outlined;
     else if (t.contains('monument') || t.contains('fort')) icon = Icons.castle_outlined;

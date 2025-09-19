@@ -289,9 +289,9 @@ class _FamousPlaceCard extends StatelessWidget {
                           color: Colors.amber,
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: Row(
+                        child: const Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: const [
+                          children: [
                             Icon(
                               Icons.star_rounded,
                               size: 12,
@@ -370,7 +370,7 @@ class _FamousPlaceCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.star_rounded,
                             size: 14,
                             color: Colors.amber,

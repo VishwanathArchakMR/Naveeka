@@ -322,7 +322,7 @@ class _BottomRow extends StatelessWidget {
       left.add(Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
-          color: cs.surfaceVariant.withValues(alpha: 0.8),
+          color: cs.surfaceContainerHighest.withValues(alpha: 0.8),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: cs.outlineVariant),
         ),
@@ -384,7 +384,7 @@ class _TagsWrap extends StatelessWidget {
         return Container(
           padding: EdgeInsets.symmetric(horizontal: padH, vertical: padV),
           decoration: BoxDecoration(
-            color: cs.surfaceVariant.withValues(alpha: 0.9),
+            color: cs.surfaceContainerHighest.withValues(alpha: 0.9),
             borderRadius: BorderRadius.circular(999),
             border: Border.all(color: cs.outlineVariant),
           ),

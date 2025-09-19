@@ -83,7 +83,7 @@ class _VisitedLocationsMapState extends State<VisitedLocationsMap> {
         ? null
         : data.firstWhere(
             (p) => p.id.toString() == _selectedId,
-            orElse: () => data.isEmpty ? Place() : data.first,
+            orElse: () => data.isEmpty ? const Place() : data.first,
           );
 
     final years = _yearsFrom(widget.places);
@@ -235,9 +235,9 @@ class _VisitedLocationsMapState extends State<VisitedLocationsMap> {
     return Container(
       color: Theme.of(context).colorScheme.surfaceContainerHigh,
       alignment: Alignment.center,
-      child: Column(
+      child: const Column(
         mainAxisSize: MainAxisSize.min,
-        children: const [
+        children: [
           Icon(Icons.map_outlined, size: 40, color: Colors.black26),
           SizedBox(height: 8),
           Text('Map unavailable', style: TextStyle(color: Colors.black45)),

@@ -306,7 +306,7 @@ class _TrainResultsScreenState extends State<TrainResultsScreen> {
           SizedBox(
             width: 220,
             child: DropdownButtonFormField<String>(
-              value: _sort,
+              initialValue: _sort,
               isDense: true,
               icon: const Icon(Icons.sort),
               onChanged: (v) async {
@@ -399,8 +399,8 @@ class _TrainFiltersSheetState extends State<_TrainFiltersSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final classes = const ['1A', '2A', '3A', '3E', 'SL', 'CC', '2S'];
-    final quotas = const ['GN', 'TQ', 'LD', 'PT', 'SS', 'HO'];
+    const classes = ['1A', '2A', '3A', '3E', 'SL', 'CC', '2S'];
+    const quotas = ['GN', 'TQ', 'LD', 'PT', 'SS', 'HO'];
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),

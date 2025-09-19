@@ -119,9 +119,9 @@ class FloatingButton extends StatelessWidget {
 
     final Widget withBadge = _BadgeOverlay(
       count: badgeCount,
-      child: fabCore,
       fg: fg,
       cs: cs,
+      child: fabCore,
     );
 
     final Widget withTooltip = (tooltip != null && tooltip!.trim().isNotEmpty)
@@ -202,7 +202,7 @@ class FloatingButton extends StatelessWidget {
                   vertical: 12,
                 ),
             icon: icon,
-            label: label!,
+            label: label,
           );
         }
         break;
