@@ -121,7 +121,9 @@ class PagedState<T> {
         error: error,
       );
 
-  static PagedState<T> empty<T>() => PagedState<T>(items: const <T>[], cursor: null, loading: false);
+  // Avoid const generic literal; use the non-literal factory to satisfy lint safely.
+  static PagedState<T> empty<T>() =>
+      PagedState<T>(items: List<T>.empty(growable: false), cursor: null, loading: false);
 }
 
 class WishlistPagedController extends AsyncNotifier<PagedState<Place>> {
@@ -133,18 +135,17 @@ class WishlistPagedController extends AsyncNotifier<PagedState<Place>> {
 
   WishlistApi get _api => ref.read(wishlistApiProvider);
 
+  // Now sets state internally and returns the next value; callers do not mutate state externally.
   Future<PagedState<Place>> refresh() async {
     final pageRes = await _api.listPage(limit: 20, cursor: null);
     if (pageRes.success) {
       final page = pageRes.data!;
-      final next = page.nextCursor;
-      return PagedState<Place>(items: page.items, cursor: next, loading: false);
+      final next = PagedState<Place>(items: page.items, cursor: page.nextCursor, loading: false);
+      state = AsyncData(next);
+      return next;
     } else {
-      // Bubble the error via AsyncError then recover to a non-loading state.
-      final err = pageRes.error!;
-      // Let Riverpod display the error if observed as AsyncValue.error.
-      Future.microtask(() => state = AsyncError(err, StackTrace.current));
-      return PagedState.empty();
+      // Propagate as AsyncError for observers; build() will reflect error.
+      throw pageRes.error!;
     }
   }
 
@@ -188,21 +189,20 @@ final wishlistExistsProvider = FutureProvider.family<bool, String>((ref, placeId
 /// ----------------------------
 /// Actions facade for UI wiring
 /// ----------------------------
+
+// Reader typedef so we can pass ref.read and call it like a function.
+typedef Reader = T Function<T>(ProviderListenable<T> provider);
+
 class WishlistActions {
   WishlistActions(this._read);
-  final Ref _read;
+  final Reader _read;
 
-  Future<void> refresh() => _read(wishlistProvider.notifier).load(refresh: true);
+  Future<void> refresh() => _read(wishlistPagedControllerProvider.notifier).refresh();
   Future<bool> add(String placeId, {String notes = ''}) => _read(wishlistProvider.notifier).add(placeId, notes: notes);
   Future<bool> remove(String placeId) => _read(wishlistProvider.notifier).remove(placeId);
 
   // Paged
-  Future<void> pagedRefresh() async {
-    final controller = _read(wishlistPagedControllerProvider.notifier);
-    final next = await controller.refresh();
-    controller.state = AsyncData(next);
-  }
-
+  Future<void> pagedRefresh() => _read(wishlistPagedControllerProvider.notifier).refresh();
   Future<void> pagedLoadMore() => _read(wishlistPagedControllerProvider.notifier).loadMore();
 }
 

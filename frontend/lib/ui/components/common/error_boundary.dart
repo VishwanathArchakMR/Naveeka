@@ -2,15 +2,12 @@
 
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../../../core/errors/flutter_exception_handler.dart';
+import 'package:flutter/foundation.dart' as f; // Use FlutterError, FlutterExceptionHandler explicitly.
+
+// Removed the local handler import to avoid type name collision with Flutter's FlutterExceptionHandler.
+// import '../../../core/errors/flutter_exception_handler.dart';
 
 /// A friendly error boundary widget that renders a fallback UI when an error is caught.
-/// - Optional global capture via FlutterError.onError and PlatformDispatcher.onError
-/// - Retry hook to rebuild/reset state
-/// - Minimal, Material 3–aligned fallback with details expander
-/// Notes:
-/// - Flutter’s error hooks (FlutterError.onError, ErrorWidget.builder, PlatformDispatcher.onError)
-///   are global; use captureGlobal=true at a screen/root scope, not for tiny subtrees. [3][2]
 class ErrorBoundary extends StatefulWidget {
   const ErrorBoundary({
     super.key,
@@ -18,34 +15,26 @@ class ErrorBoundary extends StatefulWidget {
     this.fallback,
     this.onError,
     this.onRetry,
-    this.captureGlobal = false, // set true near app/screen roots, not deep subtrees
+    this.captureGlobal = false,
     this.showDetailsByDefault = false,
     this.title = 'Something went wrong',
     this.message,
   });
 
-  /// The normal child to render when no error is present. [22]
   final Widget child;
 
-  /// Optional fallback builder for a custom error UI; if null, a default UI is shown. [22]
   final Widget Function(BuildContext context, Object error, StackTrace? stack)? fallback;
 
-  /// Error hook (e.g., for logging/analytics). [3]
-  final void Function(FlutterErrorDetails details)? onError;
+  final void Function(f.FlutterErrorDetails details)? onError;
 
-  /// Called when the user taps "Retry." If null, boundary will just clear its local error state. [3]
   final VoidCallback? onRetry;
 
-  /// If true, installs global handlers while mounted (FlutterError.onError and PlatformDispatcher.onError). [3]
   final bool captureGlobal;
 
-  /// Expand the details section (stack trace) by default. [3]
   final bool showDetailsByDefault;
 
-  /// Title text for the default fallback UI. [22]
   final String title;
 
-  /// Optional message shown under the title in the default fallback UI. [22]
   final String? message;
 
   @override
@@ -55,11 +44,10 @@ class ErrorBoundary extends StatefulWidget {
 class _ErrorBoundaryState extends State<ErrorBoundary> {
   Object? _error;
   StackTrace? _stack;
-  FlutterErrorDetails? _details;
 
-  // Preserve previous global handlers to restore on dispose. [3]
-  FlutterExceptionHandler? _prevFlutterOnError;
-  PlatformDispatcherErrorCallback? _prevPlatformOnError;
+  // Preserve previous global handlers to restore on dispose.
+  f.FlutterExceptionHandler? _prevFlutterOnError; // typedef: void Function(FlutterErrorDetails) [web:6310]
+  ErrorCallback? _prevPlatformOnError; // PlatformDispatcher.onError uses ErrorCallback(bool Function(Object, StackTrace)?) [web:6318]
 
   bool _showDetails = false;
 
@@ -75,7 +63,6 @@ class _ErrorBoundaryState extends State<ErrorBoundary> {
   @override
   void didUpdateWidget(ErrorBoundary oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Toggle global capture based on the latest prop. [3]
     if (!oldWidget.captureGlobal && widget.captureGlobal) {
       _installGlobalHandlers();
     } else if (oldWidget.captureGlobal && !widget.captureGlobal) {
@@ -92,31 +79,29 @@ class _ErrorBoundaryState extends State<ErrorBoundary> {
   }
 
   void _installGlobalHandlers() {
-    // Capture framework (build/layout/paint/callback) errors. [3]
-    _prevFlutterOnError = FlutterError.onError;
-    FlutterError.onError = (FlutterErrorDetails details) {
+    // Capture framework (build/layout/paint/callback) errors. [web:6304]
+    _prevFlutterOnError = f.FlutterError.onError;
+    f.FlutterError.onError = (f.FlutterErrorDetails details) {
       _handleError(details);
       _prevFlutterOnError?.call(details);
     };
 
-    // Capture uncaught platform/zone-originated errors (outside framework callbacks). [3]
+    // Capture uncaught platform/zone-originated errors. [web:6306][web:6315]
     _prevPlatformOnError = PlatformDispatcher.instance.onError;
     PlatformDispatcher.instance.onError = (Object error, StackTrace stack) {
-      _handleError(FlutterErrorDetails(exception: error, stack: stack));
-      // Return previous decision or true to signal handled. [3]
+      _handleError(f.FlutterErrorDetails(exception: error, stack: stack));
       return _prevPlatformOnError?.call(error, stack) ?? true;
     };
   }
 
   void _restoreGlobalHandlers() {
-    FlutterError.onError = _prevFlutterOnError;
+    f.FlutterError.onError = _prevFlutterOnError;
     PlatformDispatcher.instance.onError = _prevPlatformOnError;
   }
 
-  void _handleError(FlutterErrorDetails details) {
+  void _handleError(f.FlutterErrorDetails details) {
     if (!mounted) return;
     setState(() {
-      _details = details;
       _error = details.exception;
       _stack = details.stack;
     });
@@ -125,7 +110,6 @@ class _ErrorBoundaryState extends State<ErrorBoundary> {
 
   void _clearError() {
     setState(() {
-      _details = null;
       _error = null;
       _stack = null;
       _showDetails = widget.showDetailsByDefault;
@@ -134,7 +118,6 @@ class _ErrorBoundaryState extends State<ErrorBoundary> {
 
   @override
   Widget build(BuildContext context) {
-    // If an error was recorded (globally or via manual call), render fallback. [3]
     if (_error != null) {
       if (widget.fallback != null) {
         return widget.fallback!(context, _error!, _stack);
@@ -152,12 +135,11 @@ class _ErrorBoundaryState extends State<ErrorBoundary> {
       );
     }
 
-    // Try to build child with a protective wrapper around layout/paint errors via global hooks if enabled. [3]
     return widget.child;
   }
 }
 
-/// Default fallback UI with a large icon, title, message, details expander, and retry button. [22]
+/// Default fallback UI with a large icon, title, message, details expander, and retry button.
 class _DefaultErrorFallback extends StatelessWidget {
   const _DefaultErrorFallback({
     required this.title,
@@ -180,7 +162,7 @@ class _DefaultErrorFallback extends StatelessWidget {
     final t = Theme.of(context);
     final cs = t.colorScheme;
 
-    final Color iconBg = cs.error.withValues(alpha: 0.14); // wide‑gamut safe [21]
+    final Color iconBg = cs.error.withValues(alpha: 0.14);
     final Color iconFg = cs.onErrorContainer;
 
     return Center(
@@ -190,7 +172,7 @@ class _DefaultErrorFallback extends StatelessWidget {
           constraints: const BoxConstraints(maxWidth: 720),
           child: DecoratedBox(
             decoration: BoxDecoration(
-              color: cs.surfaceContainerHighest, // modern neutral surface [22]
+              color: cs.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: cs.outlineVariant),
             ),
@@ -270,7 +252,7 @@ class _DetailsSection extends StatelessWidget {
         constraints: const BoxConstraints(maxHeight: 200),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: cs.surfaceContainerHighest.withValues(alpha: 0.9), // updated surface [22][21]
+          color: cs.surfaceContainerHighest.withValues(alpha: 0.9),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: cs.outlineVariant),
         ),

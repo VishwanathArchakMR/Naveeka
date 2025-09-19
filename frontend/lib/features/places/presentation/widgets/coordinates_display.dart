@@ -26,8 +26,8 @@ class CoordinatesDisplay extends StatelessWidget {
   }) {
     return CoordinatesDisplay(
       key: key,
-      lat: p.lat,
-      lng: p.lng,
+      lat: _latOf(p),
+      lng: _lngOf(p),
       title: title,
       decimals: decimals,
       showTitle: showTitle,
@@ -135,4 +135,31 @@ class CoordinatesDisplay extends StatelessWidget {
     final lngDms = dms(lng, 'E', 'W');
     return '$latDms, $lngDms';
   }
+
+  // -------- Helpers to read coordinates from heterogeneous Place models --------
+
+  static Map<String, dynamic> _json(Place p) {
+    try {
+      final dyn = p as dynamic;
+      final j = dyn.toJson();
+      if (j is Map<String, dynamic>) return j;
+    } catch (_) {}
+    return const <String, dynamic>{};
+  } // Prefer toJson and Map access for flexible models. [web:5858]
+
+  static double? _latOf(Place p) {
+    final m = _json(p);
+    final v = m['lat'] ?? m['latitude'] ?? m['locationLat'] ?? m['coordLat'];
+    if (v is num) return v.toDouble();
+    if (v is String) return double.tryParse(v);
+    return null;
+  } // Parse numeric or string lat from known keys. [web:5858][web:6261]
+
+  static double? _lngOf(Place p) {
+    final m = _json(p);
+    final v = m['lng'] ?? m['longitude'] ?? m['long'] ?? m['lon'] ?? m['locationLng'] ?? m['coordLng'];
+    if (v is num) return v.toDouble();
+    if (v is String) return double.tryParse(v);
+    return null;
+  } // Parse numeric or string lng from known keys. [web:5858][web:6261]
 }

@@ -28,6 +28,7 @@ class FavoriteHeartButton extends StatefulWidget {
   });
 
   /// Build from your Place model fields.
+  /// Safely derives fields from toJson() or common map keys.
   factory FavoriteHeartButton.fromPlace({
     Key? key,
     required Place place,
@@ -41,10 +42,54 @@ class FavoriteHeartButton extends StatefulWidget {
     String? semanticLabel,
     bool disabled = false,
   }) {
+    // Try to obtain a Map view of the model.
+    Map<String, dynamic> j = const <String, dynamic>{};
+    try {
+      final dyn = place as dynamic;
+      final m = dyn.toJson();
+      if (m is Map) {
+        j = Map<String, dynamic>.from(m as Map);
+      }
+    } catch (_) {
+      // ignore
+    }
+
+    bool parseBool(dynamic v) {
+      if (v is bool) return v;
+      if (v is String) {
+        final s = v.toLowerCase().trim();
+        return s == 'true' || s == '1' || s == 'yes';
+      }
+      if (v is num) return v != 0;
+      return false;
+    }
+
+    int? parseInt(dynamic v) {
+      if (v == null) return null;
+      if (v is int) return v;
+      if (v is num) return v.toInt();
+      if (v is String) return int.tryParse(v);
+      return null;
+    }
+
+    // Derive favorite flag from common fields.
+    final fav = parseBool(
+      j['isFavorite'] ??
+          j['favorite'] ??
+          j['is_favorite'] ??
+          j['isWishlisted'] ??
+          j['wishlisted'] ??
+          j['saved'],
+    );
+
+    // Derive count from common fields.
+    final derivedCount = count ??
+        parseInt(j['favoritesCount'] ?? j['likes'] ?? j['saves'] ?? j['hearts']);
+
     return FavoriteHeartButton(
       key: key,
-      isFavorite: place.isFavorite ?? false,
-      count: count ?? place.favoritesCount,
+      isFavorite: fav,
+      count: derivedCount,
       onChanged: onChanged,
       size: size,
       compact: compact,
@@ -109,7 +154,7 @@ class _FavoriteHeartButtonState extends State<FavoriteHeartButton> {
     });
 
     // Light haptic for positive feedback
-    HapticFeedback.lightImpact(); // Triggering HapticFeedback adds tactile confirmation for interactions. [13][7]
+    HapticFeedback.lightImpact();
 
     try {
       final ok = await widget.onChanged(next);
@@ -136,7 +181,10 @@ class _FavoriteHeartButtonState extends State<FavoriteHeartButton> {
       switchOutCurve: Curves.easeIn,
       transitionBuilder: (child, anim) {
         // Scale + fade on change
-        return ScaleTransition(scale: Tween(begin: 0.85, end: 1.0).animate(anim), child: FadeTransition(opacity: anim, child: child));
+        return ScaleTransition(
+          scale: Tween(begin: 0.85, end: 1.0).animate(anim),
+          child: FadeTransition(opacity: anim, child: child),
+        );
       },
       child: Icon(
         _fav ? Icons.favorite : Icons.favorite_border,
@@ -144,13 +192,12 @@ class _FavoriteHeartButtonState extends State<FavoriteHeartButton> {
         color: _fav ? active : inactive,
         size: widget.size,
       ),
-    ); // AnimatedSwitcher cross-fades and can scale between old/new children when the keyed child changes. [12][6]
+    );
 
     final btn = IconButton(
       tooltip: widget.tooltip ?? (_fav ? 'Saved' : 'Save'),
       onPressed: widget.disabled ? null : _toggle,
       icon: icon,
-      // Keeping IconButton ensures proper Material semantics and minimum tap size. [1][2]
     );
 
     if (widget.compact) {
@@ -183,7 +230,7 @@ class _FavoriteHeartButtonState extends State<FavoriteHeartButton> {
               key: ValueKey<int>(_count!),
               style: const TextStyle(fontWeight: FontWeight.w700),
             ),
-          ), // AnimatedSwitcher is ideal to animate numeric label changes smoothly when the count updates. [12][9]
+          ),
         ],
       ],
     );

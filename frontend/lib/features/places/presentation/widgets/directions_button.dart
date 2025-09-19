@@ -33,49 +33,46 @@ class DirectionsButton extends StatelessWidget {
     bool expanded = true,
     bool showPicker = false,
   }) {
-    String? _str(dynamic v) => v == null ? null : v.toString();
-    double? _num(dynamic v) {
-      if (v is double) return v;
-      if (v is int) return v.toDouble();
+    String? asString(dynamic v) => v?.toString();
+    double? asDouble(dynamic v) {
+      if (v is num) return v.toDouble();
       if (v is String) return double.tryParse(v);
       return null;
     }
 
-    T? _get<T>(List<String> names) {
-      for (final n in names) {
-        // property access
-        try {
-          final v = (p as dynamic).noSuchMethod ? null : (p as dynamic).__getattr__ ; // placeholder to satisfy analyzer
-        } catch (_) {}
-        // map access
-        if (p is Map) {
-          final v = p[n];
-          if (v is T) return v;
-          if (T == String && v != null) return _str(v) as T?;
-          if (T == double && v != null) return _num(v) as T?;
+    // Prefer Map keys; else try toJson(); else read common fields via try/catch.
+    Map<String, dynamic> m = {};
+    if (p is Map) {
+      m = Map<String, dynamic>.from(p);
+    } else {
+      try {
+        final dyn = p as dynamic;
+        final j = dyn.toJson();
+        if (j is Map<String, dynamic>) {
+          m = j;
         }
-      }
-      return null;
+      } catch (_) {}
+      try {
+        final v = (p as dynamic).lat;
+        m['lat'] = v;
+      } catch (_) {}
+      try {
+        final v = (p as dynamic).lng;
+        m['lng'] = v;
+      } catch (_) {}
+      try {
+        final v = (p as dynamic).name;
+        m['name'] = v;
+      } catch (_) {}
     }
 
-    // Since using reflection-like property access isn’t available, prefer map keys and typical fields via try/catch.
-    double? lat;
-    double? lng;
-    String? name;
-
-    try {
-      lat = _num((p as dynamic).lat);
-    } catch (_) {}
-    try {
-      lng = _num((p as dynamic).lng);
-    } catch (_) {}
-    try {
-      name = _str((p as dynamic).name);
-    } catch (_) {}
-
-    lat ??= _get<double>(['lat', 'latitude']);
-    lng ??= _get<double>(['lng', 'long', 'longitude', 'lon']);
-    name ??= _get<String>(['name', 'title', 'label']);
+    final double? lat = asDouble(
+      m['lat'] ?? m['latitude'] ?? m['locationLat'] ?? m['coordLat'],
+    );
+    final double? lng = asDouble(
+      m['lng'] ?? m['longitude'] ?? m['long'] ?? m['lon'] ?? m['locationLng'] ?? m['coordLng'],
+    );
+    final String? name = asString(m['name'] ?? m['title'] ?? m['label']);
 
     return DirectionsButton(
       key: key,
@@ -198,7 +195,7 @@ class DirectionsButton extends StatelessWidget {
       final ok2 = await _launchGeoFallback();
       if (ok2) return;
     }
-    messenger.showSnackBar(const SnackBar(content: Text('Could not open directions'))); // Use captured messenger, no context after awaits. [web:5680][web:5873]
+    messenger.showSnackBar(const SnackBar(content: Text('Could not open directions')));
   }
 
   String _modeParam() {
@@ -229,7 +226,7 @@ class DirectionsButton extends StatelessWidget {
       'daddr=${Uri.encodeComponent(dest)}&directionsmode=${_modeParam()}',
     );
 
-    // Universal web URL: https://www.google.com/maps/dir/?api=1&destination=...&origin=...&travelmode=...
+    // Universal web URL:
     final webUri = Uri.parse(
       'https://www.google.com/maps/dir/?api=1'
       '&destination=${Uri.encodeComponent(dest)}'
@@ -260,7 +257,7 @@ class DirectionsButton extends StatelessWidget {
 
     final origin = originLabel?.trim().isNotEmpty == true ? originLabel!.trim() : null;
 
-    // Apple Maps web URL: https://maps.apple.com/?daddr=...&saddr=...&dirflg=...
+    // Apple Maps web URL:
     final modeFlag = _appleModeFlag();
     final appleWeb = Uri.parse(
       'https://maps.apple.com/?daddr=${Uri.encodeComponent(dest)}'

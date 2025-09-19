@@ -20,7 +20,7 @@ class PhotoGallery extends StatelessWidget {
     this.onOpenIndex,
   });
 
-  /// Build the gallery from a Place model if it exposes a photos list (urls).
+  /// Build the gallery from a Place model if it exposes image URLs via toJson or common keys.
   factory PhotoGallery.fromPlace(
     Place place, {
     Key? key,
@@ -31,10 +31,7 @@ class PhotoGallery extends StatelessWidget {
     Widget? emptyPlaceholder,
     void Function(int index)? onOpenIndex,
   }) {
-    final urls = (place.photos ?? <String>[])
-        .where((e) => (e).toString().trim().isNotEmpty)
-        .cast<String>()
-        .toList(growable: false);
+    final urls = _photoUrlsFromPlace(place);
     return PhotoGallery(
       key: key,
       imageUrls: urls,
@@ -225,4 +222,41 @@ class _GalleryViewerState extends State<_GalleryViewer> {
       ),
     );
   }
+}
+
+// ---------------- Helpers ----------------
+
+List<String> _photoUrlsFromPlace(Place p) {
+  Map<String, dynamic> m = {};
+  // Try toJson() first for flexibility across model shapes.
+  try {
+    final dyn = p as dynamic;
+    final j = dyn.toJson();
+    if (j is Map<String, dynamic>) m = j;
+  } catch (_) {}
+
+  // Candidate lists of urls under common keys.
+  dynamic listLike = m['photos'] ?? m['images'] ?? m['gallery'] ?? m['imageUrls'];
+  List<String> urls = <String>[];
+
+  if (listLike is List) {
+    urls = listLike.map((e) => e.toString().trim()).where((s) => s.isNotEmpty).toList(growable: false);
+  } else {
+    // Fallback to a single image field if present.
+    final single = (m['imageUrl'] ?? m['photo'] ?? m['cover'] ?? m['thumbnail'])?.toString().trim();
+    if (single != null && single.isNotEmpty) {
+      urls = <String>[single];
+    } else {
+      // As a last resort, try reading a direct photos list on the object.
+      try {
+        final dyn = p as dynamic;
+        final direct = dyn.photos;
+        if (direct is List) {
+          urls = direct.map((e) => e.toString().trim()).where((s) => s.isNotEmpty).toList(growable: false);
+        }
+      } catch (_) {}
+    }
+  }
+
+  return urls;
 }

@@ -77,7 +77,7 @@ abstract class FollowingRepository {
 /// Injection point for a concrete repo (override in main/bootstrap).
 final followingRepositoryProvider = Provider<FollowingRepository>((ref) {
   throw UnimplementedError('Provide FollowingRepository via override');
-}); // A plain Provider centralizes the repository and is override-friendly for tests and environments. [22][23]
+});
 
 /// Stateless query key for listing followers/following (family providers friendly).
 @immutable
@@ -110,7 +110,7 @@ final followFirstPageProvider = FutureProvider.family.autoDispose<FollowPage, Fo
     query: (q.search ?? '').trim().isEmpty ? null : q.search!.trim(),
   );
   return page;
-}); // FutureProvider.family is ideal for parameterized async fetches and plays well with caching/autoDispose lifecycles. [22][15]
+});
 
 /// Controller state with list, cursor, loading and optional error.
 @immutable
@@ -138,9 +138,8 @@ class FollowController extends AsyncNotifier<FollowState> {
 
   @override
   FutureOr<FollowState> build() async {
-    // Start empty; call init(query) before use, or keep read-only via followFirstPageProvider.
     return FollowState.empty;
-  } // AsyncNotifier supports async init and exposes ref for side effects and reads. [21][4]
+  }
 
   Future<void> init(FollowQuery query) async {
     _query = query;
@@ -158,7 +157,7 @@ class FollowController extends AsyncNotifier<FollowState> {
           query: (q.search ?? '').trim().isEmpty ? null : q.search!.trim(),
         ));
     state = res.whenData((page) => AsyncData(FollowState(items: page.items, cursor: page.nextCursor, loading: false)).value);
-  } // AsyncValue.guard simplifies try/catch and maps to AsyncData/AsyncError consistently for UI. [1][14]
+  }
 
   Future<void> loadMore() async {
     final current = state.valueOrNull ?? FollowState.empty;
@@ -187,7 +186,7 @@ class FollowController extends AsyncNotifier<FollowState> {
         state = AsyncData(current.copy(loading: false, error: e));
       },
     );
-  } // This mirrors offset/cursor pagination patterns recommended for Riverpod lists. [6][20]
+  }
 
   /// Optimistic follow toggle; returns final success.
   Future<bool> setFollowing(String userId, bool next) async {
@@ -204,7 +203,6 @@ class FollowController extends AsyncNotifier<FollowState> {
     });
     final ok = res.value ?? false;
     if (!ok) {
-      // revert
       if (idx >= 0) {
         final revert = [...(state.valueOrNull ?? current).items];
         revert[idx] = revert[idx].copyWith(isFollowing: !next);
@@ -212,53 +210,25 @@ class FollowController extends AsyncNotifier<FollowState> {
       }
     }
     return ok;
-  } // Optimistic mutation pattern updates UI immediately and reverts on failure per Riverpod guidance. [7][16]
+  }
 }
 
 /// Provider for the follow controller.
-final followControllerProvider = AsyncNotifierProvider<FollowController, FollowState>(() {
-  return FollowController();
-}); // AsyncNotifierProvider exposes an AsyncValue<FollowState> that widgets can watch for data/loading/error. [21][4]
-
-/// Derived selectors
-
-/// Check if a given userId is currently followed (based on local cache).
-final isFollowingProvider = Provider.family.autoDispose<bool, String>((ref, userId) {
-  final s = ref.watch(followControllerProvider).valueOrNull;
-  if (s == null) return false;
-  final idx = s.items.indexWhere((e) => e.userId == userId);
-  return idx >= 0 ? s.items[idx].isFollowing : false;
-}); // A small derived Provider makes it easy to toggle button state per user row without extra queries. [22][24]
-
-/// Count for badges; if your backend exposes totals, prefer that in repository.
-final followingCountProvider = FutureProvider.autoDispose<int>((ref) async {
-  final repo = ref.watch(followingRepositoryProvider);
-  final page = await repo.list(kind: FollowListKind.following, cursor: null, limit: 1);
-  return page.items.length; // replace with total if available
-}); // FutureProvider is suited for small badge-like async values read by headers or tabs. [22][25]
-
-final followersCountProvider = FutureProvider.autoDispose<int>((ref) async {
-  final repo = ref.watch(followingRepositoryProvider);
-  final page = await repo.list(kind: FollowListKind.followers, cursor: null, limit: 1);
-  return page.items.length; // replace with total if available
-}); // Separate counts enable independent invalidation and simpler UI bindings for badges. [22][25]
+final followControllerProvider =
+    AsyncNotifierProvider<FollowController, FollowState>(FollowController.new);
 
 /// Facade to simplify calling controller/repo from UI callbacks.
 class FollowingActions {
-  FollowingActions(this._read);
-  final Ref _read;
+  FollowingActions(this._ref);
+  final Ref _ref;
 
-  Future<void> init(FollowQuery q) => _read(followControllerProvider.notifier).init(q);
-  Future<void> refresh() => _read(followControllerProvider.notifier).refresh();
-  Future<void> loadMore() => _read(followControllerProvider.notifier).loadMore();
-  Future<bool> setFollowing(String userId, bool next) => _read(followControllerProvider.notifier).setFollowing(userId, next);
+  Future<void> init(FollowQuery q) => _ref.read(followControllerProvider.notifier).init(q);
+  Future<void> refresh() => _ref.read(followControllerProvider.notifier).refresh();
+  Future<void> loadMore() => _ref.read(followControllerProvider.notifier).loadMore();
+  Future<bool> setFollowing(String userId, bool next) =>
+      _ref.read(followControllerProvider.notifier).setFollowing(userId, next);
 }
 
 final followingActionsProvider = Provider<FollowingActions>((ref) {
-  return FollowingActions(ref.read);
-}); // A facade Provider offers a minimal surface for screens/buttons to trigger actions without wiring state manually. [22][23]
-
-/// Notes:
-/// - Use followFirstPageProvider(q) for simple screens that just need a single page and don’t mutate state, and the controller for infinite lists with toggles. [22][6]
-/// - Always guard async calls and consider ref.mounted when awaiting long operations to avoid setState on disposed notifiers. [1][11]
-/// - If you later adopt Riverpod 3 “mutations”, you can refactor the optimistic update to use the new mutation API while keeping the same repository surface. [10][7]
+  return FollowingActions(ref);
+});

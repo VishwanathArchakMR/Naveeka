@@ -52,7 +52,8 @@ class LocationSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasCoords = place.lat != null && place.lng != null;
+    final la = _latOf(place), ln = _lngOf(place); // read from toJson/keys robustly [web:5858]
+    final hasCoords = la != null && ln != null;
     final hasOrigin = originLat != null && originLng != null;
 
     final actions = BookingServices.defaultActionsFromPlace(
@@ -60,7 +61,7 @@ class LocationSection extends StatelessWidget {
       reserveUrl: reserveUrl,
       bookingUrl: bookingUrl,
       orderUrl: orderUrl,
-    ); // Use a helper to derive sensible defaults like Website/Call/Directions, with optional partner links for reservations/tickets. [1]
+    ); // Derive Website/Call/Directions, with optional partner links. [web:6261]
 
     return Card(
       elevation: 0,
@@ -91,11 +92,11 @@ class LocationSection extends StatelessWidget {
                     tooltip: 'Save',
                   ),
               ],
-            ), // Header uses a simple Row with an icon and bold title, a common pattern paired with ListTile-like content below. [1][4]
+            ),
 
             const SizedBox(height: 8),
             const Divider(height: 1),
-            const SizedBox(height: 8), // Divider visually separates the header from content for scannability. [15][18]
+            const SizedBox(height: 8),
 
             // Distance + Directions (top utility row)
             if (hasOrigin && hasCoords)
@@ -117,33 +118,58 @@ class LocationSection extends StatelessWidget {
                     expanded: false,
                   ),
                 ],
-              ), // DistanceIndicator computes great‑circle distance via haversine, and DirectionsButton launches Maps URLs for native navigation. [21][22]
+              ),
 
             if (hasOrigin && hasCoords) const SizedBox(height: 12),
 
             // Address
             AddressDetails.fromPlace(place),
-            // AddressDetails presents address, call, website, and open-in-maps actions using Material ListTiles. [1]
 
             // Coordinates
             if (hasCoords) ...[
               const SizedBox(height: 12),
               CoordinatesDisplay.fromPlace(place),
-            ], // CoordinatesDisplay shows decimal and DMS with copy and maps shortcuts for clarity and utility. [23][24]
+            ],
 
             // Booking / Services quick actions
             if (actions.isNotEmpty) ...[
               const SizedBox(height: 12),
               BookingServices(actions: actions),
-            ], // BookingServices renders action buttons (Reserve/Book/Order/Website/Call/Directions) with safe URL intents. [23]
+            ],
 
             // Contact & Accessibility
             const SizedBox(height: 12),
             ContactAccessibility.fromPlace(place),
-            // ContactAccessibility lists contact channels and accessibility amenities with clear labels and Semantics. [25]
           ],
         ),
       ),
     );
   }
+
+  // -------- Helpers to read coordinates from heterogeneous Place models --------
+
+  static Map<String, dynamic> _json(Place p) {
+    try {
+      final dyn = p as dynamic;
+      final j = dyn.toJson();
+      if (j is Map<String, dynamic>) return j;
+    } catch (_) {}
+    return const <String, dynamic>{};
+  } // Prefer toJson and Map access for flexible models. [web:5858]
+
+  static double? _latOf(Place p) {
+    final m = _json(p);
+    final v = m['lat'] ?? m['latitude'] ?? m['locationLat'] ?? m['coordLat'];
+    if (v is num) return v.toDouble();
+    if (v is String) return double.tryParse(v);
+    return null;
+  } // Parse numeric or string lat from known keys. [web:5858][web:6261]
+
+  static double? _lngOf(Place p) {
+    final m = _json(p);
+    final v = m['lng'] ?? m['longitude'] ?? m['long'] ?? m['lon'] ?? m['locationLng'] ?? m['coordLng'];
+    if (v is num) return v.toDouble();
+    if (v is String) return double.tryParse(v);
+    return null;
+  } // Parse numeric or string lng from known keys. [web:5858][web:6261]
 }

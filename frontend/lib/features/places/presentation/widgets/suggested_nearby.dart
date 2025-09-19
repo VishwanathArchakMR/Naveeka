@@ -1,11 +1,11 @@
 // lib/features/places/presentation/widgets/suggested_nearby.dart
 
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../models/place.dart';
 import 'distance_indicator.dart';
 import 'favorite_heart_button.dart';
-import 'directions_button.dart';
 
 class SuggestedNearby extends StatelessWidget {
   const SuggestedNearby({
@@ -92,7 +92,7 @@ class SuggestedNearby extends StatelessWidget {
                 child: _NearbyCard(
                   place: p,
                   width: cardWidth,
-                  heroTag: '$heroPrefix-${p.id}',
+                  heroTag: '$heroPrefix-${_placeIdOf(p)}',
                   originLat: originLat,
                   originLng: originLng,
                   unit: unit,
@@ -132,8 +132,10 @@ class _NearbyCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final img = _coverUrl(place);
-    final name = (place.name ?? '').trim().isEmpty ? 'Place' : place.name.trim();
-    final hasCoords = place.lat != null && place.lng != null;
+    final name = _nameOf(place);
+    final lat = _latOf(place);
+    final lng = _lngOf(place);
+    final hasCoords = lat != null && lng != null;
 
     return SizedBox(
       width: width,
@@ -172,7 +174,7 @@ class _NearbyCard extends StatelessWidget {
                       top: 4,
                       right: 4,
                       child: Material(
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withValues(alpha: 0.9),
                         shape: const CircleBorder(),
                         child: FavoriteHeartButton.fromPlace(
                           place: place,
@@ -189,7 +191,7 @@ class _NearbyCard extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.fromLTRB(10, 8, 10, 6),
                 child: Text(
-                  name,
+                  name.isEmpty ? 'Place' : name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontWeight: FontWeight.w800),
@@ -201,7 +203,7 @@ class _NearbyCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 10),
                 child: Row(
                   children: [
-                    _RatingPill(rating: place.rating),
+                    _RatingPill(rating: _ratingOf(place)),
                     const SizedBox(width: 8),
                     if (originLat != null && originLng != null && hasCoords)
                       Expanded(
@@ -230,7 +232,7 @@ class _NearbyCard extends StatelessWidget {
                   children: [
                     if (hasCoords)
                       OutlinedButton.icon(
-                        onPressed: () => DirectionsButton.fromPlace(place, expanded: false).onPressed?.call(),
+                        onPressed: () => _openDirections(lat!, lng!),
                         icon: const Icon(Icons.directions_outlined, size: 18),
                         label: const Text('Go'),
                       ),
@@ -250,8 +252,60 @@ class _NearbyCard extends StatelessWidget {
     );
   }
 
+  // ---- Helpers for Place shape via toJson / map aliases ----
+
+  static Map<String, dynamic> _json(Place p) {
+    try {
+      final dyn = p as dynamic;
+      final j = dyn.toJson();
+      if (j is Map) return Map<String, dynamic>.from(j);
+    } catch (_) {}
+    return const <String, dynamic>{};
+  }
+
+  // Removed unused static _idOf to resolve the “isn’t referenced” warning.
+
+  static String _nameOf(Place p) {
+    final j = _json(p);
+    return (j['name'] ?? j['title'] ?? j['label'] ?? '').toString().trim();
+  }
+
+  static double? _latOf(Place p) {
+    final j = _json(p);
+    return _d(j['lat'] ?? j['latitude']);
+  }
+
+  static double? _lngOf(Place p) {
+    final j = _json(p);
+    return _d(j['lng'] ?? j['long'] ?? j['longitude'] ?? j['lon']);
+  }
+
+  static double? _ratingOf(Place p) {
+    final j = _json(p);
+    final v = j['rating'] ?? j['avgRating'] ?? j['averageRating'];
+    if (v is num) return v.toDouble();
+    if (v is String) return double.tryParse(v);
+    return null;
+  }
+
+  static List<String> _photosOf(Place p) {
+    final j = _json(p);
+    final v = j['photos'] ?? j['images'] ?? j['gallery'];
+    if (v is List) {
+      return v.map((e) => e?.toString() ?? '').where((s) => s.trim().isNotEmpty).cast<String>().toList();
+    }
+    return const <String>[];
+  }
+
+  static double? _d(dynamic v) {
+    if (v is double) return v;
+    if (v is int) return v.toDouble();
+    if (v is String) return double.tryParse(v);
+    return null;
+  }
+
   String? _coverUrl(Place p) {
-    final list = p.photos ?? const <String>[];
+    final list = _photosOf(p);
     return list.isNotEmpty && list.first.trim().isNotEmpty ? list.first.trim() : null;
   }
 
@@ -270,6 +324,28 @@ class _NearbyCard extends StatelessWidget {
       child: const CircularProgressIndicator(strokeWidth: 2),
     );
   }
+
+  Future<void> _openDirections(double lat, double lng) async {
+    final uri = Uri.parse(
+      'https://www.google.com/maps/dir/?api=1'
+      '&destination=${Uri.encodeComponent('${lat.toStringAsFixed(6)},${lng.toStringAsFixed(6)}')}',
+    );
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+}
+
+// -------- Top‑level helper for heroTag id resolution (visible to both widgets) --------
+
+String _placeIdOf(Place p) {
+  try {
+    final dyn = p as dynamic;
+    final j = dyn.toJson();
+    if (j is Map) {
+      final m = Map<String, dynamic>.from(j);
+      return (m['id'] ?? m['_id'] ?? '').toString();
+    }
+  } catch (_) {}
+  return '';
 }
 
 class _RatingPill extends StatelessWidget {
@@ -281,7 +357,7 @@ class _RatingPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: Colors.amber.withOpacity(0.2),
+        color: Colors.amber.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(999),
       ),
       child: Row(

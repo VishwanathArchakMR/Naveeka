@@ -22,14 +22,22 @@ class TimingsSchedule extends StatelessWidget {
   }) : _now = now;
 
   /// Convenience: build from Place; uses structured fields if present, else falls back to openingHours text.
-  factory TimingsSchedule.fromPlace(Place p, {Key? key, String title = 'Hours', bool showTitle = true, Color? accentColor, DateTime? now}) {
-    // Expect an optional structured weekly hours in the model, otherwise fallback to raw text.
+  factory TimingsSchedule.fromPlace(
+    Place p, {
+    Key? key,
+    String title = 'Hours',
+    bool showTitle = true,
+    Color? accentColor,
+    DateTime? now,
+  }) {
     final structured = _extractWeeklyFromPlace(p);
+    final tz = _timezoneOf(p);
+    final raw = structured.isEmpty ? _openingHoursTextOf(p) : null;
     return TimingsSchedule(
       key: key,
       weekly: structured,
-      timezone: p.timezone, // optional in your model
-      rawText: structured.isEmpty ? p.openingHours : null,
+      timezone: tz,
+      rawText: raw,
       title: title,
       showTitle: showTitle,
       accentColor: accentColor,
@@ -89,7 +97,7 @@ class TimingsSchedule extends StatelessWidget {
             ],
           ),
         ),
-      ); // Raw-text fallback uses a compact ListTile header with open/closed status, matching Material list patterns. [21]
+      );
     }
 
     // Structured schedule path
@@ -117,10 +125,13 @@ class TimingsSchedule extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: (isOpen ? Colors.green : Colors.red).withOpacity(0.1),
+                    color: (isOpen ? Colors.green : Colors.red).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(999),
                   ),
-                  child: Text(isOpen ? 'Open now' : 'Closed', style: TextStyle(color: isOpen ? Colors.green : Colors.red, fontWeight: FontWeight.w700)),
+                  child: Text(
+                    isOpen ? 'Open now' : 'Closed',
+                    style: TextStyle(color: isOpen ? Colors.green : Colors.red, fontWeight: FontWeight.w700),
+                  ),
                 ),
               ],
             ),
@@ -132,7 +143,10 @@ class TimingsSchedule extends StatelessWidget {
 
             if ((timezone ?? '').trim().isNotEmpty) ...[
               const SizedBox(height: 2),
-              Align(alignment: Alignment.centerLeft, child: Text('Time zone: ${timezone!.trim()}', style: const TextStyle(color: Colors.black45, fontSize: 12))),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text('Time zone: ${timezone!.trim()}', style: const TextStyle(color: Colors.black45, fontSize: 12)),
+              ),
             ],
 
             const SizedBox(height: 8),
@@ -148,11 +162,10 @@ class TimingsSchedule extends StatelessWidget {
                 children: weekly.map((d) {
                   final isToday = d.weekday == today?.weekday;
                   final hl = isToday ? (accentColor ?? Theme.of(context).colorScheme.primary) : Colors.transparent;
-                  final fg = isToday ? Theme.of(context).colorScheme.onPrimary : null;
 
                   return Container(
                     decoration: BoxDecoration(
-                      color: isToday ? hl.withOpacity(0.08) : Colors.transparent,
+                      color: isToday ? hl.withValues(alpha: 0.08) : Colors.transparent,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     margin: const EdgeInsets.symmetric(vertical: 4),
@@ -162,7 +175,10 @@ class TimingsSchedule extends StatelessWidget {
                         width: 84,
                         child: Text(
                           _weekdayLabel(d.weekday),
-                          style: TextStyle(fontWeight: isToday ? FontWeight.w800 : FontWeight.w500, color: isToday ? null : Colors.black87),
+                          style: TextStyle(
+                            fontWeight: isToday ? FontWeight.w800 : FontWeight.w500,
+                            color: isToday ? null : Colors.black87,
+                          ),
                         ),
                       ),
                       title: _IntervalsText(intervals: d.intervals),
@@ -177,16 +193,23 @@ class TimingsSchedule extends StatelessWidget {
           ],
         ),
       ),
-    ); // Weekly view uses ExpansionTile for compact expand/collapse and ListTile rows for clear, accessible daily entries. [9][21]
+    );
   }
 
   // ----- Helpers -----
 
   static List<DailyHours> _extractWeeklyFromPlace(Place p) {
-    // If your Place model has structured hours, map them here.
-    // Expected flexible shape in your model:
-    // p.hoursWeekly?: [{ "weekday":1..7, "intervals":[{"start":"09:00","end":"18:00"}], "closed":false }, ...]
-    final raw = p.hoursWeekly; // dynamic/nullable in your model
+    // Try dynamic property
+    dynamic raw;
+    try {
+      final dyn = p as dynamic;
+      raw = dyn.hoursWeekly;
+    } catch (_) {}
+    // Try toJson keys
+    if (raw == null) {
+      final m = _json(p);
+      raw = m['hoursWeekly'] ?? m['openingHoursStructured'] ?? m['weeklyHours'];
+    }
     if (raw is List) {
       final out = <DailyHours>[];
       for (final e in raw) {
@@ -210,11 +233,45 @@ class TimingsSchedule extends StatelessWidget {
           out.add(DailyHours(weekday: wd, intervals: list, closed: closed));
         }
       }
-      // Ensure order Monday..Sunday if needed
       out.sort((a, b) => a.weekday.compareTo(b.weekday));
       return out;
     }
     return const <DailyHours>[];
+  }
+
+  static Map<String, dynamic> _json(Place p) {
+    try {
+      final dyn = p as dynamic;
+      final j = dyn.toJson();
+      if (j is Map<String, dynamic>) return j;
+    } catch (_) {}
+    return const <String, dynamic>{};
+  }
+
+  static String? _timezoneOf(Place p) {
+    // Try dynamic property
+    try {
+      final dyn = p as dynamic;
+      final tz = dyn.timezone;
+      if (tz is String && tz.trim().isNotEmpty) return tz.trim();
+    } catch (_) {}
+    // Try toJson keys
+    final m = _json(p);
+    final tz = (m['timezone'] ?? m['timeZone'] ?? m['tz'])?.toString().trim();
+    return (tz != null && tz.isNotEmpty) ? tz : null;
+  }
+
+  static String? _openingHoursTextOf(Place p) {
+    // Try dynamic property
+    try {
+      final dyn = p as dynamic;
+      final txt = dyn.openingHours;
+      if (txt is String && txt.trim().isNotEmpty) return txt.trim();
+    } catch (_) {}
+    // Try toJson keys
+    final m = _json(p);
+    final txt = (m['openingHours'] ?? m['hours'] ?? m['hoursText'])?.toString().trim();
+    return (txt != null && txt.isNotEmpty) ? txt : null;
   }
 
   static TimeOfDay? _tryParseTime(String v) {
@@ -226,7 +283,7 @@ class TimingsSchedule extends StatelessWidget {
     if (h == null || mi == null) return null;
     if (h < 0 || h > 23 || mi < 0 || mi > 59) return null;
     return TimeOfDay(hour: h, minute: mi);
-  } // TimeOfDay is the Material value object for day times and works with locale-aware formatting via MaterialLocalizations. [7]
+  }
 
   String _weekdayLabel(int weekday) {
     // 1=Mon ... 7=Sun (ISO-8601)
@@ -287,9 +344,7 @@ class TimingsSchedule extends StatelessWidget {
         final d = weekly[idx];
         if (d.closed || d.intervals.isEmpty) continue;
         nextOpen = d.intervals.first.start;
-        final label = i == 1
-            ? 'tomorrow'
-            : _weekdayLabel(d.weekday);
+        final label = i == 1 ? 'tomorrow' : _weekdayLabel(d.weekday);
         return _OpenStatus(false, (ctx) => 'Opens ${_fmt(ctx, nextOpen)} $label');
       }
       return _OpenStatus(false, null);
@@ -313,7 +368,7 @@ class TimingsSchedule extends StatelessWidget {
 
   String _fmt(BuildContext context, TimeOfDay? t) {
     if (t == null) return '';
-    // MaterialLocalizations provides locale-aware time formatting (12/24h). [7]
+    // MaterialLocalizations provides locale-aware time formatting (12/24h).
     return MaterialLocalizations.of(context).formatTimeOfDay(t);
   }
 }
@@ -355,9 +410,7 @@ class _IntervalsText extends StatelessWidget {
       return const Text('—', style: TextStyle(color: Colors.black54));
     }
     final l = MaterialLocalizations.of(context);
-    final text = intervals
-        .map((it) => '${l.formatTimeOfDay(it.start)} – ${l.formatTimeOfDay(it.end)}')
-        .join(', ');
+    final text = intervals.map((it) => '${l.formatTimeOfDay(it.start)} – ${l.formatTimeOfDay(it.end)}').join(', ');
     return Text(text, style: const TextStyle(fontWeight: FontWeight.w600));
   }
 }

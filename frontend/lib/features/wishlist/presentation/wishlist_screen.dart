@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../wishlist/providers/wishlist_providers.dart';
+// Corrected import path to the providers file located alongside "presentation" at ../providers
+import '../providers/wishlist_providers.dart';
 import '../../../models/place.dart';
 
 class WishlistScreen extends ConsumerStatefulWidget {
@@ -85,8 +86,10 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
                   place: place,
                   onOpen: () => context.go('/places/${place.id}'),
                   onRemove: () async {
-                    final ok = await ref.read(wishlistProvider.notifier).remove(place.id);
+                    // Guard BuildContext across async gap: capture messenger before await, then check mounted. [web:6182][web:6183]
                     final messenger = ScaffoldMessenger.of(context);
+                    final ok = await ref.read(wishlistProvider.notifier).remove(place.id);
+                    if (!context.mounted) return;
                     messenger.showSnackBar(
                       SnackBar(content: Text(ok ? 'Removed from wishlist' : "Couldn't remove from wishlist")),
                     );

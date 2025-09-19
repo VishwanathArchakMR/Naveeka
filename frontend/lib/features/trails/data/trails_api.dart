@@ -4,7 +4,90 @@ import 'dart:async';
 import 'dart:io';
 import 'package:dio/dio.dart';
 
-import 'trail_location_api.dart' show GeoPoint, TrailSummary, TrailDetail;
+// Use the shared GeoPoint model (latitude/longitude).
+import '../../../models/geo_point.dart' show GeoPoint;
+
+/// Minimal summary model for a trail list card.
+class TrailSummary {
+  const TrailSummary({
+    required this.id,
+    required this.name,
+    this.coverUrl,
+    this.avgRating,
+    this.lengthKm,
+  });
+
+  final String id;
+  final String name;
+  final String? coverUrl;
+  final double? avgRating;
+  final double? lengthKm;
+
+  factory TrailSummary.fromJson(Map<String, dynamic> j) {
+    return TrailSummary(
+      id: (j['id'] ?? j['trailId'] ?? '').toString(),
+      name: (j['name'] ?? j['title'] ?? '').toString(),
+      coverUrl: j['coverUrl']?.toString(),
+      avgRating: (j['avgRating'] as num?)?.toDouble(),
+      lengthKm: (j['lengthKm'] as num?)?.toDouble(),
+    );
+  }
+
+  Map<String, Object?> toJson() => {
+        'id': id,
+        'name': name,
+        'coverUrl': coverUrl,
+        'avgRating': avgRating,
+        'lengthKm': lengthKm,
+      };
+}
+
+/// Full detail model for a trail page.
+class TrailDetail {
+  const TrailDetail({
+    required this.id,
+    required this.name,
+    this.description,
+    this.photos = const <String>[],
+    this.lengthKm,
+    this.elevationGainM,
+    this.tags = const <String>[],
+  });
+
+  final String id;
+  final String name;
+  final String? description;
+  final List<String> photos;
+  final double? lengthKm;
+  final int? elevationGainM;
+  final List<String> tags;
+
+  factory TrailDetail.fromJson(Map<String, dynamic> j) {
+    return TrailDetail(
+      id: (j['id'] ?? j['trailId'] ?? '').toString(),
+      name: (j['name'] ?? j['title'] ?? '').toString(),
+      description: j['description']?.toString(),
+      photos: ((j['photos'] as List?) ?? const <Object>[])
+          .map((e) => e.toString())
+          .toList(growable: false),
+      lengthKm: (j['lengthKm'] as num?)?.toDouble(),
+      elevationGainM: (j['elevationGainM'] as num?)?.toInt(),
+      tags: ((j['tags'] as List?) ?? const <Object>[])
+          .map((e) => e.toString())
+          .toList(growable: false),
+    );
+  }
+
+  Map<String, Object?> toJson() => {
+        'id': id,
+        'name': name,
+        'description': description,
+        'photos': photos,
+        'lengthKm': lengthKm,
+        'elevationGainM': elevationGainM,
+        'tags': tags,
+      };
+}
 
 /// Generic cursor page envelope used across list endpoints.
 class CursorPage<T> {
@@ -145,7 +228,7 @@ abstract class TrailsApi {
 }
 
 /// Optional ETag store for conditional GETs.
-class _EtagStore {
+class EtagStore {
   final Map<String, String> _etags = <String, String>{};
 
   String? get(String key) => _etags[key];
@@ -153,10 +236,13 @@ class _EtagStore {
 }
 
 /// Simple in-memory TTL cache for JSON-decoded responses.
-class _MemCache {
-  _MemCache();
+class MemCache {
+  MemCache({this.ttl = const Duration(minutes: 5)});
   final Duration ttl;
-  final Map<String, ({DateTime at, Object data})> _store = <String, ({DateTime, Object})>{};
+
+  // Record-typed value: named fields 'at' and 'data'.
+  final Map<String, ({DateTime at, Object data})> _store =
+      <String, ({DateTime at, Object data})>{}; // Proper record type with named fields. [web:6333][web:6340]
 
   T? get<T>(String key) {
     final hit = _store[key];
@@ -174,24 +260,21 @@ class _MemCache {
 }
 
 /// Dio-based implementation of TrailsApi with optional ETag and TTL caching.
-/// - Uses FormData + MultipartFile for photo uploads per Dio’s multipart support. [1][4]
-/// - Applies cursor pagination params (limit/cursor) consistently for stable paging. [10][20]
-/// - You can attach dio_cache_interceptor externally if you prefer header-directed caching. [9][15]
 class TrailsApiDio implements TrailsApi {
   TrailsApiDio(
     this._dio, {
     required this.baseUrl,
     this.apiKey,
-    _EtagStore? etags,
-    _MemCache? cache,
-  })  : _etags = etags ?? _EtagStore(),
-        _cache = cache ?? _MemCache();
+    EtagStore? etags,
+    MemCache? cache,
+  })  : _etags = etags ?? EtagStore(),
+        _cache = cache ?? MemCache();
 
   final Dio _dio;
   final String baseUrl;
   final String? apiKey;
-  final _EtagStore _etags;
-  final _MemCache _cache;
+  final EtagStore _etags;
+  final MemCache _cache;
 
   Map<String, String> get _headers => {
         if (apiKey != null && apiKey!.trim().isNotEmpty) 'x-api-key': apiKey!.trim(),
@@ -211,8 +294,8 @@ class TrailsApiDio implements TrailsApi {
   }) async {
     final qp = <String, dynamic>{
       if ((query ?? '').trim().isNotEmpty) 'q': query!.trim(),
-      if (center != null) 'lat': center.lat,
-      if (center != null) 'lng': center.lng,
+      if (center != null) 'lat': center.latitude,
+      if (center != null) 'lng': center.longitude,
       if (radiusKm != null) 'radiusKm': radiusKm,
       if ((tags ?? <String>[]).isNotEmpty) 'tags': tags!.join(','),
       if ((difficulty ?? '').isNotEmpty) 'difficulty': difficulty,
@@ -315,7 +398,7 @@ class TrailsApiDio implements TrailsApi {
       }),
     );
     return TrailReview.fromJson(resp.data ?? <String, dynamic>{});
-  } // Multipart uploads are supported via FormData and MultipartFile in Dio. [1][4]
+  } // Multipart uploads via Dio FormData/MultipartFile. [web:6341][web:6338]
 
   @override
   Future<bool> toggleReviewHelpful({required String trailId, required String reviewId, required bool nextValue}) async {
@@ -341,7 +424,7 @@ class TrailsApiDio implements TrailsApi {
       }),
     );
     return (resp.data?['url'] as String?) ?? '';
-  } // File uploads rely on MultipartFile and server-side multipart/form-data handling. [4][5]
+  } // Multipart file upload using Dio MultipartFile.fromFile. [web:6341][web:6338]
 
   @override
   Future<bool> toggleFavorite({required String trailId, required bool nextValue}) async {
@@ -368,7 +451,7 @@ class TrailsApiDio implements TrailsApi {
         .map((e) => TrailSummary.fromJson(e as Map<String, dynamic>))
         .toList(growable: false);
     return CursorPage<TrailSummary>(items: items, nextCursor: data['nextCursor'] as String?);
-  } // Consistent cursor-based pagination yields stable, efficient scrolling lists. [10][13]
+  }
 
   @override
   Future<bool> reportTrail({required String trailId, required String reason, String? note}) async {

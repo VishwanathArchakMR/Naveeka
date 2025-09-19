@@ -217,6 +217,8 @@ class ParkingInfo extends StatelessWidget {
     }
 
     final theme = Theme.of(context);
+    final chips = _buildChips();
+
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -281,7 +283,6 @@ class ParkingInfo extends StatelessWidget {
               ),
 
             // Amenity chips (types & features)
-            final chips = _buildChips(),
             if (chips.isNotEmpty) ...[
               const SizedBox(height: 8),
               Wrap(
@@ -341,7 +342,7 @@ class ParkingInfo extends StatelessWidget {
     return '${h.toStringAsFixed(1)}h';
   }
 
-  // Renamed to match the call site in build() and keep generic syntax straightforward.
+  // Amenity chips
   List<Widget> _buildChips() {
     final items = <_ChipItem>[];
 

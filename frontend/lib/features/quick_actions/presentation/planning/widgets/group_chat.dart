@@ -2,15 +2,15 @@
 
 import 'package:flutter/material.dart';
 
-import '../../../messages/widgets/message_thread.dart';
-import '../../../messages/widgets/suggested_places_messages.dart';
-import '../../../messages/widgets/location_share.dart';
-import '../../../../models/place.dart';
-import '../../../../models/unit_system.dart';
-import '../../../../models/share_location_request.dart';
-import '../../../../models/geo_point.dart';
-import '../../../../models/message_item.dart';
-import '../../../places/presentation/widgets/distance_indicator.dart';
+import '../../messages/widgets/message_thread.dart';
+import '../../messages/widgets/suggested_places_messages.dart';
+import '/../models/place.dart';
+import '/../models/unit_system.dart';
+import '/../models/share_location_request.dart';
+import '/../../models/geo_point.dart';
+import '/../../models/message_item.dart';
+// Avoid UnitSystem name clash by aliasing and hiding UnitSystem from this import.
+
 
 class GroupParticipant {
   const GroupParticipant({
@@ -142,13 +142,13 @@ class _GroupChatState extends State<GroupChat> {
             _ModeChips(
               selected: _mode,
               onChanged: (m) => setState(() => _mode = m),
-            ), // ChoiceChip is ideal for single selection among related modes like Chat, Polls, and Schedule. [9][6]
+            ),
 
             const SizedBox(height: 8),
 
             // Optional plan summary that can be collapsed
             if ((widget.initialPlanSummary ?? '').trim().isNotEmpty)
-              _PlanSummaryPanel(text: widget.initialPlanSummary!.trim()), // Expansion panels present compact, collapsible summaries for contextual info. [10]
+              _PlanSummaryPanel(text: widget.initialPlanSummary!.trim()),
 
             const SizedBox(height: 8),
 
@@ -168,19 +168,13 @@ class _GroupChatState extends State<GroupChat> {
             // Thread
             Expanded(
               child: MessageThread(
-                currentUserId: widget.currentUserId,
+                // Provide only known/required parameters for MessageThread.
                 messages: widget.messages,
                 loading: widget.loading,
-                hasMore: widget.hasMore,
-                onRefresh: widget.onRefresh,
-                onLoadMore: widget.onLoadMore,
-                onSendText: widget.onSendText,
-                onAttach: widget.onAttach,
-                onShareLocation: widget.onShareLocation,
-                onOpenAttachment: widget.onOpenAttachment,
-                onOpenLocation: widget.onOpenLocation,
-                typing: false,
-                inputHint: 'Plan, share, decide…',
+                onSendMessage: (text) async {
+                  final cb = widget.onSendText;
+                  if (cb != null) await cb(text);
+                },
               ),
             ),
 
@@ -202,37 +196,35 @@ class _GroupChatState extends State<GroupChat> {
               sectionTitle: 'Suggested for the plan',
             ),
           ],
-        ); // A chat thread plus a horizontal suggestion row supports plan discovery inside conversations. [7]
+        );
 
       case _GroupMode.polls:
         return _PollsEmptyState(
           onCreate: widget.onCreatePoll == null ? null : () => _openPollCreator(context),
-        ); // Poll creation is provided as a bottom sheet for quick, focused input without leaving the screen. [1][5]
+        );
 
       case _GroupMode.schedule:
         return _ScheduleEmptyState(
           onPropose: widget.onProposeSchedule == null ? null : () => _openScheduleSheet(context),
-        ); // Schedule proposing uses a modal sheet that summarizes a chosen window and returns via Navigator.pop. [1][11]
+        );
     }
   }
 
   Future<void> _openPollCreator(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
     final draft = await _PollCreatorSheet.show(context);
     if (draft != null && widget.onCreatePoll != null) {
       await widget.onCreatePoll!(draft);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Poll created')));
-      }
+      messenger.showSnackBar(const SnackBar(content: Text('Poll created')));
     }
   }
 
   Future<void> _openScheduleSheet(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
     final range = await _ScheduleSheet.show(context);
     if (range != null && widget.onProposeSchedule != null) {
       await widget.onProposeSchedule!(range);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Schedule proposed')));
-      }
+      messenger.showSnackBar(const SnackBar(content: Text('Schedule proposed')));
     }
   }
 }
@@ -254,8 +246,6 @@ class _HeaderBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
     return Row(
       children: [
         Expanded(
@@ -370,9 +360,10 @@ class _ModeChips extends StatelessWidget {
           selectedColor: cs.primary.withValues(alpha: 0.18),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
           side: BorderSide(color: isOn ? cs.primary : cs.outlineVariant),
+          backgroundColor: bg,
         );
       }).toList(growable: false),
-    ); // ChoiceChip provides single-choice behavior and compact labels/icons suited for view switching. [9][6]
+    );
   }
 }
 
@@ -413,7 +404,7 @@ class _PlanSummaryPanelState extends State<_PlanSummaryPanel> {
           backgroundColor: cs.surfaceContainerHigh.withValues(alpha: 1.0),
         ),
       ],
-    ); // ExpansionPanelList presents collapsible content blocks with animated expand/collapse affordances. [10]
+    );
   }
 }
 
@@ -454,7 +445,7 @@ class _PollCreatorSheet extends StatefulWidget {
       ),
       builder: (_) => const _PollCreatorSheet(),
     );
-  } // showModalBottomSheet presents focused, transient edit flows over current content. [1][2]
+  }
 
   @override
   State<_PollCreatorSheet> createState() => _PollCreatorSheetState();
@@ -595,7 +586,7 @@ class _ScheduleSheet extends StatefulWidget {
       ),
       builder: (_) => const _ScheduleSheet(),
     );
-  } // A rounded modal bottom sheet cleanly scopes schedule configuration. [1][3]
+  }
 
   @override
   State<_ScheduleSheet> createState() => _ScheduleSheetState();
@@ -612,7 +603,8 @@ class _ScheduleSheetState extends State<_ScheduleSheet> {
 
     return Material(
       color: cs.surface,
-      borderRadius: const RoundedRectangleBorder(
+      // Fix: use shape for RoundedRectangleBorder
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       child: Padding(

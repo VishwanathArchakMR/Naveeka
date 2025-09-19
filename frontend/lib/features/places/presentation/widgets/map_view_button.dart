@@ -29,10 +29,31 @@ class MapViewButton extends StatelessWidget {
     bool extended = false,
     WidgetBuilder? mapBuilder,
   }) {
+    // Try to obtain a JSON map view of the model for flexible field access.
+    Map<String, dynamic> j = const <String, dynamic>{};
+    try {
+      final dyn = place as dynamic;
+      final m = dyn.toJson();
+      if (m is Map) {
+        j = Map<String, dynamic>.from(m);
+      }
+    } catch (_) {
+      // ignore if toJson isn't present
+    }
+
+    double? parseDouble(dynamic v) {
+      if (v is num) return v.toDouble();
+      if (v is String) return double.tryParse(v);
+      return null;
+    }
+
+    final double? lat = parseDouble(j['lat'] ?? j['latitude']);
+    final double? lng = parseDouble(j['lng'] ?? j['long'] ?? j['longitude'] ?? j['lon']);
+
     return MapViewButton(
       key: key,
-      lat: place.lat,
-      lng: place.lng,
+      lat: lat,
+      lng: lng,
       title: title,
       label: label,
       icon: icon,
@@ -93,7 +114,7 @@ class MapViewButton extends StatelessWidget {
     final uri = Uri.parse(
       'https://www.google.com/maps/search/?api=1&query=${lat!.toStringAsFixed(6)},${lng!.toStringAsFixed(6)}',
     );
-    final ok = await launchUrl(uri, mode: LaunchMode.externalApplication); // Launch URL into external maps/browser if no in-app map builder is given. [6]
+    final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!ok && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Could not open map')));
     }

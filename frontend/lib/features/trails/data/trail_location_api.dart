@@ -153,8 +153,11 @@ abstract class TrailLocationApi {
 class _MemCache {
   _MemCache();
 
-  final Duration ttl;
-  final Map<String, ({DateTime at, Object data})> _store = <String, ({DateTime, Object})>{};
+  // Default TTL initialized at declaration; no unused parameter.
+  final Duration ttl = const Duration(minutes: 5);
+
+  // Store records as ({DateTime at, Object data}) to track insertion time.
+  final Map<String, ({DateTime at, Object data})> _store = <String, ({DateTime at, Object data})>{};
 
   T? get<T>(String key) {
     final hit = _store[key];
@@ -172,7 +175,7 @@ class _MemCache {
 }
 
 /// Dio-based implementation of TrailLocationApi.
-/// - Uses interceptors for headers/logging and supports baseUrl+apiKey injection. [Dio] [9][14]
+/// - Uses interceptors for headers/logging and supports baseUrl+apiKey injection.
 class TrailLocationApiDio implements TrailLocationApi {
   TrailLocationApiDio(
     this._dio, {
@@ -184,6 +187,8 @@ class TrailLocationApiDio implements TrailLocationApi {
   final Dio _dio;
   final String baseUrl;
   final String? apiKey;
+
+  // Private cache type is used only internally; not exposed in the public API.
   final _MemCache _cache;
 
   Map<String, String> get _headers => {
@@ -237,7 +242,6 @@ class TrailLocationApiDio implements TrailLocationApi {
     int limit = 50,
     List<String>? tags,
   }) async {
-    // Prefer server-side filtering; fall back to client-side distance sort if only a bounding set is returned. [Haversine] [5][2]
     final resp = await _dio.get<List<dynamic>>(
       '$baseUrl/trails/nearby',
       queryParameters: <String, dynamic>{
@@ -299,7 +303,7 @@ class TrailLocationApiDio implements TrailLocationApi {
 
   // --- Utilities ---
 
-  /// Great-circle distance using the Haversine formula (km). [5][2]
+  /// Great-circle distance using the Haversine formula (km).
   double _haversineKm(GeoPoint a, GeoPoint b) {
     const r = 6371.0; // km
     const p = math.pi / 180.0;
@@ -308,9 +312,7 @@ class TrailLocationApiDio implements TrailLocationApi {
     final lat1 = a.lat * p;
     final lat2 = b.lat * p;
 
-    final h = 0.5 -
-        math.cos(dLat) / 2 +
-        math.cos(lat1) * math.cos(lat2) * (1 - math.cos(dLon)) / 2;
+    final h = 0.5 - math.cos(dLat) / 2 + math.cos(lat1) * math.cos(lat2) * (1 - math.cos(dLon)) / 2;
     return 2 * r * math.asin(math.sqrt(h));
   }
 }
