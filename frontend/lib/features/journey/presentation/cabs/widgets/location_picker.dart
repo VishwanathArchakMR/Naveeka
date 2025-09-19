@@ -1,11 +1,18 @@
 // lib/features/journey/presentation/cabs/widgets/location_picker.dart
 
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
 
 import '../../../../../core/storage/location_cache.dart';
+
+/// Minimal coordinate model (replaces latlong2.LatLng for this widget)
+@immutable
+class LatLng {
+  final double latitude;
+  final double longitude;
+  const LatLng(this.latitude, this.longitude);
+}
 
 class LocationPicker extends StatefulWidget {
   const LocationPicker({
@@ -25,6 +32,7 @@ class LocationPicker extends StatefulWidget {
   final String? initialAddress;
   final String title;
 
+  // Kept for future extensibility; not used in this dependency-free version.
   final String tileUrl;
   final List<String> tileSubdomains;
 
@@ -72,8 +80,6 @@ class LocationPicker extends StatefulWidget {
 }
 
 class _LocationPickerState extends State<LocationPicker> {
-  final MapController _map = MapController();
-
   final TextEditingController _searchCtrl = TextEditingController();
   final FocusNode _searchFocus = FocusNode();
 
@@ -86,12 +92,16 @@ class _LocationPickerState extends State<LocationPicker> {
   LatLng? _selected;
   String? _address;
 
+  // Simple zoom scalar to vary coordinate spread when tapping
+  double _zoom = 12; // 12 ~ city view; 16 ~ street-level
+
   @override
   void initState() {
     super.initState();
     if (widget.initialLat != null && widget.initialLng != null) {
       _selected = LatLng(widget.initialLat!, widget.initialLng!);
       _address = widget.initialAddress;
+      _zoom = 16;
     }
   }
 
@@ -101,10 +111,12 @@ class _LocationPickerState extends State<LocationPicker> {
     _searchCtrl.dispose();
     _searchFocus.dispose();
     super.dispose();
+    // GestureDetector-based approach is dependency-free and uses standard Flutter APIs. [web:5945][web:5946]
   }
 
   Future<void> _useCurrent() async {
-    final snap = await LocationCache.instance.getLast(maxAge: const Duration(minutes: 10));
+    final snap = await LocationCache.instance
+        .getLast(maxAge: const Duration(minutes: 10));
     if (!mounted) return;
     if (snap == null) {
       _snack('Location not available yet');
@@ -114,29 +126,48 @@ class _LocationPickerState extends State<LocationPicker> {
       _selected = LatLng(snap.latitude, snap.longitude);
       _address = 'Current location';
       _suggestions = const [];
-    });
-    _map.move(_selected!, _map.camera.zoom);
-    // Optionally perform reverse geocode
-    if (widget.reverseGeocode != null) {
-      final addr = await widget.reverseGeocode!(_selected!.latitude, _selected!.longitude);
-      if (!mounted) return;
-      if (addr != null && addr.isNotEmpty) setState(() => _address = addr);
-    }
-  } // Uses a cached last known location for quick centering and selection [3]
-
-  void _onTapMap(TapPosition tapPos, LatLng latlng) async {
-    setState(() {
-      _selected = latlng;
-      _address = null;
-      _suggestions = const [];
+      _zoom = 16;
     });
     // Optional reverse geocode
     if (widget.reverseGeocode != null) {
-      final addr = await widget.reverseGeocode!(latlng.latitude, latlng.longitude);
+      final addr = await widget.reverseGeocode!(
+          _selected!.latitude, _selected!.longitude);
       if (!mounted) return;
       if (addr != null && addr.isNotEmpty) setState(() => _address = addr);
     }
-  } // Map taps assign selection; reverse geocoding hook can resolve human-readable address [3]
+  }
+
+  void _onCanvasTapDown(TapDownDetails details, Size size) async {
+    // Approximate conversion: map the tap within the box to lat/lng deltas around current center.
+    final center = _selected ??
+        const LatLng(12.9716, 77.5946); // Bengaluru fallback center
+    final local = details.localPosition;
+    final nx = (local.dx.clamp(0, size.width)) / size.width; // 0..1
+    final ny = (local.dy.clamp(0, size.height)) / size.height; // 0..1
+
+    // Span shrinks as zoom increases (very rough model).
+    final scale = math.pow(2.0, (_zoom - 12)).toDouble(); // zoom 12 => 1.0
+    const baseSpan = 0.05; // ~5km-ish at zoom 12; adjust as needed
+    final spanLat = baseSpan / scale;
+    final spanLng = baseSpan / scale;
+
+    final lat = center.latitude + (0.5 - ny) * 2 * spanLat;
+    final lng = center.longitude + (nx - 0.5) * 2 * spanLng;
+
+    setState(() {
+      _selected = LatLng(lat, lng);
+      _address = null;
+      _suggestions = const [];
+      _zoom = 16;
+    });
+
+    if (widget.reverseGeocode != null) {
+      final addr = await widget.reverseGeocode!(lat, lng);
+      if (!mounted) return;
+      if (addr != null && addr.isNotEmpty) setState(() => _address = addr);
+    }
+    // This replaces flutter_map's MapOptions.onTap(TapPosition, LatLng) using native GestureDetector. [web:5951][web:5945]
+  }
 
   void _onSearchChanged(String q) {
     if (widget.geocodeSearch == null) return;
@@ -167,7 +198,7 @@ class _LocationPickerState extends State<LocationPicker> {
         });
       }
     });
-  } // Debounces geocoding calls to avoid spamming APIs during typing [4]
+  } // Debounce typing with a Timer; triggers geocodeSearch after user pause. [web:5945][web:5952]
 
   void _applySuggestion(Map<String, dynamic> s) {
     final lat = _toD(s['lat']);
@@ -180,8 +211,8 @@ class _LocationPickerState extends State<LocationPicker> {
       _suggestions = const [];
       _searchCtrl.text = addr.isNotEmpty ? addr : _searchCtrl.text;
       _searchFocus.unfocus();
+      _zoom = 16;
     });
-    _map.move(_selected!, 16);
   }
 
   void _confirm() {
@@ -198,7 +229,7 @@ class _LocationPickerState extends State<LocationPicker> {
 
   void _snack(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
-  } // SnackBar via ScaffoldMessenger for reliable feedback in sheets [2]
+  } // Use ScaffoldMessenger to display SnackBars from modals/sheets. [web:5903][web:5873]
 
   double? _toD(dynamic v) {
     if (v is double) return v;
@@ -209,7 +240,8 @@ class _LocationPickerState extends State<LocationPicker> {
 
   @override
   Widget build(BuildContext context) {
-    final center = _selected ?? const LatLng(12.9716, 77.5946); // Default center if none selected yet (Bengaluru)
+    final center = _selected ??
+        const LatLng(12.9716, 77.5946); // Default center if none selected yet
     return SafeArea(
       top: false,
       child: Column(
@@ -223,7 +255,10 @@ class _LocationPickerState extends State<LocationPicker> {
                 Expanded(
                   child: Text(
                     widget.title,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleLarge
+                        ?.copyWith(fontWeight: FontWeight.w700),
                   ),
                 ),
                 IconButton(
@@ -276,67 +311,83 @@ class _LocationPickerState extends State<LocationPicker> {
                   final lng = _toD(s['lng']);
                   return ListTile(
                     leading: const Icon(Icons.place_outlined),
-                    title: Text(addr.isEmpty ? 'Result' : addr, maxLines: 2, overflow: TextOverflow.ellipsis),
-                    subtitle: (lat != null && lng != null) ? Text('${lat.toStringAsFixed(5)}, ${lng.toStringAsFixed(5)}') : null,
+                    title: Text(addr.isEmpty ? 'Result' : addr,
+                        maxLines: 2, overflow: TextOverflow.ellipsis),
+                    subtitle: (lat != null && lng != null)
+                        ? Text(
+                            '${lat.toStringAsFixed(5)}, ${lng.toStringAsFixed(5)}')
+                        : null,
                     onTap: () => _applySuggestion(s),
                   );
                 },
               ),
             ),
 
-          // Map
+          // "Map" area (dependency-free mock map with tap-to-pick using GestureDetector)
           SizedBox(
             height: 360,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: FlutterMap(
-                  mapController: _map,
-                  options: MapOptions(
-                    initialCenter: center,
-                    initialZoom: _selected == null ? 12 : 16,
-                    onTap: _onTapMap,
-                    interactionOptions: const InteractionOptions(
-                      flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag | InteractiveFlag.doubleTapZoom,
-                    ),
-                  ), // MapOptions configures center/zoom and tap handling for selection [3]
-                  children: [
-                    TileLayer(
-                      urlTemplate: widget.tileUrl,
-                      subdomains: widget.tileSubdomains,
-                      userAgentPackageName: 'com.example.app',
-                    ),
-                    MarkerLayer(
-                      markers: [
-                        if (_selected != null)
-                          Marker(
-                            point: _selected!,
-                            width: 44,
-                            height: 44,
-                            alignment: Alignment.center,
-                            child: const _Pin(color: Colors.red, icon: Icons.place),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTapDown: (details) => _onCanvasTapDown(details,
+                          Size(constraints.maxWidth, constraints.maxHeight)),
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          // Background placeholder (could be replaced with a static map image if desired)
+                          Container(
+                            color: Colors.grey.shade200,
+                            child: CustomPaint(
+                              painter: _GridPainter(),
+                            ),
                           ),
-                      ],
-                    ),
-                  ],
+                          // Centered pin to indicate current selection point (center = _selected or default)
+                          if (_selected != null)
+                            const Align(
+                              alignment: Alignment.center,
+                              child: _Pin(color: Colors.red, icon: Icons.place),
+                            )
+                          else
+                            Align(
+                              alignment: Alignment.center,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.08),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Text('Tap to pick',
+                                    style: TextStyle(color: Colors.black54)),
+                              ),
+                            ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
-          ), // MarkerLayer renders the selected point with a custom, interactive widget marker [1]
+          ), // GestureDetector lets the widget capture taps and compute positions without external plugins. [web:5945][web:5946]
 
           // Coordinates + address
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
             child: Row(
               children: [
-                const Icon(Icons.location_on_outlined, size: 18, color: Colors.black54),
+                const Icon(Icons.location_on_outlined,
+                    size: 18, color: Colors.black54),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     _selected == null
                         ? 'Tap on the map to select'
-                        : '${_selected!.latitude.toStringAsFixed(5)}, ${_selected!.longitude.toStringAsFixed(5)}',
+                        : '${center.latitude.toStringAsFixed(5)}, ${center.longitude.toStringAsFixed(5)}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -400,4 +451,38 @@ class _Pin extends StatelessWidget {
       child: Icon(icon, size: 16, color: Colors.white),
     );
   }
+}
+
+/// Simple background grid painter for the mock map
+class _GridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+    canvas.drawRect(Offset.zero & size, paint);
+
+    final line = Paint()
+      ..color = Colors.black12
+      ..strokeWidth = 1;
+
+    const step = 40.0;
+    for (double x = 0; x <= size.width; x += step) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), line);
+    }
+    for (double y = 0; y <= size.height; y += step) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), line);
+    }
+
+    final cross = Paint()
+      ..color = Colors.black26
+      ..strokeWidth = 2;
+    canvas.drawLine(Offset(size.width / 2 - 8, size.height / 2),
+        Offset(size.width / 2 + 8, size.height / 2), cross);
+    canvas.drawLine(Offset(size.width / 2, size.height / 2 - 8),
+        Offset(size.width / 2, size.height / 2 + 8), cross);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

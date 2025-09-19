@@ -4,13 +4,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../widgets/trails_top_bar.dart';
-import '../widgets/feed_card.dart';
-import '../widgets/location_tagged_posts.dart';
-import '../widgets/trail_map_view.dart';
+import '../presentation/widgets/trails_top_bar.dart';
+import '../presentation/widgets/feed_card.dart';
+import '../presentation/widgets/trail_map_view.dart';
 
-import '../../data/trails_api.dart' show TrailsApi, CursorPage;
-import '../../data/trail_location_api.dart' show TrailSummary, GeoPoint;
+import '../../trails/data/trails_api.dart' show TrailsApi, CursorPage;
+import '../../trails/data/trail_location_api.dart' show TrailSummary, GeoPoint;
 
 /// DI injection point for the Trails domain API (override in app bootstrap).
 final trailsApiProvider = Provider<TrailsApi>((ref) {
@@ -51,21 +50,32 @@ class TrailsFilters {
   }
 }
 
-final trailsFiltersProvider = StateProvider<TrailsFilters>((ref) => const TrailsFilters());
+final trailsFiltersProvider =
+    StateProvider<TrailsFilters>((ref) => const TrailsFilters());
 
 /// Simple paged state holder.
 @immutable
 class PagedState<T> {
-  const PagedState({required this.items, required this.cursor, required this.loading, this.error});
+  const PagedState(
+      {required this.items,
+      required this.cursor,
+      required this.loading,
+      this.error});
   final List<T> items;
   final String? cursor;
   final bool loading;
   final Object? error;
 
-  PagedState<T> copy({List<T>? items, String? cursor, bool? loading, Object? error}) =>
-      PagedState<T>(items: items ?? this.items, cursor: cursor ?? this.cursor, loading: loading ?? this.loading, error: error);
+  PagedState<T> copy(
+          {List<T>? items, String? cursor, bool? loading, Object? error}) =>
+      PagedState<T>(
+          items: items ?? this.items,
+          cursor: cursor ?? this.cursor,
+          loading: loading ?? this.loading,
+          error: error);
 
-  static PagedState<T> empty<T>() => PagedState<T>(items: const <T>[], cursor: null, loading: false);
+  static PagedState<T> empty<T>() => PagedState<T>(
+      items: const <dynamic>[] as List<T>, cursor: null, loading: false);
 }
 
 /// Controller that fetches and paginates Trails via TrailsApi using current filters.
@@ -92,7 +102,8 @@ class TrailsListController extends AsyncNotifier<PagedState<TrailSummary>> {
       limit: 20,
       cursor: null,
     );
-    state = AsyncData(PagedState<TrailSummary>(items: page.items, cursor: page.nextCursor, loading: false));
+    state = AsyncData(PagedState<TrailSummary>(
+        items: page.items, cursor: page.nextCursor, loading: false));
   }
 
   Future<void> loadMore() async {
@@ -112,7 +123,10 @@ class TrailsListController extends AsyncNotifier<PagedState<TrailSummary>> {
         limit: 20,
         cursor: current.cursor,
       );
-      state = AsyncData(current.copy(items: [...current.items, ...page.items], cursor: page.nextCursor, loading: false));
+      state = AsyncData(current.copy(
+          items: [...current.items, ...page.items],
+          cursor: page.nextCursor,
+          loading: false));
     } catch (e, st) {
       state = AsyncError(e, st);
       state = AsyncData(current.copy(loading: false, error: e));
@@ -120,7 +134,8 @@ class TrailsListController extends AsyncNotifier<PagedState<TrailSummary>> {
   }
 }
 
-final trailsListControllerProvider = AsyncNotifierProvider<TrailsListController, PagedState<TrailSummary>>(
+final trailsListControllerProvider =
+    AsyncNotifierProvider<TrailsListController, PagedState<TrailSummary>>(
   TrailsListController.new,
 );
 
@@ -149,11 +164,13 @@ class _TrailsScreenState extends ConsumerState<TrailsScreen> {
     unawaited(ref.read(trailsListControllerProvider.notifier).refresh());
   }
 
-  Future<void> _onRefresh() => ref.read(trailsListControllerProvider.notifier).refresh();
+  Future<void> _onRefresh() =>
+      ref.read(trailsListControllerProvider.notifier).refresh();
 
   void _applyQuery(String q) {
     final curr = ref.read(trailsFiltersProvider);
-    ref.read(trailsFiltersProvider.notifier).state = curr.copyWith(query: q.trim());
+    ref.read(trailsFiltersProvider.notifier).state =
+        curr.copyWith(query: q.trim());
     unawaited(ref.read(trailsListControllerProvider.notifier).refresh());
   }
 
@@ -165,7 +182,8 @@ class _TrailsScreenState extends ConsumerState<TrailsScreen> {
     } else {
       set.remove(d);
     }
-    ref.read(trailsFiltersProvider.notifier).state = curr.copyWith(difficulties: set);
+    ref.read(trailsFiltersProvider.notifier).state =
+        curr.copyWith(difficulties: set);
     unawaited(ref.read(trailsListControllerProvider.notifier).refresh());
   }
 
@@ -215,7 +233,8 @@ class _TrailsScreenState extends ConsumerState<TrailsScreen> {
           Expanded(
             child: RefreshIndicator.adaptive(
               onRefresh: _onRefresh,
-              child: _buildBody(context, filters.viewMode, items, loading, error),
+              child:
+                  _buildBody(context, filters.viewMode, items, loading, error),
             ),
           ),
         ],
@@ -237,7 +256,8 @@ class _TrailsScreenState extends ConsumerState<TrailsScreen> {
         child: SizedBox(
           width: 22,
           height: 22,
-          child: CircularProgressIndicator(strokeWidth: 2, color: cs.onSurfaceVariant),
+          child: CircularProgressIndicator(
+              strokeWidth: 2, color: cs.onSurfaceVariant),
         ),
       );
     }
@@ -312,8 +332,11 @@ class _TrailsScreenState extends ConsumerState<TrailsScreen> {
         ),
         // Load more
         _LoadMoreSliver(
-          hasMore: (ref.read(trailsListControllerProvider).valueOrNull?.cursor) != null,
-          onLoadMore: () => ref.read(trailsListControllerProvider.notifier).loadMore(),
+          hasMore:
+              (ref.read(trailsListControllerProvider).valueOrNull?.cursor) !=
+                  null,
+          onLoadMore: () =>
+              ref.read(trailsListControllerProvider.notifier).loadMore(),
         ),
       ],
     );
@@ -384,13 +407,18 @@ class _MapOverlayList extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(t.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w800)),
+                          Text(t.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.w800)),
                           const SizedBox(height: 2),
                           Text(
                             _subtitle(t),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12),
+                            style: TextStyle(
+                                color: cs.onSurfaceVariant, fontSize: 12),
                           ),
                         ],
                       ),
@@ -408,8 +436,13 @@ class _MapOverlayList extends StatelessWidget {
   String _subtitle(TrailSummary t) {
     final parts = <String>[];
     if (t.rating != null) parts.add('${t.rating!.toStringAsFixed(1)}★');
-    if (t.distanceKm != null) parts.add('${t.distanceKm!.toStringAsFixed(t.distanceKm! >= 10 ? 0 : 1)} km');
-    if (t.elevationGainM != null) parts.add('${t.elevationGainM!.toStringAsFixed(0)} m');
+    if (t.distanceKm != null) {
+      parts.add(
+          '${t.distanceKm!.toStringAsFixed(t.distanceKm! >= 10 ? 0 : 1)} km');
+    }
+    if (t.elevationGainM != null) {
+      parts.add('${t.elevationGainM!.toStringAsFixed(0)} m');
+    }
     return parts.join(' • ');
   }
 }
@@ -462,16 +495,25 @@ class _EmptyState extends StatelessWidget {
             child: Icon(Icons.route_outlined, color: cs.primary, size: 36),
           ),
           const SizedBox(height: 12),
-          Text('No trails found', style: TextStyle(fontWeight: FontWeight.w800, color: cs.onSurface)),
+          Text('No trails found',
+              style:
+                  TextStyle(fontWeight: FontWeight.w800, color: cs.onSurface)),
           const SizedBox(height: 6),
-          Text('Try adjusting filters or refreshing', style: TextStyle(color: cs.onSurfaceVariant)),
+          Text('Try adjusting filters or refreshing',
+              style: TextStyle(color: cs.onSurfaceVariant)),
           const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              OutlinedButton.icon(onPressed: onAddFilters, icon: const Icon(Icons.tune), label: const Text('Filters')),
+              OutlinedButton.icon(
+                  onPressed: onAddFilters,
+                  icon: const Icon(Icons.tune),
+                  label: const Text('Filters')),
               const SizedBox(width: 8),
-              FilledButton.icon(onPressed: onRefresh, icon: const Icon(Icons.refresh), label: const Text('Refresh')),
+              FilledButton.icon(
+                  onPressed: onRefresh,
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Refresh')),
             ],
           ),
         ],
@@ -495,9 +537,14 @@ class _ErrorState extends StatelessWidget {
         children: [
           Icon(Icons.error_outline, color: cs.error, size: 28),
           const SizedBox(height: 8),
-          Text(message, textAlign: TextAlign.center, style: TextStyle(color: cs.onSurface)),
+          Text(message,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: cs.onSurface)),
           const SizedBox(height: 8),
-          FilledButton.icon(onPressed: onRetry, icon: const Icon(Icons.refresh), label: const Text('Retry')),
+          FilledButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Retry')),
         ],
       ),
     );

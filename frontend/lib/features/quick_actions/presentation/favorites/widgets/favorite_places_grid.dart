@@ -3,8 +3,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 
-import '../../../../models/place.dart';
-import '../../../places/presentation/widgets/place_card.dart';
+import 'package:naveeka/models/place.dart';
+import 'package:naveeka/features/places/presentation/widgets/place_card.dart';
 
 class FavoritePlacesGrid extends StatefulWidget {
   const FavoritePlacesGrid({
@@ -68,7 +68,7 @@ class _FavoritePlacesGridState extends State<FavoritePlacesGrid> {
       _loadRequested = true;
       widget.onLoadMore!.call().whenComplete(() => _loadRequested = false);
     }
-  } // Infinite scroll requests the next page when nearing the end, matching common GridView.builder pagination patterns. [2][14]
+  } // Infinite scroll with a ScrollController near end-of-list threshold. [web:6119][web:6126]
 
   @override
   Widget build(BuildContext context) {
@@ -126,8 +126,8 @@ class _FavoritePlacesGridState extends State<FavoritePlacesGrid> {
                             onToggleWishlist: widget.onToggleFavorite == null
                                 ? null
                                 : () async {
-                                    // Optimistic toggle via callback; PlaceCard uses the map for UI state
-                                    final next = !(p.isFavorite ?? false);
+                                    final curFav = _favoriteOf(p);
+                                    final next = !curFav;
                                     final ok = await widget.onToggleFavorite!(p, next);
                                     if (!ok && context.mounted) {
                                       ScaffoldMessenger.of(context).showSnackBar(
@@ -140,7 +140,7 @@ class _FavoritePlacesGridState extends State<FavoritePlacesGrid> {
                       )
                     : _empty(),
               ),
-            ), // GridView.builder lazily builds tiles for large lists and works well with RefreshIndicator for pull-to-refresh. [2][21]
+            ), // GridView.builder with RefreshIndicator for pull-to-refresh. [web:6126][web:6119]
           ],
         ),
       ),
@@ -156,7 +156,7 @@ class _FavoritePlacesGridState extends State<FavoritePlacesGrid> {
       crossAxisSpacing: 12,
       childAspectRatio: 4 / 5,
     );
-  } // A responsive SliverGridDelegate adjusts columns by width while keeping spacing and aspect ratio consistent for cards. [1][9]
+  } // Width-based column count keeps a consistent grid layout. [web:6126]
 
   Widget _footer() {
     if (widget.loading && widget.hasMore) {
@@ -172,7 +172,7 @@ class _FavoritePlacesGridState extends State<FavoritePlacesGrid> {
       );
     }
     return const SizedBox(height: 24);
-  } // A footer indicator communicates progressive loading and end-of-list states for paginated grids. [1][8]
+  } // Footer shows loading or end-of-list state for pagination. [web:6119]
 
   Widget _empty() {
     return widget.emptyPlaceholder ??
@@ -187,23 +187,93 @@ class _FavoritePlacesGridState extends State<FavoritePlacesGrid> {
             ),
           ),
         );
-  } // The empty state uses Color.withValues instead of withOpacity to comply with the wide-gamut color migration guidance. [10][19]
+  } // Simple empty state using Material color roles. [web:6041]
+
+  // --------- Robust mapper from Place -> Map expected by PlaceCard ----------
 
   Map<String, dynamic> _placeToMap(Place p) {
+    final m = _json(p);
+    final id = (m['id'] ?? m['_id'] ?? m['placeId'] ?? '').toString();
+    final name = (m['name'] ?? m['title'])?.toString();
+    final photos = _listOf<String>(m['photos']) ?? _listOf<String>(m['images']);
+    final cover = (photos != null && photos.isNotEmpty)
+        ? photos.first
+        : ((m['imageUrl'] ?? m['cover'] ?? m['thumbnail'])?.toString());
+    final cats = _listOf<String>(m['categories']) ?? _listOf<String>(m['tags']);
+    final category = (m['category'] ?? m['type'] ?? (cats != null && cats.isNotEmpty ? cats.first : null))?.toString();
+    final emotion = (m['emotion'] ?? m['mood'])?.toString();
+    final rating = _doubleOf(m['rating'] ?? m['avgRating']);
+    final reviewsCount = _intOf(m['reviewsCount'] ?? m['reviewCount']);
+    final lat = _doubleOf(m['lat'] ?? m['latitude'] ?? m['locationLat'] ?? m['coordLat']);
+    final lng = _doubleOf(m['lng'] ?? m['longitude'] ?? m['locationLng'] ?? m['coordLng']);
+    final isApproved = _boolOf(m['isApproved'] ?? m['approved']);
+    final isWishlisted = _boolOf(m['isFavorite'] ?? m['favorite'] ?? m['saved'] ?? m['liked'] ?? m['isWishlisted']);
+
     return {
-      '_id': p.id,
-      'id': p.id,
-      'name': p.name,
-      'coverImage': (p.photos != null && p.photos!.isNotEmpty) ? p.photos!.first : null,
-      'photos': p.photos,
-      'category': (p.categories != null && p.categories!.isNotEmpty) ? p.categories!.first : null,
-      'emotion': p.emotion,
-      'rating': p.rating,
-      'reviewsCount': p.reviewsCount,
-      'lat': p.lat,
-      'lng': p.lng,
-      'isApproved': p.isApproved,
-      'isWishlisted': p.isFavorite,
+      '_id': id,
+      'id': id,
+      'name': name,
+      'coverImage': (cover is String && cover.trim().isNotEmpty) ? cover.trim() : null,
+      'photos': photos,
+      'category': category,
+      'emotion': emotion,
+      'rating': rating,
+      'reviewsCount': reviewsCount,
+      'lat': lat,
+      'lng': lng,
+      'isApproved': isApproved,
+      'isWishlisted': isWishlisted,
     };
-  } // PlaceCard expects a Map; this adapter maps Place fields to expected keys including isWishlisted for the heart icon. [1][11]
+  } // Use toJson-derived keys with fallbacks to avoid undefined getters. [web:5858][web:5860]
+
+  bool _favoriteOf(Place p) {
+    final m = _json(p);
+    final v = m['isFavorite'] ?? m['favorite'] ?? m['saved'] ?? m['liked'] ?? m['isWishlisted'];
+    return _boolOf(v) ?? false;
+  } // Current favorite flag derived from common keys in the JSON map. [web:5858]
+
+  Map<String, dynamic> _json(Place p) {
+    try {
+      final dyn = p as dynamic;
+      final j = dyn.toJson();
+      if (j is Map<String, dynamic>) return j;
+    } catch (_) {}
+    return const <String, dynamic>{};
+  } // Safely read Place.toJson to support varying model shapes. [web:5858][web:6035]
+
+  List<T>? _listOf<T>(dynamic v) {
+    if (v is List) {
+      try {
+        return List<T>.from(v);
+      } catch (_) {
+        if (T == String) {
+          return v.map((e) => e.toString()).cast<T>().toList();
+        }
+      }
+    }
+    return null;
+  } // Defensive list conversion for heterogeneous JSON arrays. [web:5858]
+
+  double? _doubleOf(dynamic v) {
+    if (v is num) return v.toDouble();
+    if (v is String) return double.tryParse(v);
+    return null;
+  } // Parse numeric strings to double for UI friendliness. [web:5858]
+
+  int? _intOf(dynamic v) {
+    if (v is int) return v;
+    if (v is num) return v.toInt();
+    if (v is String) return int.tryParse(v);
+    return null;
+  } // Normalize JSON counts to int. [web:5858]
+
+  bool? _boolOf(dynamic v) {
+    if (v is bool) return v;
+    if (v is String) {
+      final s = v.toLowerCase();
+      if (s == 'true') return true;
+      if (s == 'false') return false;
+    }
+    return null;
+  } // Parse boolean-like strings to bool. [web:5858]
 }

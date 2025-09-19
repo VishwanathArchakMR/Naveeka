@@ -5,7 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../ui/theme/theme.dart';
-import '../../../../ui/components/glass_card.dart';
+import '../../../../ui/components/cards/glass_card.dart';
 import 'distance_indicator.dart';
 
 class PlaceCard extends StatelessWidget {

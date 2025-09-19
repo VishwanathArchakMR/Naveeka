@@ -5,11 +5,11 @@ import 'package:flutter/material.dart';
 import '../widgets/category_cards.dart';
 
 // Entry screens wired earlier
-import '../../flights/flight_search_screen.dart';
-import '../../hotels/hotel_search_screen.dart';
-import '../../places/place_search_screen.dart';
-import '../../restaurants/restaurant_search_screen.dart';
-import '../../trains/train_search_screen.dart';
+import '../../presentation/flights/flight_search_screen.dart';
+import '../../presentation/hotels/hotel_search_screen.dart';
+import '../../presentation/places/place_search_screen.dart';
+import '../../presentation/restaurants/restaurant_search_screen.dart';
+import '../../presentation/trains/train_search_screen.dart';
 
 class JourneyHome extends StatelessWidget {
   const JourneyHome({super.key, this.title = 'Plan your journey'});

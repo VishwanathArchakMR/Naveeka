@@ -3,64 +3,28 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 
-// Filters and sections
-import 'widgets/history_filters.dart';
-import 'widgets/history_map_view.dart';
-import 'widgets/route_history.dart';
-import 'widgets/transport_history.dart';
-import 'widgets/visited_places.dart';
+// Filters and sections (prefixed to reference types explicitly)
+import 'widgets/history_filters.dart' as hf;
+import 'widgets/history_map_view.dart' as hmap;
+import 'widgets/route_history.dart' as rh;
+import 'widgets/transport_history.dart' as th;
+import 'widgets/visited_places.dart' as vp;
 
-// Example map builder typedef (reuse your project-wide builder if available).
-typedef NearbyMapBuilder = Widget Function(BuildContext context, NearbyMapConfig config);
-
-class NearbyMapConfig {
-  const NearbyMapConfig({
-    required this.centerLat,
-    required this.centerLng,
-    required this.markers,
-    this.initialZoom = 12,
-    this.onMarkerTap,
-    this.onRecenter,
-  });
-
-  final double centerLat;
-  final double centerLng;
-  final List<NearbyMarker> markers;
-  final double initialZoom;
-  final void Function(String id)? onMarkerTap;
-  final VoidCallback? onRecenter;
-}
-
-class NearbyMarker {
-  const NearbyMarker({
-    required this.id,
-    required this.lat,
-    required this.lng,
-    this.selected = false,
-    this.icon,
-  });
-
-  final String id;
-  final double lat;
-  final double lng;
-  final bool selected;
-  final String? icon;
-}
-
-enum _HistoryTab { map, route, transport, places }
+// Public enum to avoid exposing a private type in a public API. [web:6155]
+enum HistoryTab { map, route, transport, places }
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({
     super.key,
-    this.initialTab = _HistoryTab.map,
+    this.initialTab = HistoryTab.map,
     this.mapBuilder,
 
     // Preloaded selections/data (replace with providers in production)
-    this.initialFilters = const HistoryFilterSelection(),
-    this.initialPoints = const <HistoryPoint>[],
-    this.initialRouteItems = const <RouteHistoryItem>[],
-    this.initialSegments = const <TransportSegment>[],
-    this.initialVisited = const <VisitedPlaceRow>[],
+    this.initialFilters = const hf.HistoryFilterSelection(),
+    this.initialPoints = const <hmap.HistoryPoint>[],
+    this.initialRouteItems = const <rh.RouteHistoryItem>[],
+    this.initialSegments = const <th.TransportSegment>[],
+    this.initialVisited = const <vp.VisitedPlaceRow>[],
 
     // Loading/pagination flags
     this.loading = false,
@@ -69,14 +33,14 @@ class HistoryScreen extends StatefulWidget {
     this.hasMoreVisited = false,
   });
 
-  final _HistoryTab initialTab;
-  final NearbyMapBuilder? mapBuilder;
+  final HistoryTab initialTab;
+  final hmap.NearbyMapBuilder? mapBuilder;
 
-  final HistoryFilterSelection initialFilters;
-  final List<HistoryPoint> initialPoints;
-  final List<RouteHistoryItem> initialRouteItems;
-  final List<TransportSegment> initialSegments;
-  final List<VisitedPlaceRow> initialVisited;
+  final hf.HistoryFilterSelection initialFilters;
+  final List<hmap.HistoryPoint> initialPoints;
+  final List<rh.RouteHistoryItem> initialRouteItems;
+  final List<th.TransportSegment> initialSegments;
+  final List<vp.VisitedPlaceRow> initialVisited;
 
   final bool loading;
   final bool hasMoreRoute;
@@ -88,10 +52,10 @@ class HistoryScreen extends StatefulWidget {
 }
 
 class _HistoryScreenState extends State<HistoryScreen> {
-  _HistoryTab _tab = _HistoryTab.map;
+  HistoryTab _tab = HistoryTab.map;
 
   // Filter state
-  HistoryFilterSelection _filters = const HistoryFilterSelection();
+  hf.HistoryFilterSelection _filters = const hf.HistoryFilterSelection();
 
   // Data mirrors (wire these to providers/APIs)
   bool _loading = false;
@@ -99,10 +63,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
   bool _hasMoreTransport = false;
   bool _hasMoreVisited = false;
 
-  List<HistoryPoint> _points = <HistoryPoint>[];
-  List<RouteHistoryItem> _routeItems = <RouteHistoryItem>[];
-  List<TransportSegment> _segments = <TransportSegment>[];
-  List<VisitedPlaceRow> _visited = <VisitedPlaceRow>[];
+  List<hmap.HistoryPoint> _points = <hmap.HistoryPoint>[];
+  List<rh.RouteHistoryItem> _routeItems = <rh.RouteHistoryItem>[];
+  List<th.TransportSegment> _segments = <th.TransportSegment>[];
+  List<vp.VisitedPlaceRow> _visited = <vp.VisitedPlaceRow>[];
 
   @override
   void initState() {
@@ -123,20 +87,39 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Future<void> _refreshAll() async {
     setState(() => _loading = true);
     try {
-      // TODO: call HistoryApi.list with _filters; split into points/route/transport/places as needed.
-      await Future.delayed(const Duration(milliseconds: 350));
+      // Simulated concurrent refresh; replace with HistoryApi.list(_filters) and split. [web:6167]
+      final results = await Future.wait(<Future<dynamic>>[
+        _fetchPoints(filter: _filters),
+        _fetchRouteItems(filter: _filters, page: 1),
+        _fetchTransportSegments(filter: _filters, page: 1),
+        _fetchVisitedPlaces(filter: _filters, page: 1),
+      ]);
+      if (!mounted) return;
+      setState(() {
+        _points = (results[0] as List<hmap.HistoryPoint>);
+        _routeItems = (results[1] as List<rh.RouteHistoryItem>);
+        _segments = (results[2] as List<th.TransportSegment>);
+        _visited = (results[3] as List<vp.VisitedPlaceRow>);
+        _hasMoreRoute = _routeItems.isNotEmpty;
+        _hasMoreTransport = _segments.isNotEmpty;
+        _hasMoreVisited = _visited.length >= 12;
+      });
     } finally {
       if (mounted) setState(() => _loading = false);
     }
-  }
+  } // Using Future.wait consolidates async work and simplifies state updates. [web:6167]
 
   // Loaders for paginated sections (if you split lists)
   Future<void> _loadMoreRoute() async {
     if (!_hasMoreRoute || _loading) return;
     setState(() => _loading = true);
     try {
-      // TODO: fetch next page of route items
-      await Future.delayed(const Duration(milliseconds: 300));
+      final next = await _fetchRouteItems(filter: _filters, page: 2);
+      if (!mounted) return;
+      setState(() {
+        _routeItems = [..._routeItems, ...next];
+        _hasMoreRoute = false;
+      });
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -146,8 +129,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
     if (!_hasMoreTransport || _loading) return;
     setState(() => _loading = true);
     try {
-      // TODO: fetch next page of transport segments
-      await Future.delayed(const Duration(milliseconds: 300));
+      final next = await _fetchTransportSegments(filter: _filters, page: 2);
+      if (!mounted) return;
+      setState(() {
+        _segments = [..._segments, ...next];
+        _hasMoreTransport = false;
+      });
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -157,8 +144,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
     if (!_hasMoreVisited || _loading) return;
     setState(() => _loading = true);
     try {
-      // TODO: fetch next page of visited places
-      await Future.delayed(const Duration(milliseconds: 300));
+      final next = await _fetchVisitedPlaces(filter: _filters, page: 2);
+      if (!mounted) return;
+      setState(() {
+        _visited = [..._visited, ...next];
+        _hasMoreVisited = false;
+      });
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -166,13 +157,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   // Clear handlers
   Future<void> _clearDay(DateTime day) async {
-    // TODO: call HistoryApi.clearRange for that day and refetch
+    // Simulate HistoryApi.clearRange(day..day) then refetch. [web:6167]
     await Future.delayed(const Duration(milliseconds: 250));
     await _refreshAll();
   }
 
   Future<void> _clearAll() async {
-    // TODO: call HistoryApi.clearRange over a broad range and refetch
+    // Simulate HistoryApi.clearRange(fullRange) then refetch. [web:6167]
     await Future.delayed(const Duration(milliseconds: 250));
     await _refreshAll();
   }
@@ -191,12 +182,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
               const Expanded(
                 child: Text('History', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20)),
               ),
-              SegmentedButton<_HistoryTab>(
+              SegmentedButton<HistoryTab>(
                 segments: const [
-                  ButtonSegment(value: _HistoryTab.map, label: Text('Map'), icon: Icon(Icons.map_outlined)),
-                  ButtonSegment(value: _HistoryTab.route, label: Text('Route'), icon: Icon(Icons.alt_route_outlined)),
-                  ButtonSegment(value: _HistoryTab.transport, label: Text('Transport'), icon: Icon(Icons.train_outlined)),
-                  ButtonSegment(value: _HistoryTab.places, label: Text('Places'), icon: Icon(Icons.place_outlined)),
+                  ButtonSegment(value: HistoryTab.map, label: Text('Map'), icon: Icon(Icons.map_outlined)),
+                  ButtonSegment(value: HistoryTab.route, label: Text('Route'), icon: Icon(Icons.alt_route_outlined)),
+                  ButtonSegment(value: HistoryTab.transport, label: Text('Transport'), icon: Icon(Icons.train_outlined)),
+                  ButtonSegment(value: HistoryTab.places, label: Text('Places'), icon: Icon(Icons.place_outlined)),
                 ],
                 selected: {_tab},
                 onSelectionChanged: (s) => setState(() => _tab = s.first),
@@ -204,13 +195,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ],
           ),
         ),
-      ), // CustomScrollView organizes mixed sections efficiently with slivers for complex layouts. [1][2]
+      ), // Public enum ensures clean public API. [web:6155]
 
       // Filters
       SliverToBoxAdapter(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: HistoryFilters(
+          child: hf.HistoryFilters(
             value: _filters,
             onChanged: (next) async {
               setState(() => _filters = next);
@@ -242,7 +233,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       body: RefreshIndicator.adaptive(
         onRefresh: _refreshAll,
         child: CustomScrollView(slivers: slivers),
-      ), // RefreshIndicator.adaptive applies platform-appropriate pull-to-refresh visuals. [6][12]
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _refreshAll,
         icon: const Icon(Icons.sync),
@@ -255,86 +246,166 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   Widget _buildTabBody() {
     switch (_tab) {
-      case _HistoryTab.map:
+      case HistoryTab.map:
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: HistoryMapView(
+          child: hmap.HistoryMapView(
             points: _points,
-            mapBuilder: widget.mapBuilder,
-            onOpenFilters: () async {
-              // Focus filters section
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Adjust filters above')));
+            mapBuilder: widget.mapBuilder, // typedef matches file’s NearbyMapBuilder. [web:6120]
+            onOpenFilters: () {
+              final messenger = ScaffoldMessenger.of(context);
+              messenger.showSnackBar(const SnackBar(content: Text('Adjust filters above')));
             },
-            onOpenPoint: (p) {
-              // TODO: open place or history detail
+            onOpenPoint: (hmap.HistoryPoint p) {
+              // Open place or history detail via named route; fallback SnackBar. [web:6143]
+              try {
+                Navigator.pushNamed(context, '/history_point', arguments: {'point': p});
+              } catch (_) {
+                final messenger = ScaffoldMessenger.of(context);
+                messenger.showSnackBar(const SnackBar(content: Text('Open history point')));
+              }
             },
-            onDirections: (p) async {
-              // TODO: launch directions
+            onDirections: (hmap.HistoryPoint p) async {
+              // Launch directions (simulated); guard context after await. [web:6182]
+              final messenger = ScaffoldMessenger.of(context);
               await Future.delayed(const Duration(milliseconds: 150));
+              if (!mounted) return;
+              messenger.showSnackBar(const SnackBar(content: Text('Launching directions…')));
             },
           ),
-        ); // Map view embeds a pluggable map and a peek card for selected points. [1]
+        );
 
-      case _HistoryTab.route:
+      case HistoryTab.route:
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: RouteHistory(
-            items: _routeItems,
-            sectionTitle: 'Route history',
-            onOpenItem: (it) {
-              // TODO: open route item detail
-            },
-            onClearDay: _clearDay,
-            onClearAll: _clearAll,
+          child: Column(
+            children: [
+              rh.RouteHistory(
+                items: _routeItems,
+                sectionTitle: 'Route history',
+                onOpenItem: (it) {
+                  // Open route item detail via named route; fallback SnackBar. [web:6143]
+                  try {
+                    Navigator.pushNamed(context, '/route_item', arguments: {'item': it});
+                  } catch (_) {
+                    final messenger = ScaffoldMessenger.of(context);
+                    messenger.showSnackBar(const SnackBar(content: Text('Open route item')));
+                  }
+                },
+                onClearDay: _clearDay,
+                onClearAll: _clearAll,
+              ),
+              const SizedBox(height: 8),
+              if (_hasMoreRoute)
+                OutlinedButton.icon(
+                  onPressed: _loadMoreRoute,
+                  icon: const Icon(Icons.more_horiz),
+                  label: const Text('Load more'),
+                ),
+            ],
           ),
-        ); // Route history uses an expandable day timeline with a custom rail and actions. [1]
+        );
 
-      case _HistoryTab.transport:
+      case HistoryTab.transport:
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: TransportHistory(
-            segments: _segments,
-            sectionTitle: 'Transport history',
-            onOpenSegment: (s) {
-              // TODO: open segment detail
-            },
-            onDirections: (s) async {
-              // TODO: launch directions
-              await Future.delayed(const Duration(milliseconds: 150));
-            },
-            onShare: (s) {
-              // TODO: share
-            },
-            onClearDay: _clearDay,
-            onClearAll: _clearAll,
+          child: Column(
+            children: [
+              th.TransportHistory(
+                segments: _segments,
+                sectionTitle: 'Transport history',
+                onOpenSegment: (s) {
+                  // Open segment detail via named route; fallback SnackBar. [web:6143]
+                  try {
+                    Navigator.pushNamed(context, '/transport_segment', arguments: {'segment': s});
+                  } catch (_) {
+                    final messenger = ScaffoldMessenger.of(context);
+                    messenger.showSnackBar(const SnackBar(content: Text('Open transport segment')));
+                  }
+                },
+                onDirections: (s) async {
+                  // Launch directions (simulated). [web:6143]
+                  final messenger = ScaffoldMessenger.of(context);
+                  await Future.delayed(const Duration(milliseconds: 150));
+                  if (!mounted) return;
+                  messenger.showSnackBar(const SnackBar(content: Text('Launching directions…')));
+                },
+                onShare: (s) {
+                  // Share (simulated). [web:6155]
+                  final messenger = ScaffoldMessenger.of(context);
+                  messenger.showSnackBar(const SnackBar(content: Text('Shared segment')));
+                },
+                onClearDay: _clearDay,
+                onClearAll: _clearAll,
+              ),
+              const SizedBox(height: 8),
+              if (_hasMoreTransport)
+                OutlinedButton.icon(
+                  onPressed: _loadMoreTransport,
+                  icon: const Icon(Icons.more_horiz),
+                  label: const Text('Load more'),
+                ),
+            ],
           ),
-        ); // Transport history shows filterable modes and per-segment metadata with actions. [21]
+        );
 
-      case _HistoryTab.places:
+      case HistoryTab.places:
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: VisitedPlaces(
-            items: _visited,
-            loading: _loading,
-            hasMore: _hasMoreVisited,
-            onRefresh: _refreshAll,
-            onLoadMore: _loadMoreVisited,
-            onOpenPlace: (p) {
-              // TODO: open place details
-            },
-            onToggleFavorite: (p, next) async {
-              // TODO: call favorites API
-              await Future.delayed(const Duration(milliseconds: 150));
-              return true;
-            },
-            onRebook: (p) async {
-              // TODO: call booking API or partner deep link
-              await Future.delayed(const Duration(milliseconds: 200));
-              return true;
-            },
-            sectionTitle: 'Visited places',
+          child: Column(
+            children: [
+              vp.VisitedPlaces(
+                items: _visited,
+                loading: _loading,
+                hasMore: _hasMoreVisited,
+                onRefresh: _refreshAll,
+                onLoadMore: _loadMoreVisited,
+                onOpenPlace: (p) {
+                  // Open place details via named route; fallback SnackBar. [web:6143]
+                  try {
+                    Navigator.pushNamed(context, '/place_details', arguments: {'place': p});
+                  } catch (_) {
+                    final messenger = ScaffoldMessenger.of(context);
+                    messenger.showSnackBar(const SnackBar(content: Text('Open place details')));
+                  }
+                },
+                onToggleFavorite: (p, next) async {
+                  // Call favorites API (simulated). [web:6167]
+                  await Future.delayed(const Duration(milliseconds: 150));
+                  return true;
+                },
+                onRebook: (p) async {
+                  // Call booking API or deep link (simulated). [web:6143]
+                  await Future.delayed(const Duration(milliseconds: 200));
+                  return true;
+                },
+                sectionTitle: 'Visited places',
+              ),
+            ],
           ),
-        ); // Places grid renders visited items with favorite/rebook quick actions in accessible cards. [22][23]
+        );
     }
   }
+
+  // ---------------- Demo fetchers (replace with HistoryApi) ----------------
+
+  Future<List<hmap.HistoryPoint>> _fetchPoints({required hf.HistoryFilterSelection filter}) async {
+    await Future.delayed(const Duration(milliseconds: 120));
+    return _points;
+  } // Keep existing demo points to avoid model coupling. [web:6155]
+
+  Future<List<rh.RouteHistoryItem>> _fetchRouteItems({required hf.HistoryFilterSelection filter, required int page}) async {
+    await Future.delayed(const Duration(milliseconds: 140));
+    return _routeItems.isNotEmpty && page > 1 ? _routeItems.take((_routeItems.length / 2).ceil()).toList() : _routeItems;
+  } // Simple paging demo; replace with server paging. [web:6167]
+
+  Future<List<th.TransportSegment>> _fetchTransportSegments({required hf.HistoryFilterSelection filter, required int page}) async {
+    await Future.delayed(const Duration(milliseconds: 140));
+    return _segments.isNotEmpty && page > 1 ? _segments.take((_segments.length / 2).ceil()).toList() : _segments;
+  } // Simple paging demo. [web:6167]
+
+  Future<List<vp.VisitedPlaceRow>> _fetchVisitedPlaces({required hf.HistoryFilterSelection filter, required int page}) async {
+    await Future.delayed(const Duration(milliseconds: 160));
+    return _visited.isNotEmpty && page > 1 ? _visited.take((_visited.length / 2).ceil()).toList() : _visited;
+  } // Simple paging demo. [web:6167]
 }

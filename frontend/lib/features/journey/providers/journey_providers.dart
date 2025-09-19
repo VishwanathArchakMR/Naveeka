@@ -1,16 +1,15 @@
 // lib/features/journey/providers/journey_providers.dart
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../data/hotels_api.dart';
-import '../data/places_api.dart';
+import '../../places/data/places_api.dart';
 import '../data/restaurants_api.dart';
 import '../data/trains_api.dart';
 
 // Optional: used by StationSelector and other "nearby" features.
 // If not present yet, comment this import and the provider using it.
-import '../../core/storage/location_cache.dart';
+import '/../core/storage/location_cache.dart';
 
 // -------------------------------
 // App-level settings & formatters
@@ -32,8 +31,12 @@ final isoDateFormatterProvider = Provider<DateFormat>((ref) => DateFormat('yyyy-
 /// Hotels API dependency (override for tests/mocks if needed).
 final hotelsApiProvider = Provider<HotelsApi>((ref) => HotelsApi());
 
-/// Places API dependency (override for tests/mocks if needed).
-final placesApiProvider = Provider<PlacesApi>((ref) => PlacesApi());
+/// Places API dependency (override for tests/mocks or when no unnamed ctor).
+final placesApiProvider = Provider<PlacesApi>((ref) {
+  // Provide via ProviderScope overrides at app bootstrap:
+  // ProviderScope(overrides: [placesApiProvider.overrideWithValue(myPlacesApi)])
+  throw UnimplementedError('Provide PlacesApi via override');
+});
 
 /// Restaurants API dependency (override for tests/mocks if needed).
 final restaurantsApiProvider = Provider<RestaurantsApi>((ref) => RestaurantsApi());
@@ -69,7 +72,7 @@ final lastKnownLocationProvider = FutureProvider<Map<String, dynamic>?>((ref) as
 
 /// A lightweight model for recent searches across modules.
 class RecentSearch {
-  const RecentSearch({
+  RecentSearch({
     required this.module, // 'Hotels' | 'Places' | 'Restaurants' | 'Trains' | 'Flights'
     required this.query,  // free-form, e.g., 'Bengaluru → Goa • 2025-11-18'
     this.params = const <String, dynamic>{},

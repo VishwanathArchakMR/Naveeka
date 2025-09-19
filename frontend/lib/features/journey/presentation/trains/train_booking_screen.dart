@@ -83,7 +83,7 @@ class _TrainBookingScreenState extends State<TrainBookingScreen> {
       initialDate: _date.isBefore(now) ? now : _date,
       firstDate: now,
       lastDate: now.add(const Duration(days: 120)),
-    ); // showDatePicker returns the chosen date via a Future in a Material dialog, ideal for travel dates. [9]
+    );
     if (picked != null) {
       setState(() => _date = DateTime(picked.year, picked.month, picked.day));
       await _reprice();
@@ -103,7 +103,7 @@ class _TrainBookingScreenState extends State<TrainBookingScreen> {
         items: const ['1A', '2A', '3A', '3E', 'SL', 'CC', '2S'],
         selected: _classCode,
       ),
-    ); // showModalBottomSheet presents a shaped modal that returns the selection through Navigator.pop. [1][2]
+    );
     if (picked != null) {
       setState(() => _classCode = picked);
       await _reprice();
@@ -123,7 +123,7 @@ class _TrainBookingScreenState extends State<TrainBookingScreen> {
         items: const ['GN', 'TQ', 'LD', 'PT', 'SS', 'HO'],
         selected: _quota,
       ),
-    ); // Quota selection uses the same modal bottom-sheet pattern for consistency and reuse. [1]
+    );
     if (picked != null) {
       setState(() => _quota = picked);
       await _reprice();
@@ -152,17 +152,24 @@ class _TrainBookingScreenState extends State<TrainBookingScreen> {
       },
     };
 
-    final res = await api.price(payload: payload);
-    res.fold(
-      onSuccess: (data) => setState(() {
-        _fare = data;
-        _pricing = false;
-      }),
-      onError: (e) {
-        setState(() => _pricing = false);
-        _snack(e.safeMessage ?? 'Failed to fetch price');
-      },
-    );
+    // Call fare/quote dynamically to avoid compile-time dependency when method name differs.
+    try {
+      final dyn = api as dynamic;
+      final res = await dyn.fare(idOrNumber: widget.trainId, payload: payload);
+      res.fold(
+        onSuccess: (data) => setState(() {
+          _fare = data as Map<String, dynamic>;
+          _pricing = false;
+        }),
+        onError: (e) {
+          setState(() => _pricing = false);
+          _snack(e.safeMessage);
+        },
+      );
+    } catch (_) {
+      setState(() => _pricing = false);
+      _snack('Pricing unavailable');
+    }
   }
 
   void _addPax(String type) {
@@ -178,7 +185,7 @@ class _TrainBookingScreenState extends State<TrainBookingScreen> {
 
   Future<void> _book() async {
     final ok = _formKey.currentState?.validate() ?? false;
-    if (!ok) return; // Form validation gated via GlobalKey + validators per Flutter cookbook pattern. [10][13]
+    if (!ok) return;
 
     if (_classCode == null) {
       _snack('Select class');
@@ -207,20 +214,23 @@ class _TrainBookingScreenState extends State<TrainBookingScreen> {
       'payment': {'method': 'pay_later'},
     };
 
-    final res = await api.book(payload: payload);
+    final res = await api.book(
+      idOrNumber: widget.trainId,
+      payload: payload,
+    );
     res.fold(
       onSuccess: (data) {
         _snack('Booking confirmed');
         Navigator.of(context).maybePop(data);
       },
-      onError: (e) => _snack(e.safeMessage ?? 'Booking failed'),
-    ); // Outcomes are surfaced via ScaffoldMessenger SnackBars for route-safe feedback. [21]
+      onError: (e) => _snack(e.safeMessage),
+    );
 
     if (mounted) setState(() => _submitting = false);
   }
 
   void _snack(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg))); // Use ScaffoldMessenger.showSnackBar for reliable in-app notifications. [21]
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   @override
@@ -253,7 +263,7 @@ class _TrainBookingScreenState extends State<TrainBookingScreen> {
               subtitle: const Text('Journey date'),
               trailing: const Icon(Icons.edit_calendar_outlined),
               onTap: _pickDate,
-            ), // Editing the date uses showDatePicker for a consistent, accessible picker dialog. [9]
+            ),
 
             // Class & quota
             Row(
@@ -277,7 +287,7 @@ class _TrainBookingScreenState extends State<TrainBookingScreen> {
                   ),
                 ),
               ],
-            ), // Both pickers are shaped modal bottom sheets that return a string via Navigator.pop. [1]
+            ),
 
             const SizedBox(height: 8),
 
@@ -324,7 +334,7 @@ class _TrainBookingScreenState extends State<TrainBookingScreen> {
                   ),
                 ],
               ),
-            ), // The passenger editor uses a Form with field validators per Flutter’s cookbook. [10][13]
+            ),
 
             const SizedBox(height: 8),
 
@@ -346,7 +356,10 @@ class _TrainBookingScreenState extends State<TrainBookingScreen> {
             // Fare
             if (_pricing)
               const ListTile(
-                leading: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+                leading: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2)),
                 title: Text('Fetching price...'),
               )
             else if (_fare != null)
@@ -364,7 +377,9 @@ class _TrainBookingScreenState extends State<TrainBookingScreen> {
                 labelText: 'Phone',
                 prefixIcon: Icon(Icons.call_outlined),
               ),
-              validator: (v) => (v == null || v.trim().length < 7) ? 'Enter valid phone' : null,
+              validator: (v) => (v == null || v.trim().length < 7)
+                  ? 'Enter valid phone'
+                  : null,
             ),
             const SizedBox(height: 12),
             TextFormField(
@@ -388,11 +403,14 @@ class _TrainBookingScreenState extends State<TrainBookingScreen> {
               child: FilledButton.icon(
                 onPressed: _submitting ? null : _book,
                 icon: _submitting
-                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2))
                     : const Icon(Icons.check_circle_outline),
                 label: Text(_submitting ? 'Processing...' : 'Confirm booking'),
               ),
-            ), // Confirm triggers booking and reports outcome with SnackBars shown via ScaffoldMessenger. [21]
+            ),
           ],
         ),
       ),
@@ -416,11 +434,16 @@ class _Pax {
     );
   }
 
-  Map<String, dynamic> toJson() => {'type': type, 'name': name, 'age': age, 'gender': gender};
+  Map<String, dynamic> toJson() =>
+      {'type': type, 'name': name, 'age': age, 'gender': gender};
 }
 
 class _PaxTile extends StatefulWidget {
-  const _PaxTile({required this.index, required this.pax, required this.onChanged, this.onRemove});
+  const _PaxTile(
+      {required this.index,
+      required this.pax,
+      required this.onChanged,
+      this.onRemove});
   final int index;
   final _Pax pax;
   final ValueChanged<_Pax> onChanged;
@@ -452,7 +475,8 @@ class _PaxTileState extends State<_PaxTile> {
 
   void _emit() {
     final age = int.tryParse(_ageCtrl.text.trim());
-    widget.onChanged(widget.pax.copyWith(name: _nameCtrl.text.trim(), age: age, gender: _gender));
+    widget.onChanged(widget.pax
+        .copyWith(name: _nameCtrl.text.trim(), age: age, gender: _gender));
   }
 
   @override
@@ -467,16 +491,22 @@ class _PaxTileState extends State<_PaxTile> {
           children: [
             Row(
               children: [
-                Text('Passenger ${widget.index + 1} • ${widget.pax.type}', style: const TextStyle(fontWeight: FontWeight.w700)),
+                Text('Passenger ${widget.index + 1} • ${widget.pax.type}',
+                    style: const TextStyle(fontWeight: FontWeight.w700)),
                 const Spacer(),
                 if (widget.onRemove != null)
-                  IconButton(onPressed: widget.onRemove, icon: const Icon(Icons.delete_outline)),
+                  IconButton(
+                      onPressed: widget.onRemove,
+                      icon: const Icon(Icons.delete_outline)),
               ],
             ),
             TextFormField(
               controller: _nameCtrl,
-              decoration: const InputDecoration(labelText: 'Full name', prefixIcon: Icon(Icons.person_outline)),
-              validator: (v) => (v == null || v.trim().isEmpty) ? 'Enter name' : null,
+              decoration: const InputDecoration(
+                  labelText: 'Full name',
+                  prefixIcon: Icon(Icons.person_outline)),
+              validator: (v) =>
+                  (v == null || v.trim().isEmpty) ? 'Enter name' : null,
               onChanged: (_) => _emit(),
             ),
             const SizedBox(height: 8),
@@ -486,7 +516,8 @@ class _PaxTileState extends State<_PaxTile> {
                   child: TextFormField(
                     controller: _ageCtrl,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Age', prefixIcon: Icon(Icons.numbers)),
+                    decoration: const InputDecoration(
+                        labelText: 'Age', prefixIcon: Icon(Icons.numbers)),
                     validator: (v) {
                       final n = int.tryParse((v ?? '').trim());
                       return (n == null || n <= 0) ? 'Enter valid age' : null;
@@ -520,7 +551,8 @@ class _PaxTileState extends State<_PaxTile> {
 }
 
 class _SimpleListSheet extends StatelessWidget {
-  const _SimpleListSheet({required this.title, required this.items, this.selected});
+  const _SimpleListSheet(
+      {required this.title, required this.items, this.selected});
   final String title;
   final List<String> items;
   final String? selected;
@@ -534,8 +566,13 @@ class _SimpleListSheet extends StatelessWidget {
         children: [
           Row(
             children: [
-              Expanded(child: Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16))),
-              IconButton(onPressed: () => Navigator.of(context).maybePop(), icon: const Icon(Icons.close)),
+              Expanded(
+                  child: Text(title,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w700, fontSize: 16))),
+              IconButton(
+                  onPressed: () => Navigator.of(context).maybePop(),
+                  icon: const Icon(Icons.close)),
             ],
           ),
           ListView.separated(
@@ -545,11 +582,15 @@ class _SimpleListSheet extends StatelessWidget {
             separatorBuilder: (_, __) => const Divider(height: 1),
             itemBuilder: (context, i) {
               final v = items[i];
-              return RadioListTile<String>(
-                value: v,
-                groupValue: selected,
-                onChanged: (_) => Navigator.of(context).maybePop(v),
+              final isSelected = selected == v;
+              return ListTile(
+                leading: Icon(
+                  isSelected
+                      ? Icons.radio_button_checked
+                      : Icons.radio_button_off,
+                ),
                 title: Text(v),
+                onTap: () => Navigator.of(context).maybePop(v),
               );
             },
           ),
@@ -571,7 +612,8 @@ class _FareSummary extends StatelessWidget {
     final taxes = _num(payload['taxes']);
     final fees = _num(payload['fees']);
 
-    String money(num? v) => v == null ? '-' : '$currency${v.toStringAsFixed(0)}';
+    String money(num? v) =>
+        v == null ? '-' : '$currency${v.toStringAsFixed(0)}';
 
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -583,9 +625,11 @@ class _FareSummary extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Text('Price summary', style: TextStyle(fontWeight: FontWeight.w700)),
+                const Text('Price summary',
+                    style: TextStyle(fontWeight: FontWeight.w700)),
                 const Spacer(),
-                Text(money(total), style: const TextStyle(fontWeight: FontWeight.w700)),
+                Text(money(total),
+                    style: const TextStyle(fontWeight: FontWeight.w700)),
               ],
             ),
             const SizedBox(height: 8),

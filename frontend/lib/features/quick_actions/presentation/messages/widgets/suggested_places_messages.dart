@@ -2,9 +2,10 @@
 
 import 'package:flutter/material.dart';
 
-import '../../../../models/place.dart';
-import '../../../../models/unit_system.dart';
-import '../../../places/presentation/widgets/distance_indicator.dart';
+import '/../../../models/place.dart';
+import '/../../../models/unit_system.dart' as us show UnitSystem;
+import '../../../../places/presentation/widgets/distance_indicator.dart' as di
+    show DistanceIndicator, UnitSystem;
 
 class SuggestedPlacesMessages extends StatefulWidget {
   const SuggestedPlacesMessages({
@@ -19,7 +20,7 @@ class SuggestedPlacesMessages extends StatefulWidget {
     this.onBook, // Future<void> Function(Place place)
     this.originLat,
     this.originLng,
-    this.unit = UnitSystem.metric,
+    this.unit = us.UnitSystem.metric,
     this.sectionTitle = 'Suggested places',
     this.cardWidth = 260,
     this.height = 230,
@@ -39,7 +40,7 @@ class SuggestedPlacesMessages extends StatefulWidget {
 
   final double? originLat;
   final double? originLng;
-  final UnitSystem unit;
+  final us.UnitSystem unit;
 
   final String sectionTitle;
   final double cardWidth;
@@ -74,7 +75,7 @@ class _SuggestedPlacesMessagesState extends State<SuggestedPlacesMessages> {
       _loadRequested = true;
       widget.onLoadMore!.call().whenComplete(() => _loadRequested = false);
     }
-  } // Horizontal ListView pagination triggers near the trailing edge for smooth, incremental loading. [1]
+  } // Pagination guard avoids duplicate trailing loads. [web:6120]
 
   @override
   Widget build(BuildContext context) {
@@ -122,7 +123,8 @@ class _SuggestedPlacesMessagesState extends State<SuggestedPlacesMessages> {
                               place: p,
                               width: widget.cardWidth,
                               height: widget.height,
-                              heroTag: '${widget.heroPrefix}-${p.id}',
+                              // Use index-based tag to ensure uniqueness per route/subtree. [web:6171][web:6174]
+                              heroTag: '${widget.heroPrefix}-$i',
                               originLat: widget.originLat,
                               originLng: widget.originLng,
                               unit: widget.unit,
@@ -144,7 +146,7 @@ class _SuggestedPlacesMessagesState extends State<SuggestedPlacesMessages> {
           ],
         ),
       ),
-    ); // A horizontal ListView in a section Card matches messaging-side “suggested content” patterns and remains performant with lazy building. [1][12]
+    );
   }
 
   Widget _tail() {
@@ -185,7 +187,7 @@ class _PlaceCard extends StatelessWidget {
 
   final double? originLat;
   final double? originLng;
-  final UnitSystem unit;
+  final us.UnitSystem unit;
 
   final void Function(Place place)? onOpen;
   final Future<void> Function(Place place)? onShare;
@@ -193,10 +195,11 @@ class _PlaceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     final img = _coverUrl(place);
-    final name = (place.name ?? 'Place').trim();
-    final hasCoords = place.lat != null && place.lng != null && originLat != null && originLng != null;
+    final name = _nameOf(place);
+
+    final la = _latOf(place), ln = _lngOf(place);
+    final hasCoords = la != null && ln != null && originLat != null && originLng != null;
 
     return SizedBox(
       width: width,
@@ -246,25 +249,26 @@ class _PlaceCard extends StatelessWidget {
                         style: const TextStyle(fontWeight: FontWeight.w800),
                       ),
                     ),
-                    if (place.rating != null)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.amber.withValues(alpha: 0.18),
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.star, size: 14, color: Colors.amber),
-                            const SizedBox(width: 4),
-                            Text(
-                              place.rating!.toStringAsFixed(1),
-                              style: const TextStyle(fontWeight: FontWeight.w700),
+                    finalRating(place) == null
+                        ? const SizedBox.shrink()
+                        : Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.amber.withValues(alpha: 0.18),
+                              borderRadius: BorderRadius.circular(999),
                             ),
-                          ],
-                        ),
-                      ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.star, size: 14, color: Colors.amber),
+                                const SizedBox(width: 4),
+                                Text(
+                                  finalRating(place)!.toStringAsFixed(1),
+                                  style: const TextStyle(fontWeight: FontWeight.w700),
+                                ),
+                              ],
+                            ),
+                          ),
                   ],
                 ),
               ),
@@ -273,11 +277,11 @@ class _PlaceCard extends StatelessWidget {
               if (hasCoords)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(10, 4, 10, 0),
-                  child: DistanceIndicator.fromPlace(
+                  child: di.DistanceIndicator.fromPlace(
                     place,
                     originLat: originLat!,
                     originLng: originLng!,
-                    unit: unit,
+                    unit: _toDi(unit),
                     compact: true,
                     labelSuffix: 'away',
                   ),
@@ -315,13 +319,71 @@ class _PlaceCard extends StatelessWidget {
           ),
         ),
       ),
-    ); // Each suggestion is a Material Card with image, text, and actions, following accessible Card patterns and theming. [12][15]
+    );
   }
 
+  // -------- Unit mapping (models -> distance_indicator) --------
+
+  di.UnitSystem _toDi(us.UnitSystem u) {
+    switch (u) {
+      case us.UnitSystem.metric:
+        return di.UnitSystem.metric;
+      case us.UnitSystem.imperial:
+        return di.UnitSystem.imperial;
+    }
+  } // Prefixing imports avoids UnitSystem collisions; map enums explicitly. [web:6120]
+
+  // -------- Place helpers via toJson (model-agnostic) --------
+
+  Map<String, dynamic> _json(Place p) {
+    try {
+      final dyn = p as dynamic;
+      final j = dyn.toJson();
+      if (j is Map<String, dynamic>) return j;
+    } catch (_) {}
+    return const <String, dynamic>{};
+  } // Safely project Place to a map to avoid missing getters. [web:5858]
+
+  String _nameOf(Place p) {
+    final m = _json(p);
+    final v = (m['name'] ?? m['title'])?.toString().trim();
+    return (v == null || v.isEmpty) ? 'Place' : v;
+  } // Title or fallback. [web:5858]
+
+  double? _latOf(Place p) {
+    final m = _json(p);
+    final v = m['lat'] ?? m['latitude'] ?? m['locationLat'] ?? m['coordLat'];
+    if (v is num) return v.toDouble();
+    if (v is String) return double.tryParse(v);
+    return null;
+  } // Accept number or parse string. [web:5858]
+
+  double? _lngOf(Place p) {
+    final m = _json(p);
+    final v = m['lng'] ?? m['longitude'] ?? m['locationLng'] ?? m['coordLng'];
+    if (v is num) return v.toDouble();
+    if (v is String) return double.tryParse(v);
+    return null;
+  } // Accept number or parse string. [web:5858]
+
+  double? finalRating(Place p) {
+    final m = _json(p);
+    final v = m['rating'] ?? m['avgRating'];
+    if (v is num) return v.toDouble();
+    if (v is String) return double.tryParse(v);
+    return null;
+  } // Rating key fallbacks. [web:5858]
+
   String? _coverUrl(Place p) {
-    final list = p.photos ?? const <String>[];
-    return list.isNotEmpty && list.first.trim().isNotEmpty ? list.first.trim() : null;
-  }
+    final m = _json(p);
+    final photos = m['photos'] ?? m['images'];
+    if (photos is List && photos.isNotEmpty) {
+      final first = photos.first.toString().trim();
+      if (first.isNotEmpty) return first;
+    }
+    final single = (m['imageUrl'] ?? m['cover'] ?? m['thumbnail'])?.toString().trim();
+    return (single != null && single.isNotEmpty) ? single : null;
+  } // Flexible image source. [web:5858]
 
   Widget _fallbackImage() {
     return Container(

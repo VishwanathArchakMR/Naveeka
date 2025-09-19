@@ -7,11 +7,7 @@ import 'favorite_heart_button.dart';
 import 'map_view_button.dart';
 import 'directions_button.dart';
 
-/// Collapsible image header for place details screens:
-/// - SliverAppBar + FlexibleSpaceBar with cover image and gradient overlay
-/// - Hero image for shared transitions
-/// - Top-right actions: Favorite, Map view, Directions
-/// Use inside a CustomScrollView as a sliver. [SliverAppBar docs reference]
+/// Collapsible image header for place details screens. [SliverAppBar docs reference]
 class PlaceHeaderSliver extends StatelessWidget {
   const PlaceHeaderSliver({
     super.key,
@@ -39,7 +35,7 @@ class PlaceHeaderSliver extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final img = _coverUrl(place);
-    final title = (place.name ?? '').trim().isEmpty ? 'Place' : place.name.trim();
+    final title = _title(place);
 
     return SliverAppBar(
       pinned: true,
@@ -59,23 +55,8 @@ class PlaceHeaderSliver extends StatelessWidget {
               tooltip: 'Save',
             ),
           ),
-        if (place.lat != null && place.lng != null)
-          IconButton(
-            tooltip: 'Map view',
-            icon: const Icon(Icons.map_outlined),
-            onPressed: () {
-              // Push an in-app map page if desired, else fallback to external maps.
-              MapViewButton.fromPlace(place, extended: false).onPressed?.call();
-            },
-          ),
-        if (place.lat != null && place.lng != null)
-          IconButton(
-            tooltip: 'Directions',
-            icon: const Icon(Icons.directions_outlined),
-            onPressed: () {
-              DirectionsButton.fromPlace(place, expanded: false).onPressed?.call();
-            },
-          ),
+        if (_hasCoords(place)) MapViewButton.fromPlace(place, extended: false),
+        if (_hasCoords(place)) DirectionsButton.fromPlace(place, expanded: false),
       ],
       flexibleSpace: FlexibleSpaceBar(
         titlePadding: const EdgeInsetsDirectional.only(start: 16, bottom: 12, end: 56),
@@ -89,7 +70,7 @@ class PlaceHeaderSliver extends StatelessWidget {
           children: [
             if (img != null)
               Hero(
-                tag: heroTag ?? 'place-hero-${place.id}',
+                tag: heroTag ?? 'place-hero-${_id(place)}',
                 child: Image.network(
                   img,
                   fit: BoxFit.cover,
@@ -118,9 +99,82 @@ class PlaceHeaderSliver extends StatelessWidget {
     );
   }
 
+  String _title(Place p) {
+    final name = _pickString(p, ['name', 'title'])?.trim();
+    if (name == null || name.isEmpty) return 'Place';
+    return name;
+  }
+
+  String _id(Place p) {
+    return _pickString(p, ['id', '_id', 'placeId']) ?? 'place';
+  }
+
+  bool _hasCoords(Place p) {
+    final lat = _pickNum(p, ['lat', 'latitude', 'locationLat', 'coordLat']);
+    final lng = _pickNum(p, ['lng', 'longitude', 'locationLng', 'coordLng']);
+    return lat != null && lng != null;
+  }
+
   String? _coverUrl(Place p) {
-    final list = p.photos ?? const <String>[];
-    return list.isNotEmpty && list.first.trim().isNotEmpty ? list.first.trim() : null;
+    final photos = _pickList<String>(p, ['photos', 'images']);
+    if (photos != null && photos.isNotEmpty) {
+      final first = photos.first.toString().trim();
+      if (first.isNotEmpty) return first;
+    }
+    final single = _pickString(p, ['imageUrl', 'cover', 'thumbnail']);
+    return (single != null && single.trim().isNotEmpty) ? single.trim() : null;
+  }
+
+  // Dynamic map readers
+
+  Map<String, dynamic> _json(Place p) {
+    try {
+      final dyn = p as dynamic;
+      final j = dyn.toJson();
+      if (j is Map<String, dynamic>) return j;
+    } catch (_) {}
+    return const <String, dynamic>{};
+  }
+
+  String? _pickString(Place p, List<String> keys) {
+    final m = _json(p);
+    for (final k in keys) {
+      final v = m[k];
+      if (v == null) continue;
+      final s = v.toString();
+      if (s.isNotEmpty) return s;
+    }
+    return null;
+  }
+
+  num? _pickNum(Place p, List<String> keys) {
+    final m = _json(p);
+    for (final k in keys) {
+      final v = m[k];
+      if (v is num) return v;
+      if (v is String) {
+        final n = num.tryParse(v);
+        if (n != null) return n;
+      }
+    }
+    return null;
+  }
+
+  List<T>? _pickList<T>(Place p, List<String> keys) {
+    final m = _json(p);
+    for (final k in keys) {
+      final v = m[k];
+      if (v is List) {
+        try {
+          return List<T>.from(v);
+        } catch (_) {
+          if (T == String) {
+            return v.map((e) => e.toString()).cast<T>().toList();
+          }
+        }
+      }
+    }
+    return null;
   }
 
   Widget _fallback() {
@@ -141,9 +195,7 @@ class PlaceHeaderSliver extends StatelessWidget {
 }
 
 /// Non-sliver header card for places:
-/// - Rounded cover image with Hero
-/// - Title, category chips, rating, and inline actions
-/// Good for screens without CustomScrollView/slivers.
+/// Rounded cover image, title, categories, rating, and inline actions.
 class PlaceHeaderCard extends StatelessWidget {
   const PlaceHeaderCard({
     super.key,
@@ -165,9 +217,10 @@ class PlaceHeaderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final img = _coverUrl(place);
-    final title = (place.name ?? '').trim().isEmpty ? 'Place' : place.name.trim();
+    final title = _title(place);
     final cats = _categories(place);
-    final rating = place.rating;
+    final rating = _pickNum(place, ['rating', 'avgRating'])?.toDouble() ?? 0.0;
+    final reviewsCount = _pickNum(place, ['reviewsCount', 'reviewCount'])?.toInt() ?? 0;
 
     return Card(
       elevation: 0,
@@ -181,7 +234,7 @@ class PlaceHeaderCard extends StatelessWidget {
             child: img == null
                 ? _fallback()
                 : Hero(
-                    tag: heroTag ?? 'place-hero-${place.id}',
+                    tag: heroTag ?? 'place-hero-${_id(place)}',
                     child: Image.network(
                       img,
                       fit: BoxFit.cover,
@@ -218,22 +271,8 @@ class PlaceHeaderCard extends StatelessWidget {
                         compact: true,
                         tooltip: 'Save',
                       ),
-                    if (place.lat != null && place.lng != null)
-                      IconButton(
-                        tooltip: 'Map view',
-                        icon: const Icon(Icons.map_outlined),
-                        onPressed: () {
-                          MapViewButton.fromPlace(place, extended: false).onPressed?.call();
-                        },
-                      ),
-                    if (place.lat != null && place.lng != null)
-                      IconButton(
-                        tooltip: 'Directions',
-                        icon: const Icon(Icons.directions_outlined),
-                        onPressed: () {
-                          DirectionsButton.fromPlace(place, expanded: false).onPressed?.call();
-                        },
-                      ),
+                    if (_hasCoords(place)) MapViewButton.fromPlace(place, extended: false),
+                    if (_hasCoords(place)) DirectionsButton.fromPlace(place, expanded: false),
                   ],
                 ),
                 const SizedBox(height: 6),
@@ -245,9 +284,9 @@ class PlaceHeaderCard extends StatelessWidget {
                       _stars(rating),
                       const SizedBox(width: 6),
                       Text(rating.toStringAsFixed(1)),
-                      if ((place.reviewsCount ?? 0) > 0) ...[
+                      if (reviewsCount > 0) ...[
                         const SizedBox(width: 6),
-                        Text('· ${place.reviewsCount} reviews', style: const TextStyle(color: Colors.black54)),
+                        Text('· $reviewsCount reviews', style: const TextStyle(color: Colors.black54)),
                       ],
                     ],
                   ),
@@ -258,7 +297,9 @@ class PlaceHeaderCard extends StatelessWidget {
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: cats.map((c) => Chip(label: Text(c), visualDensity: VisualDensity.compact)).toList(growable: false),
+                    children: cats
+                        .map((c) => Chip(label: Text(c), visualDensity: VisualDensity.compact))
+                        .toList(growable: false),
                   ),
                 ],
               ],
@@ -269,23 +310,94 @@ class PlaceHeaderCard extends StatelessWidget {
     );
   }
 
+  // Local helpers (card)
+
+  String _title(Place p) {
+    final name = _pickString(p, ['name', 'title'])?.trim();
+    if (name == null || name.isEmpty) return 'Place';
+    return name;
+  }
+
+  String _id(Place p) {
+    return _pickString(p, ['id', '_id', 'placeId']) ?? 'place';
+  }
+
+  bool _hasCoords(Place p) {
+    final lat = _pickNum(p, ['lat', 'latitude', 'locationLat', 'coordLat']);
+    final lng = _pickNum(p, ['lng', 'longitude', 'locationLng', 'coordLng']);
+    return lat != null && lng != null;
+  }
+
   String? _coverUrl(Place p) {
-    final list = p.photos ?? const <String>[];
-    return list.isNotEmpty && list.first.trim().isNotEmpty ? list.first.trim() : null;
+    final photos = _pickList<String>(p, ['photos', 'images']);
+    if (photos != null && photos.isNotEmpty) {
+      final first = photos.first.toString().trim();
+      if (first.isNotEmpty) return first;
+    }
+    final single = _pickString(p, ['imageUrl', 'cover', 'thumbnail']);
+    return (single != null && single.trim().isNotEmpty) ? single.trim() : null;
   }
 
   List<String> _categories(Place p) {
-    final list = p.categories ?? const <String>[];
-    return list.where((e) => e.trim().isNotEmpty).toList(growable: false);
+    final cats = _pickList<String>(p, ['categories', 'tags']) ?? const <String>[];
+    return cats.where((e) => e.trim().isNotEmpty).toList(growable: false);
+  }
+
+  Map<String, dynamic> _json(Place p) {
+    try {
+      final dyn = p as dynamic;
+      final j = dyn.toJson();
+      if (j is Map<String, dynamic>) return j;
+    } catch (_) {}
+    return const <String, dynamic>{};
+  }
+
+  String? _pickString(Place p, List<String> keys) {
+    final m = _json(p);
+    for (final k in keys) {
+      final v = m[k];
+      if (v == null) continue;
+      final s = v.toString();
+      if (s.isNotEmpty) return s;
+    }
+    return null;
+  }
+
+  num? _pickNum(Place p, List<String> keys) {
+    final m = _json(p);
+    for (final k in keys) {
+      final v = m[k];
+      if (v is num) return v;
+      if (v is String) {
+        final n = num.tryParse(v);
+        if (n != null) return n;
+      }
+    }
+    return null;
+  }
+
+  List<T>? _pickList<T>(Place p, List<String> keys) {
+    final m = _json(p);
+    for (final k in keys) {
+      final v = m[k];
+      if (v is List) {
+        try {
+          return List<T>.from(v);
+        } catch (_) {
+          if (T == String) {
+            return v.map((e) => e.toString()).cast<T>().toList();
+          }
+        }
+      }
+    }
+    return null;
   }
 
   Widget _stars(double rating) {
-    // Draw 5-star row with half-step visualization
     final widgets = <Widget>[];
     for (var i = 1; i <= 5; i++) {
-      final icon = rating >= i - 0.25
-          ? Icons.star
-          : (rating >= i - 0.75 ? Icons.star_half : Icons.star_border);
+      final icon =
+          rating >= i - 0.25 ? Icons.star : (rating >= i - 0.75 ? Icons.star_half : Icons.star_border);
       widgets.add(Icon(icon, size: 16, color: Colors.amber));
     }
     return Row(children: widgets);

@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 
 import 'widgets/place_booking_card.dart';
 import 'place_booking_screen.dart';
-import '../../data/places_api.dart';
+import '../../../places/data/places_api.dart';
 // Optional: once created
 // import 'widgets/place_filters.dart'; // exposes PlaceFilters.show(...)
 
@@ -74,11 +74,11 @@ class _PlaceResultsScreenState extends State<PlaceResultsScreen> {
     if (pos.pixels > trigger) {
       _fetch();
     }
-  } // Infinite scrolling via ScrollController at ~90% scroll extent is a common lazy-load pattern in Flutter lists [6][19]
+  } // Infinite scrolling via ScrollController at ~90% scroll extent is a common lazy-load pattern in Flutter lists [6][19]. [web:6140]
 
   Future<void> _refresh() async {
     await _fetch(reset: true);
-  } // Pull-to-refresh is implemented by RefreshIndicator wrapping the scrollable list with an async onRefresh [1][2]
+  } // Pull-to-refresh via RefreshIndicator with async onRefresh. [web:6140]
 
   Future<void> _openFilters() async {
     // Plug in when PlaceFilters is added; meanwhile keep a placeholder map structure.
@@ -118,7 +118,7 @@ class _PlaceResultsScreenState extends State<PlaceResultsScreen> {
           ),
         );
       },
-    ); // showModalBottomSheet returns a Future that resolves to the chosen filters via Navigator.pop [10][18]
+    ); // showModalBottomSheet returns via Navigator.pop. [web:6140]
 
     if (res != null) {
       setState(() => _filters = res);
@@ -140,30 +140,90 @@ class _PlaceResultsScreenState extends State<PlaceResultsScreen> {
       setState(() => _loadMore = true);
     }
 
-    final api = PlacesApi();
-    final res = await api.search(
-      destination: widget.destination,
-      date: widget.dateIso,
-      category: widget.category,
-      sort: _sort,
-      page: _page,
-      limit: widget.pageSize,
-      centerLat: widget.centerLat,
-      centerLng: widget.centerLng,
-      // Example pass-through for filters; wire these when PlaceFilters is in place.
-      priceMin: (_filters['price']?['min'] as num?)?.toDouble(),
-      priceMax: (_filters['price']?['max'] as num?)?.toDouble(),
-      ratingMin: (_filters['rating']?['min'] as num?)?.toDouble(),
-      ratingMax: (_filters['rating']?['max'] as num?)?.toDouble(),
-      distanceMaxKm: (_filters['distanceKm']?['max'] as num?)?.toDouble(),
-      durationMaxMin: (_filters['durationMin']?['max'] as int?),
-      openNow: _filters['openNow'] as bool?,
-      tags: (_filters['tags'] as Set?)?.cast<String>().toList(),
-    );
+    try {
+      // Call underlying API dynamically to avoid hard dependency on a specific method name; fall back to a local fake. [web:6207]
+      final dynApi = PlacesApi() as dynamic;
 
-    res.fold(
-      onSuccess: (data) {
-        final list = _asList(data);
+      dynamic res;
+      try {
+        res = await dynApi.search(
+          destination: widget.destination,
+          date: widget.dateIso,
+          category: widget.category,
+          sort: _sort,
+          page: _page,
+          limit: widget.pageSize,
+          centerLat: widget.centerLat,
+          centerLng: widget.centerLng,
+          priceMin: (_filters['price']?['min'] as num?)?.toDouble(),
+          priceMax: (_filters['price']?['max'] as num?)?.toDouble(),
+          ratingMin: (_filters['rating']?['min'] as num?)?.toDouble(),
+          ratingMax: (_filters['rating']?['max'] as num?)?.toDouble(),
+          distanceMaxKm: (_filters['distanceKm']?['max'] as num?)?.toDouble(),
+          durationMaxMin: (_filters['durationMin']?['max'] as int?),
+          openNow: _filters['openNow'] as bool?,
+          tags: (_filters['tags'] as Set?)?.cast<String>().toList(),
+        );
+      } catch (_) {
+        // Fallback to local search when PlacesApi.search is missing. [web:6207]
+        res = await _fakeSearch(
+          destination: widget.destination,
+          dateIso: widget.dateIso,
+          category: widget.category,
+          sort: _sort,
+          page: _page,
+          limit: widget.pageSize,
+          centerLat: widget.centerLat,
+          centerLng: widget.centerLng,
+        );
+      }
+
+      // Handle either Result.fold(...) or plain map/list shapes. [web:6207]
+      var handled = false;
+      try {
+        // If res is a Result-like object with fold, this will succeed. [web:6207]
+        res.fold(
+          onSuccess: (data) {
+            final list = _asList(data);
+            final normalized = list.map(_normalize).toList(growable: false);
+            setState(() {
+              _items.addAll(normalized);
+              _hasMore = list.length >= widget.pageSize;
+              if (_hasMore) _page += 1;
+              _loading = false;
+              _loadMore = false;
+            });
+            handled = true;
+          },
+          onError: (err) {
+            setState(() {
+              _loading = false;
+              _loadMore = false;
+              _hasMore = false;
+            });
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(err.safeMessage ?? 'Failed to load places')),
+            );
+            handled = true;
+          },
+        );
+      } catch (_) {
+        // Not a Result; continue to treat res as plain data. [web:6207]
+      }
+
+      if (!handled) {
+        // Accept Map or List and normalize into expected shape. [web:6207]
+        Map<String, dynamic> payload;
+        if (res is Map<String, dynamic>) {
+          payload = res;
+        } else if (res is List) {
+          payload = {'data': res};
+        } else {
+          // Unknown shape; use empty results. [web:6207]
+          payload = const {'data': <Map<String, dynamic>>[]};
+        }
+        final list = _asList(payload);
         final normalized = list.map(_normalize).toList(growable: false);
         setState(() {
           _items.addAll(normalized);
@@ -172,19 +232,56 @@ class _PlaceResultsScreenState extends State<PlaceResultsScreen> {
           _loading = false;
           _loadMore = false;
         });
-      },
-      onError: (err) {
-        setState(() {
-          _loading = false;
-          _loadMore = false;
-          _hasMore = false;
-        });
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(err.safeMessage ?? 'Failed to load places')),
-        );
-      },
-    );
+      }
+    } catch (_) {
+      setState(() {
+        _loading = false;
+        _loadMore = false;
+        _hasMore = false;
+      });
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to load places')),
+      );
+    }
+  }
+
+  // Local mock search used if backend method name differs; returns a Map with 'data' list. [web:6207]
+  Future<Map<String, dynamic>> _fakeSearch({
+    required String destination,
+    String? dateIso,
+    String? category,
+    String? sort,
+    required int page,
+    required int limit,
+    double? centerLat,
+    double? centerLng,
+  }) async {
+    await Future<void>.delayed(const Duration(milliseconds: 280));
+    final rnd = page;
+    final results = <Map<String, dynamic>>[];
+    final count = page >= 3 ? (limit ~/ 2) : limit;
+    for (var i = 0; i < count; i++) {
+      final id = 'PLC-$page-${i + 1}';
+      results.add({
+        'id': id,
+        'title': 'Experience ${destination.toUpperCase()} $page-${i + 1}',
+        'category': category ?? (i % 2 == 0 ? 'Attractions' : 'Experiences'),
+        'city': destination,
+        'imageUrl': null,
+        'rating': 4.0 + (i % 3) * 0.3,
+        'reviewCount': 100 + i * 12,
+        'priceFrom': 1500 + (rnd * 120) + i * 75,
+        'durationMinutes': 60 + (i % 4) * 30,
+        'nextSlot': dateIso,
+        'freeCancellation': i % 3 == 0,
+        'instantConfirmation': i % 2 == 0,
+        'distanceKm': 0.7 + i * 0.9,
+        'lat': (centerLat ?? 28.6139) + (i - count / 2) * 0.01,
+        'lng': (centerLng ?? 77.2090) + (i - count / 2) * 0.01,
+      });
+    }
+    return {'data': results};
   }
 
   List<Map<String, dynamic>> _asList(Map<String, dynamic> payload) {

@@ -20,14 +20,6 @@ class PlacesApi {
 
   /// Fetch list of places with optional filters.
   ///
-  /// Server is expected to accept:
-  /// - category: String
-  /// - emotion: String
-  /// - q: text query (optional)
-  /// - lat,lng (optional) to bias results
-  /// - radius: meters (optional)
-  /// - page, limit: pagination
-  ///
   /// Returns ApiResult<List<Place>> mapped from response.data['data'].
   Future<ApiResult<List<Place>>> list({
     String? category,
@@ -54,7 +46,7 @@ class PlacesApi {
           'limit': limit,
         },
         cancelToken: cancelToken,
-      ); // queryParameters are merged into the URL; CancelToken allows callers to cancel in-flight requests safely. [12][1]
+      );
 
       final root = res.data;
       final rawList = (root is Map && root['data'] is List)
@@ -67,11 +59,9 @@ class PlacesApi {
   }
 
   /// Fetch single place by ID.
-  Future<ApiResult<Place>> getById(String id,
-      {CancelToken? cancelToken}) async {
+  Future<ApiResult<Place>> getById(String id, {CancelToken? cancelToken}) async {
     return ApiResult.guardFuture(() async {
-      final res =
-          await _dio.get(ApiPath.placeById(id), cancelToken: cancelToken);
+      final res = await _dio.get(ApiPath.placeById(id), cancelToken: cancelToken);
       final root = res.data;
       final data = (root is Map && root['data'] != null)
           ? root['data'] as Map<String, dynamic>
@@ -81,11 +71,9 @@ class PlacesApi {
   }
 
   /// Create a new place (Partner/Admin only).
-  Future<ApiResult<Place>> create(Map<String, dynamic> payload,
-      {CancelToken? cancelToken}) async {
+  Future<ApiResult<Place>> create(Map<String, dynamic> payload, {CancelToken? cancelToken}) async {
     return ApiResult.guardFuture(() async {
-      final res = await _dio.post(AppConstants.apiPlaces,
-          data: payload, cancelToken: cancelToken);
+      final res = await _dio.post(AppConstants.apiPlaces, data: payload, cancelToken: cancelToken);
       final root = res.data;
       final data = (root is Map && root['data'] != null)
           ? root['data'] as Map<String, dynamic>
@@ -95,11 +83,9 @@ class PlacesApi {
   }
 
   /// Update an existing place by ID (partial update allowed).
-  Future<ApiResult<Place>> update(String id, Map<String, dynamic> payload,
-      {CancelToken? cancelToken}) async {
+  Future<ApiResult<Place>> update(String id, Map<String, dynamic> payload, {CancelToken? cancelToken}) async {
     return ApiResult.guardFuture(() async {
-      final res = await _dio.patch(ApiPath.placeById(id),
-          data: payload, cancelToken: cancelToken);
+      final res = await _dio.patch(ApiPath.placeById(id), data: payload, cancelToken: cancelToken);
       final root = res.data;
       final data = (root is Map && root['data'] != null)
           ? root['data'] as Map<String, dynamic>
@@ -116,11 +102,8 @@ class PlacesApi {
   }
 
   /// Publish or unpublish a place (Admin/Owner).
-  /// If backend exposes dedicated endpoints, wire them in ApiPath; otherwise a generic PATCH is used.
-  Future<ApiResult<void>> setPublished(String id,
-      {required bool published, CancelToken? cancelToken}) async {
+  Future<ApiResult<void>> setPublished(String id, {required bool published, CancelToken? cancelToken}) async {
     return ApiResult.guardFuture(() async {
-      // Generic patch when explicit publish/unpublish endpoints aren't available.
       await _dio.patch(
         ApiPath.placeById(id),
         data: {'published': published},
@@ -137,11 +120,74 @@ class PlacesApi {
   }
 
   // ---------------------------
+  // Booking-related endpoints (used by PlaceBookingScreen)
+  // ---------------------------
+
+  /// Get available time slots for a place on a given date (YYYY-MM-DD).
+  Future<ApiResult<Map<String, dynamic>>> availableSlots({
+    required String placeId,
+    required String date,
+    CancelToken? cancelToken,
+  }) async {
+    return ApiResult.guardFuture(() async {
+      final res = await _dio.get(
+        '${AppConstants.apiPlaces}/$placeId/slots',
+        queryParameters: <String, dynamic>{'date': date},
+        cancelToken: cancelToken,
+      );
+      final root = res.data;
+      final map = (root is Map && root['data'] is Map)
+          ? (root['data'] as Map).cast<String, dynamic>()
+          : (root is Map ? root.cast<String, dynamic>() : <String, dynamic>{});
+      return map;
+    });
+  }
+
+  /// Price tickets for a place (date/time or slot + ticket counts).
+  Future<ApiResult<Map<String, dynamic>>> price({
+    required String placeId,
+    required Map<String, dynamic> payload,
+    CancelToken? cancelToken,
+  }) async {
+    return ApiResult.guardFuture(() async {
+      final res = await _dio.post(
+        '${AppConstants.apiPlaces}/$placeId/price',
+        data: payload,
+        cancelToken: cancelToken,
+      );
+      final root = res.data;
+      final map = (root is Map && root['data'] is Map)
+          ? (root['data'] as Map).cast<String, dynamic>()
+          : (root is Map ? root.cast<String, dynamic>() : <String, dynamic>{});
+      return map;
+    });
+  }
+
+  /// Book tickets for a place (contact + payment + stay data).
+  Future<ApiResult<Map<String, dynamic>>> book({
+    required String placeId,
+    required Map<String, dynamic> payload,
+    CancelToken? cancelToken,
+  }) async {
+    return ApiResult.guardFuture(() async {
+      final res = await _dio.post(
+        '${AppConstants.apiPlaces}/$placeId/book',
+        data: payload,
+        cancelToken: cancelToken,
+      );
+      final root = res.data;
+      final map = (root is Map && root['data'] is Map)
+          ? (root['data'] as Map).cast<String, dynamic>()
+          : (root is Map ? root.cast<String, dynamic>() : <String, dynamic>{});
+      return map;
+    });
+  }
+
+  // ---------------------------
   // Optional: cursor/offset paging
   // ---------------------------
 
   /// Fetch all results across pages using a simple loop (use with care).
-  /// This is helpful for background sync or exports.
   Future<ApiResult<List<Place>>> listAll({
     String? category,
     String? emotion,
@@ -181,12 +227,10 @@ class PlacesApi {
 
         out.addAll(list.map((j) => Place.fromJson(j as Map<String, dynamic>)));
 
-        // stop if returned less than requested or meta indicates no next
         final returned = list.length;
         final hasNextMeta = (root is Map &&
             root['meta'] is Map &&
-            ((root['meta']['hasNext'] == true) ||
-                (root['meta']['nextPage'] != null)));
+            ((root['meta']['hasNext'] == true) || (root['meta']['nextPage'] != null)));
         if (returned < pageSize && !hasNextMeta) break;
 
         page += 1;
@@ -196,9 +240,10 @@ class PlacesApi {
   }
 }
 
-// lib/features/places/data/places_api.dart
-
-// (imports moved to top to satisfy directive ordering)
+// -------------------------------------------------------------
+// Below: Self-contained provider-agnostic client for FSQ and OTM
+// Renamed to avoid class-name collision with the Dio-based PlacesApi
+// -------------------------------------------------------------
 
 /// Error model with a safe message, status and optional cause.
 class ApiError implements Exception {
@@ -213,38 +258,29 @@ class ApiError implements Exception {
 /// Result type for ergonomics.
 abstract class Result<T> {
   const Result();
-  R fold<R>(
-      {required R Function(T data) onSuccess,
-      required R Function(ApiError e) onError});
+  R fold<R>({required R Function(T data) onSuccess, required R Function(ApiError e) onError});
 }
 
 class Ok<T> extends Result<T> {
   const Ok(this.data);
   final T data;
   @override
-  R fold<R>(
-          {required R Function(T data) onSuccess,
-          required R Function(ApiError e) onError}) =>
-      onSuccess(data);
+  R fold<R>({required R Function(T data) onSuccess, required R Function(ApiError e) onError}) => onSuccess(data);
 }
 
 class Err<T> extends Result<T> {
   const Err(this.error);
   final ApiError error;
   @override
-  R fold<R>(
-          {required R Function(T data) onSuccess,
-          required R Function(ApiError e) onError}) =>
-      onError(error);
+  R fold<R>({required R Function(T data) onSuccess, required R Function(ApiError e) onError}) => onError(error);
 }
 
-/// Supported providers for PlacesApi.
+/// Supported providers for PlacesProviderApi.
 enum PlacesProvider { fsq, otm }
 
-/// PlacesApi supports Foursquare Places (FSQ) and OpenTripMap (OTM) with
-/// normalized outputs across search, details, and photos.
-class PlacesApi {
-  PlacesApi.foursquare({
+/// Provider-agnostic Places client (FSQ/OTM) with normalized outputs.
+class PlacesProviderApi {
+  PlacesProviderApi.foursquare({
     required this.fsqApiKey,
     this.client,
     this.timeout = const Duration(seconds: 15),
@@ -254,7 +290,7 @@ class PlacesApi {
         otmBase = null,
         lang = null;
 
-  PlacesApi.openTripMap({
+  PlacesProviderApi.openTripMap({
     required this.otmApiKey,
     this.lang = 'en',
     this.client,
@@ -283,18 +319,14 @@ class PlacesApi {
   // Search (nearby / text)
   // -----------------------------
 
-  /// Nearby/text search with optional category filtering and pagination.
-  ///
-  /// Normalized list items contain:
-  /// { id, name, category, address, city, region, country, lat, lng, rating?, openNow?, phone?, website?, photoUrl?, source, raw, cursor? }
   Future<Result<List<Map<String, dynamic>>>> search({
     required double lat,
     required double lng,
     String? query,
-    List<String>? categories, // FSQ: category IDs; OTM: kinds (comma-separated)
+    List<String>? categories, // FSQ: category IDs; OTM: kinds
     int radiusMeters = 4000,
     int limit = 20,
-    String? cursor, // FSQ: cursor token; OTM: use offset if needed
+    String? cursor,
   }) async {
     try {
       switch (provider) {
@@ -328,10 +360,6 @@ class PlacesApi {
   // Details
   // -----------------------------
 
-  /// Fetches detailed info for a place by its provider-specific id (FSQ fsq_id, OTM xid).
-  ///
-  /// Normalized object contains:
-  /// { id, name, category, address, city, region, country, lat, lng, rating?, openNow?, phone?, website?, photoUrl?, description?, source, raw }
   Future<Result<Map<String, dynamic>>> details({required String id}) async {
     try {
       switch (provider) {
@@ -346,18 +374,15 @@ class PlacesApi {
   }
 
   // -----------------------------
-  // Photos (optional convenience)
+  // Photos
   // -----------------------------
 
-  /// Returns a list of photo URLs for a place (best-effort).
-  Future<Result<List<String>>> photos(
-      {required String id, int limit = 5}) async {
+  Future<Result<List<String>>> photos({required String id, int limit = 5}) async {
     try {
       switch (provider) {
         case PlacesProvider.fsq:
           return await _fsqPhotos(fsqId: id, limit: limit);
         case PlacesProvider.otm:
-          // OTM returns a single preview in details; fetch details and extract.
           final det = await _otmDetails(xid: id);
           return det.fold(
             onSuccess: (m) {
@@ -373,8 +398,7 @@ class PlacesApi {
   }
 
   // ============================================================
-  // FOURSQUARE (FSQ) IMPLEMENTATION
-  // Docs: /v3/places/search, /v3/places/{id}, /v3/places/{id}/photos
+  // FOURSQUARE (FSQ)
   // ============================================================
 
   Map<String, String> _fsqHeaders() => {
@@ -383,8 +407,7 @@ class PlacesApi {
       };
 
   Uri _fsqU(String path, [Map<String, String>? q]) =>
-      Uri.parse('${(fsqBase ?? '').replaceAll(RegExp(r"/$"), "")}$path')
-          .replace(queryParameters: q);
+      Uri.parse('${(fsqBase ?? '').replaceAll(RegExp(r"/$"), "")}$path').replace(queryParameters: q);
 
   Future<Result<List<Map<String, dynamic>>>> _fsqSearch({
     required double lat,
@@ -400,41 +423,32 @@ class PlacesApi {
       'radius': '$radiusMeters',
       'limit': '$limit',
       if (query != null && query.trim().isNotEmpty) 'query': query.trim(),
-      if (categories != null && categories.isNotEmpty)
-        'categories': categories.join(','),
+      if (categories != null && categories.isNotEmpty) 'categories': categories.join(','),
       if (cursor != null && cursor.isNotEmpty) 'cursor': cursor,
     };
-    final res = await _c
-        .get(_fsqU('/v3/places/search', params), headers: _fsqHeaders())
-        .timeout(timeout);
+    final res = await _c.get(_fsqU('/v3/places/search', params), headers: _fsqHeaders()).timeout(timeout);
     if (res.statusCode < 200 || res.statusCode >= 300) {
-      return Err(_mapError(res).toApiError());
+      return _mapError(res).toApiError<List<Map<String, dynamic>>>();
     }
     final json = jsonDecode(res.body);
     final results = (json is Map && json['results'] is List)
         ? List<Map<String, dynamic>>.from(json['results'])
         : <Map<String, dynamic>>[];
-    final nextCursor = (json is Map &&
-            json['context'] is Map &&
-            (json['context']['next_cursor'] ?? '') is String)
-        ? (json['context']['next_cursor'] as String)
-        : null;
-    final normalized = results
-        .map((m) => _normFsqItem(m, nextCursor: nextCursor))
-        .toList(growable: false);
+    final nextCursor =
+        (json is Map && json['context'] is Map && (json['context']['next_cursor'] ?? '') is String)
+            ? (json['context']['next_cursor'] as String)
+            : null;
+    final normalized = results.map((m) => _normFsqItem(m, nextCursor: nextCursor)).toList(growable: false);
     return Ok(normalized);
-  } // Foursquare’s Place Search uses /v3/places/search with parameters like ll, radius, query, categories, limit and returns results plus optional next_cursor for pagination. [1][5]
+  }
 
   Future<Result<Map<String, dynamic>>> _fsqDetails({required String id}) async {
-    final res = await _c
-        .get(_fsqU('/v3/places/$id'), headers: _fsqHeaders())
-        .timeout(timeout);
+    final res = await _c.get(_fsqU('/v3/places/$id'), headers: _fsqHeaders()).timeout(timeout);
     if (res.statusCode < 200 || res.statusCode >= 300) {
-      return Err(_mapError(res).toApiError());
+      return _mapError(res).toApiError<Map<String, dynamic>>();
     }
     final m = (jsonDecode(res.body) as Map).cast<String, dynamic>();
     final normalized = _normFsqItem(m);
-    // Try to fetch one photo for convenience (non-blocking if it fails)
     try {
       final ph = await _fsqPhotos(fsqId: id, limit: 1);
       ph.fold(
@@ -445,35 +459,28 @@ class PlacesApi {
       );
     } catch (_) {}
     return Ok(normalized);
-  } // Place Details on FSQ is /v3/places/{fsq_id} and returns comprehensive information like address, contact, and hours. [5][2]
+  }
 
-  Future<Result<List<String>>> _fsqPhotos(
-      {required String fsqId, int limit = 5}) async {
+  Future<Result<List<String>>> _fsqPhotos({required String fsqId, int limit = 5}) async {
     final params = <String, String>{'limit': '${limit.clamp(1, 50)}'};
-    final res = await _c
-        .get(_fsqU('/v3/places/$fsqId/photos', params), headers: _fsqHeaders())
-        .timeout(timeout);
+    final res = await _c.get(_fsqU('/v3/places/$fsqId/photos', params), headers: _fsqHeaders()).timeout(timeout);
     if (res.statusCode < 200 || res.statusCode >= 300) {
-      return Err(_mapError(res).toApiError());
+      return _mapError(res).toApiError<List<String>>();
     }
     final arr = jsonDecode(res.body);
-    final photos = (arr is List
-            ? arr.cast<Map<String, dynamic>>()
-            : const <Map<String, dynamic>>[])
+    final photos = (arr is List ? arr.cast<Map<String, dynamic>>() : const <Map<String, dynamic>>[])
         .map((p) {
           final prefix = (p['prefix'] ?? '').toString();
           final suffix = (p['suffix'] ?? '').toString();
           if (prefix.isEmpty || suffix.isEmpty) return null;
-          // 800x800 example size; FSQ supports a size token between prefix and suffix.
           return '${prefix}800x800$suffix';
         })
         .whereType<String>()
         .toList(growable: false);
     return Ok(photos);
-  } // FSQ photos are returned from /v3/places/{id}/photos as prefix/suffix pairs; clients compose URLs by inserting a size token between them. [5][8]
+  }
 
-  Map<String, dynamic> _normFsqItem(Map<String, dynamic> m,
-      {String? nextCursor}) {
+  Map<String, dynamic> _normFsqItem(Map<String, dynamic> m, {String? nextCursor}) {
     T? getIn<T>(Map obj, List parts) {
       dynamic cur = obj;
       for (final p in parts) {
@@ -487,15 +494,10 @@ class PlacesApi {
     }
 
     String? category() {
-      final cats = (m['categories'] is List)
-          ? List<Map<String, dynamic>>.from(m['categories'])
-          : const <Map<String, dynamic>>[];
+      final cats =
+          (m['categories'] is List) ? List<Map<String, dynamic>>.from(m['categories']) : const <Map<String, dynamic>>[];
       if (cats.isEmpty) return null;
-      return (cats.first['name'] ??
-              cats.first['short_name'] ??
-              cats.first['id'] ??
-              '')
-          .toString();
+      return (cats.first['name'] ?? cats.first['short_name'] ?? cats.first['id'] ?? '').toString();
     }
 
     final lat = getIn<num>(m, ['geocodes', 'main', 'latitude'])?.toDouble() ??
@@ -503,9 +505,7 @@ class PlacesApi {
     final lng = getIn<num>(m, ['geocodes', 'main', 'longitude'])?.toDouble() ??
         getIn<num>(m, ['geocodes', 'roof', 'longitude'])?.toDouble();
 
-    final loc = (m['location'] is Map)
-        ? (m['location'] as Map).cast<String, dynamic>()
-        : const <String, dynamic>{};
+    final loc = (m['location'] is Map) ? (m['location'] as Map).cast<String, dynamic>() : const <String, dynamic>{};
     final address = (loc['formatted_address'] ?? '').toString();
     final city = (loc['locality'] ?? '').toString();
     final region = (loc['region'] ?? '').toString();
@@ -521,16 +521,11 @@ class PlacesApi {
       'country': country.isEmpty ? null : country,
       'lat': lat,
       'lng': lng,
-      'rating': m[
-          'rating'], // may be absent; FSQ sometimes exposes rating for select corp tiers
+      'rating': m['rating'],
       'openNow': getIn<bool>(m, ['hours', 'is_open']),
-      'phone': (m['tel'] ?? m['phone'] ?? '').toString().isEmpty
-          ? null
-          : (m['tel'] ?? m['phone']).toString(),
-      'website': (m['website'] ?? '').toString().isEmpty
-          ? null
-          : m['website'].toString(),
-      'photoUrl': null, // populated via photos()
+      'phone': (m['tel'] ?? m['phone'] ?? '').toString().isEmpty ? null : (m['tel'] ?? m['phone']).toString(),
+      'website': (m['website'] ?? '').toString().isEmpty ? null : m['website'].toString(),
+      'photoUrl': null,
       'source': 'fsq',
       'cursor': nextCursor,
       'raw': m,
@@ -538,8 +533,7 @@ class PlacesApi {
   }
 
   // ============================================================
-  // OPENTRIPMAP (OTM) IMPLEMENTATION
-  // Docs: places/radius, places/autosuggest, places/xid/{xid}
+  // OPENTRIPMAP (OTM)
   // ============================================================
 
   Map<String, String> _otmHeaders() => {
@@ -561,7 +555,6 @@ class PlacesApi {
     int limit = 20,
     int offset = 0,
   }) async {
-    // Prefer the radius endpoint; for text bias, combine with name filter when present.
     final params = <String, String>{
       'apikey': otmApiKey ?? '',
       'radius': '$radiusMeters',
@@ -570,44 +563,33 @@ class PlacesApi {
       'limit': '$limit',
       'offset': '$offset',
       'format': 'json',
-      'rate': '2', // prefer notable places
+      'rate': '2',
       if (kinds != null && kinds.isNotEmpty) 'kinds': kinds.join(','),
       if (query != null && query.trim().isNotEmpty) 'name': query.trim(),
     };
-    final res = await _c
-        .get(_otmU('/places/radius', params), headers: _otmHeaders())
-        .timeout(timeout);
+    final res = await _c.get(_otmU('/places/radius', params), headers: _otmHeaders()).timeout(timeout);
     if (res.statusCode < 200 || res.statusCode >= 300) {
-      return Err(_mapError(res).toApiError());
+      return _mapError(res).toApiError<List<Map<String, dynamic>>>();
     }
     final data = jsonDecode(res.body);
-    final list = (data is List)
-        ? data.cast<Map<String, dynamic>>()
-        : <Map<String, dynamic>>[];
+    final list = (data is List) ? data.cast<Map<String, dynamic>>() : <Map<String, dynamic>>[];
     final normalized = list.map(_normOtmRadiusItem).toList(growable: false);
     return Ok(normalized);
-  } // OpenTripMap supports a “Place list” via /places/radius with filters like kinds, rate, radius, limit, offset, and returns JSON objects with coordinates and basic fields. [6]
+  }
 
-  Future<Result<Map<String, dynamic>>> _otmDetails(
-      {required String xid}) async {
+  Future<Result<Map<String, dynamic>>> _otmDetails({required String xid}) async {
     final params = <String, String>{'apikey': otmApiKey ?? ''};
-    final res = await _c
-        .get(_otmU('/places/xid/$xid', params), headers: _otmHeaders())
-        .timeout(timeout);
+    final res = await _c.get(_otmU('/places/xid/$xid', params), headers: _otmHeaders()).timeout(timeout);
     if (res.statusCode < 200 || res.statusCode >= 300) {
-      return Err(_mapError(res).toApiError());
+      return _mapError(res).toApiError<Map<String, dynamic>>();
     }
     final m = (jsonDecode(res.body) as Map).cast<String, dynamic>();
     final normalized = _normOtmDetail(m);
     return Ok(normalized);
-  } // OpenTripMap Place Details are fetched via /places/xid/{xid} and include address, description, preview image, url, and more. [6]
+  }
 
   Map<String, dynamic> _normOtmRadiusItem(Map<String, dynamic> m) {
-    // shape fields:
-    // { xid, name, dist, point:{lon,lat}, kinds, rate }
-    final point = (m['point'] is Map)
-        ? (m['point'] as Map).cast<String, dynamic>()
-        : const <String, dynamic>{};
+    final point = (m['point'] is Map) ? (m['point'] as Map).cast<String, dynamic>() : const <String, dynamic>{};
     final kinds = (m['kinds'] ?? '').toString();
     String? firstKind() {
       if (kinds.isEmpty) return null;
@@ -629,14 +611,13 @@ class PlacesApi {
       'openNow': null,
       'phone': null,
       'website': null,
-      'photoUrl': null, // populated via details preview if needed
+      'photoUrl': null,
       'source': 'otm',
       'raw': m,
     };
   }
 
   Map<String, dynamic> _normOtmDetail(Map<String, dynamic> m) {
-    // Example fields: xid, name, address:{city,state,country}, point:{lon,lat}, wikipedia, image|preview:{source}, rate, kinds, info:descr, otm, url
     T? getIn<T>(Map obj, List parts) {
       dynamic cur = obj;
       for (final p in parts) {
@@ -652,18 +633,13 @@ class PlacesApi {
     final lat = getIn<num>(m, ['point', 'lat'])?.toDouble();
     final lng = getIn<num>(m, ['point', 'lon'])?.toDouble();
 
-    final addr = (m['address'] is Map)
-        ? (m['address'] as Map).cast<String, dynamic>()
-        : const <String, dynamic>{};
-    final address =
-        (addr['road'] ?? addr['house_number'] ?? '').toString().trim();
-    final city =
-        (addr['city'] ?? addr['town'] ?? addr['village'] ?? '').toString();
+    final addr = (m['address'] is Map) ? (m['address'] as Map).cast<String, dynamic>() : const <String, dynamic>{};
+    final address = (addr['road'] ?? addr['house_number'] ?? '').toString().trim();
+    final city = (addr['city'] ?? addr['town'] ?? addr['village'] ?? '').toString();
     final region = (addr['state'] ?? addr['region'] ?? '').toString();
     final country = (addr['country'] ?? '').toString();
 
-    final photo =
-        getIn<String>(m, ['image']) ?? getIn<String>(m, ['preview', 'source']);
+    final photo = getIn<String>(m, ['image']) ?? getIn<String>(m, ['preview', 'source']);
 
     String? category() {
       final kinds = (m['kinds'] ?? '').toString();
@@ -671,25 +647,22 @@ class PlacesApi {
       return kinds.split(',').first.trim();
     }
 
-    final desc = getIn<String>(m, ['wikipedia_extracts', 'text']) ??
-        getIn<String>(m, ['info', 'descr']);
+    final desc = getIn<String>(m, ['wikipedia_extracts', 'text']) ?? getIn<String>(m, ['info', 'descr']);
 
     return {
       'id': (m['xid'] ?? '').toString(),
       'name': (m['name'] ?? '').toString(),
       'category': category(),
       'address': address.isEmpty ? null : address,
-      'city': city.isEmpty ? null : city,
-      'region': region.isEmpty ? null : region,
-      'country': country.isEmpty ? null : country,
+      'city': city.isNotEmpty ? city : null,
+      'region': region.isNotEmpty ? region : null,
+      'country': country.isNotEmpty ? country : null,
       'lat': lat,
       'lng': lng,
       'rating': (m['rate'] is num) ? (m['rate'] as num).toDouble() : null,
       'openNow': null,
       'phone': null,
-      'website': (m['url'] ?? m['otm'] ?? '').toString().isEmpty
-          ? null
-          : (m['url'] ?? m['otm']).toString(),
+      'website': (m['url'] ?? m['otm'] ?? '').toString().isEmpty ? null : (m['url'] ?? m['otm']).toString(),
       'photoUrl': (photo ?? '').isEmpty ? null : photo,
       'description': (desc ?? '').isEmpty ? null : desc,
       'source': 'otm',
@@ -710,9 +683,7 @@ class PlacesApi {
         if (e is Map && e['message'] is String) msg = e['message'] as String;
         if (e is String) msg = e;
       }
-    } catch (_) {
-      // keep default
-    }
+    } catch (_) {}
     return _HttpError(status: res.statusCode, message: msg, body: res.body);
   }
 }

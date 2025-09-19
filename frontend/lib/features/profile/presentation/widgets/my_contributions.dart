@@ -104,9 +104,24 @@ class _MyContributionsState extends State<MyContributions> with TickerProviderSt
   @override
   void initState() {
     super.initState();
-    _placesScroll.addListener(() => _maybeLoadMore(_placesScroll, widget.onPlacesLoadMore, widget.placesHasMore, widget.placesLoading));
-    _reviewsScroll.addListener(() => _maybeLoadMore(_reviewsScroll, widget.onReviewsLoadMore, widget.reviewsHasMore, widget.reviewsLoading));
-    _photosScroll.addListener(() => _maybeLoadMore(_photosScroll, widget.onPhotosLoadMore, widget.photosHasMore, widget.photosLoading));
+    _placesScroll.addListener(() => _maybeLoadMore(
+          _placesScroll,
+          widget.onPlacesLoadMore,
+          widget.placesHasMore,
+          widget.placesLoading,
+        ));
+    _reviewsScroll.addListener(() => _maybeLoadMore(
+          _reviewsScroll,
+          widget.onReviewsLoadMore,
+          widget.reviewsHasMore,
+          widget.reviewsLoading,
+        ));
+    _photosScroll.addListener(() => _maybeLoadMore(
+          _photosScroll,
+          widget.onPhotosLoadMore,
+          widget.photosHasMore,
+          widget.photosLoading,
+        ));
   }
 
   @override
@@ -117,13 +132,18 @@ class _MyContributionsState extends State<MyContributions> with TickerProviderSt
     super.dispose();
   }
 
-  void _maybeLoadMore(ScrollController c, Future<void> Function()? loadMore, bool hasMore, bool loading) {
+  void _maybeLoadMore(
+    ScrollController c,
+    Future<void> Function()? loadMore,
+    bool hasMore,
+    bool loading,
+  ) {
     if (loadMore == null) return;
     if (!hasMore || loading) return;
     if (c.position.pixels >= c.position.maxScrollExtent - 480) {
       loadMore();
     }
-  } // Infinite scroll loads more when nearing the end of the scroll extent, a standard pattern for progressive lists. [3][4]
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -144,13 +164,25 @@ class _MyContributionsState extends State<MyContributions> with TickerProviderSt
                     child: Text('My contributions', style: TextStyle(fontWeight: FontWeight.w800)),
                   ),
                   if (widget.onAddPlace != null)
-                    OutlinedButton.icon(onPressed: widget.onAddPlace, icon: const Icon(Icons.add_location_alt_outlined), label: const Text('Add place')),
+                    OutlinedButton.icon(
+                      onPressed: widget.onAddPlace,
+                      icon: const Icon(Icons.add_location_alt_outlined),
+                      label: const Text('Add place'),
+                    ),
                   if (widget.onWriteReview != null) const SizedBox(width: 8),
                   if (widget.onWriteReview != null)
-                    OutlinedButton.icon(onPressed: widget.onWriteReview, icon: const Icon(Icons.rate_review_outlined), label: const Text('Write review')),
+                    OutlinedButton.icon(
+                      onPressed: widget.onWriteReview,
+                      icon: const Icon(Icons.rate_review_outlined),
+                      label: const Text('Write review'),
+                    ),
                   if (widget.onUploadPhoto != null) const SizedBox(width: 8),
                   if (widget.onUploadPhoto != null)
-                    OutlinedButton.icon(onPressed: widget.onUploadPhoto, icon: const Icon(Icons.add_a_photo_outlined), label: const Text('Upload')),
+                    OutlinedButton.icon(
+                      onPressed: widget.onUploadPhoto,
+                      icon: const Icon(Icons.add_a_photo_outlined),
+                      label: const Text('Upload'),
+                    ),
                 ],
               ),
 
@@ -173,7 +205,7 @@ class _MyContributionsState extends State<MyContributions> with TickerProviderSt
                   Tab(icon: Icon(Icons.reviews_outlined), text: 'Reviews'),
                   Tab(icon: Icon(Icons.photo_library_outlined), text: 'Photos'),
                 ],
-              ), // TabBar provides a primary navigation affordance for switching panes in a page. [5][6]
+              ),
 
               const SizedBox(height: 8),
 
@@ -185,7 +217,7 @@ class _MyContributionsState extends State<MyContributions> with TickerProviderSt
                     _buildReviewsTab(context),
                     _buildPhotosTab(context),
                   ],
-                ), // TabBarView pairs with TabBar to present each tab’s content with swipe gesture support. [5][6]
+                ),
               ),
             ],
           ),
@@ -205,10 +237,12 @@ class _MyContributionsState extends State<MyContributions> with TickerProviderSt
             padding: const EdgeInsets.fromLTRB(4, 4, 4, 4),
             sliver: _placesGrid(),
           ),
-          SliverToBoxAdapter(child: _footer(widget.placesLoading, widget.placesHasMore, widget.places.isEmpty)),
+          SliverToBoxAdapter(
+            child: _footer(widget.placesLoading, widget.placesHasMore, widget.places.isEmpty),
+          ),
         ],
       ),
-    ); // RefreshIndicator adds pull-to-refresh behavior to the scrollable tab content. [7][8]
+    );
   }
 
   SliverGrid _placesGrid() {
@@ -223,35 +257,75 @@ class _MyContributionsState extends State<MyContributions> with TickerProviderSt
       delegate: SliverChildBuilderDelegate(
         (context, i) {
           final p = items[i];
-          final map = {
-            '_id': p.id,
-            'id': p.id,
-            'name': p.name,
-            'coverImage': (p.photos != null && p.photos!.isNotEmpty) ? p.photos!.first : null,
-            'photos': p.photos,
-            'category': (p.categories != null && p.categories!.isNotEmpty) ? p.categories!.first : null,
-            'emotion': p.emotion,
-            'rating': p.rating,
-            'reviewsCount': p.reviewsCount,
-            'lat': p.lat,
-            'lng': p.lng,
-            'isApproved': p.isApproved,
-            'isWishlisted': p.isFavorite,
-          };
-          return PlaceCard(
-            place: map,
-            originLat: widget.originLat,
-            originLng: widget.originLng,
-            onToggleWishlist: () async {
-              if (widget.onToggleWishlist != null) {
-                await widget.onToggleWishlist!(p);
+
+          // Read a flexible JSON map from Place.
+          Map<String, dynamic> j = const <String, dynamic>{};
+          try {
+            final dyn = p as dynamic;
+            final raw = dyn.toJson();
+            if (raw is Map<String, dynamic>) j = raw;
+          } catch (_) {}
+
+          T? pick<T>(List<String> keys) {
+            for (final k in keys) {
+              final v = j[k];
+              if (v is T) return v;
+              if (T == double && v is num) return v.toDouble() as T;
+              if (T == double && v is String) {
+                final d = double.tryParse(v);
+                if (d != null) return d as T;
               }
-            },
+              if (T == String && v != null) return v.toString() as T;
+              if (T == bool && v is String) {
+                final s = v.toLowerCase();
+                if (s == 'true') return true as T;
+                if (s == 'false') return false as T;
+              }
+            }
+            return null;
+          }
+
+          List<dynamic> listOf(dynamic v) {
+            if (v is List) return v;
+            return const <dynamic>[];
+          }
+
+          final photos = listOf(j['photos'] ?? j['images'] ?? j['gallery']);
+          final categories = listOf(j['categories'] ?? j['tags'] ?? j['types']);
+          final map = {
+            '_id': j['_id'] ?? j['id'] ?? j['placeId'],
+            'id': j['id'] ?? j['_id'] ?? j['placeId'],
+            'name': j['name'] ?? j['title'] ?? j['label'],
+            'coverImage': photos.isNotEmpty ? photos.first : null,
+            'photos': photos,
+            'category': categories.isNotEmpty ? categories.first : null,
+            'emotion': j['emotion'],
+            'rating': pick<num>(['rating', 'avgRating', 'averageRating']),
+            'reviewsCount': pick<num>(['reviewsCount', 'reviewCount', 'reviews']),
+            'lat': pick<double>(['lat', 'latitude', 'coord_lat', 'location_lat']),
+            'lng': pick<double>(['lng', 'lon', 'longitude', 'coord_lng', 'location_lng']),
+            'isApproved': pick<bool>(['isApproved', 'approved']),
+            'isWishlisted': pick<bool>(['isFavorite', 'wishlisted', 'isWishlisted']),
+          };
+
+          // Wrap PlaceCard to handle taps externally (no onTap in PlaceCard).
+          return GestureDetector(
+            onTap: widget.onOpenPlace == null ? null : () => widget.onOpenPlace!(p),
+            child: PlaceCard(
+              place: map,
+              originLat: widget.originLat,
+              originLng: widget.originLng,
+              onToggleWishlist: () async {
+                if (widget.onToggleWishlist != null) {
+                  await widget.onToggleWishlist!(p);
+                }
+              },
+            ),
           );
         },
         childCount: items.length,
       ),
-    ); // SliverGrid efficiently builds a responsive grid of cards for large item sets. [9][10]
+    );
   }
 
   // ----------------- REVIEWS -----------------
@@ -269,19 +343,45 @@ class _MyContributionsState extends State<MyContributions> with TickerProviderSt
             return _footer(widget.reviewsLoading, widget.reviewsHasMore, items.isEmpty);
           }
           final r = items[i];
+
+          Map<String, dynamic> j = const <String, dynamic>{};
+          try {
+            final dyn = r as dynamic;
+            final raw = dyn.toJson();
+            if (raw is Map<String, dynamic>) j = raw;
+          } catch (_) {}
+
+          String titleOf() {
+            final v = j['title'] ??
+                j['headline'] ??
+                j['placeName'] ??
+                j['subject'] ??
+                '';
+            return v?.toString() ?? '';
+          }
+
+          String subtitleOf() {
+            final v = j['subtitle'] ??
+                j['text'] ??
+                j['comment'] ??
+                j['body'] ??
+                '';
+            return v?.toString() ?? '';
+          }
+
           return ListTile(
             leading: const CircleAvatar(
               backgroundColor: Colors.black12,
               child: Icon(Icons.rate_review_outlined, color: Colors.black54),
             ),
-            title: Text(r.title, maxLines: 1, overflow: TextOverflow.ellipsis),
-            subtitle: Text(r.subtitle, maxLines: 2, overflow: TextOverflow.ellipsis),
+            title: Text(titleOf(), maxLines: 1, overflow: TextOverflow.ellipsis),
+            subtitle: Text(subtitleOf(), maxLines: 2, overflow: TextOverflow.ellipsis),
             trailing: const Icon(Icons.open_in_new),
             onTap: widget.onOpenReviewTarget == null ? null : () => widget.onOpenReviewTarget!(r),
           );
         },
       ),
-    ); // ListView.separated inserts uniform dividers and remains efficient for long, scrollable lists. [2][11]
+    );
   }
 
   // ----------------- PHOTOS -----------------
@@ -305,7 +405,19 @@ class _MyContributionsState extends State<MyContributions> with TickerProviderSt
                   final url = urls[i];
                   final tag = '${widget.heroPrefix}-photo-$i';
                   return GestureDetector(
-                    onTap: widget.onOpenPhotoIndex == null ? null : () => widget.onOpenPhotoIndex!(i),
+                    onTap: () async {
+                      if (widget.onOpenPhotoIndex != null) {
+                        // Do not await a void callback.
+                        widget.onOpenPhotoIndex!(i);
+                        return;
+                      }
+                      // Open full-screen PhotoGallery; this widget in this codebase requires imageUrls.
+                      await Navigator.of(context).push(MaterialPageRoute<void>(
+                        builder: (_) => PhotoGallery(
+                          imageUrls: urls,
+                        ),
+                      ));
+                    },
                     child: Hero(
                       tag: tag,
                       child: ClipRRect(
@@ -327,10 +439,12 @@ class _MyContributionsState extends State<MyContributions> with TickerProviderSt
               ),
             ),
           ),
-          SliverToBoxAdapter(child: _footer(widget.photosLoading, widget.photosHasMore, urls.isEmpty)),
+          SliverToBoxAdapter(
+            child: _footer(widget.photosLoading, widget.photosHasMore, urls.isEmpty),
+          ),
         ],
       ),
-    ); // GridView/SliverGrid renders media thumbnails efficiently and pairs well with Hero for full-screen transitions. [12][13]
+    );
   }
 
   // ----------------- FOOTER -----------------

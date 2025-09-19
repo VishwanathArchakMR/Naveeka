@@ -6,7 +6,7 @@ import 'package:intl/intl.dart';
 import 'bus_results_screen.dart';
 
 class BusSearchScreen extends StatefulWidget {
-  const BusSearchScreen({
+  BusSearchScreen({
     super.key,
     this.initialFromCode,
     this.initialToCode,
@@ -53,7 +53,7 @@ class _BusSearchScreenState extends State<BusSearchScreen> {
       initialDate: _date.isBefore(now) ? now : _date,
       firstDate: DateTime(now.year, now.month, now.day),
       lastDate: now.add(const Duration(days: 365)),
-    ); // showDatePicker is the standard Material date picker API in Flutter [1]
+    ); // showDatePicker is the standard Material date picker API in Flutter
     if (picked != null) {
       setState(() => _date = DateTime(picked.year, picked.month, picked.day));
     }
@@ -68,11 +68,11 @@ class _BusSearchScreenState extends State<BusSearchScreen> {
   }
 
   void _snack(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg))); // Use ScaffoldMessenger for SnackBars [7]
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg))); // Use ScaffoldMessenger for SnackBars
   }
 
   void _submit() {
-    final ok = _formKey.currentState?.validate() ?? false; // Standard Form + GlobalKey validation flow [12]
+    final ok = _formKey.currentState?.validate() ?? false; // Standard Form + GlobalKey validation flow
     if (!ok) return;
 
     final from = _fromCtrl.text.trim().toUpperCase();
@@ -125,7 +125,7 @@ class _BusSearchScreenState extends State<BusSearchScreen> {
                       if (s.isEmpty) return 'Enter origin';
                       if (s.length < 2) return 'Too short';
                       return null;
-                    }, // Field-level validator in TextFormField is the cookbook pattern [12]
+                    }, // Field-level validator in TextFormField is the cookbook pattern
                   ),
                   const SizedBox(height: 12),
 
@@ -153,7 +153,7 @@ class _BusSearchScreenState extends State<BusSearchScreen> {
                     title: Text(df.format(_date)),
                     subtitle: const Text('Travel date'),
                     trailing: const Icon(Icons.edit_calendar_outlined),
-                  ), // Date selection via ListTile triggers showDatePicker [1]
+                  ), // Date selection via ListTile triggers showDatePicker
                 ],
               ),
             ),
@@ -166,7 +166,7 @@ class _BusSearchScreenState extends State<BusSearchScreen> {
                 icon: const Icon(Icons.search),
                 label: const Text('Search buses'),
               ),
-            ), // CTA submits the validated form and navigates to results [12][7]
+            ), // CTA submits the validated form and navigates to results
           ],
         ),
       ),

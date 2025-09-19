@@ -3,7 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../data/places_api.dart';
+// Fixed relative import: from features/journey/presentation/places to features/places/data
+import '../../../places/data/places_api.dart';
 
 class PlaceBookingScreen extends StatefulWidget {
   const PlaceBookingScreen({
@@ -85,7 +86,7 @@ class _PlaceBookingScreenState extends State<PlaceBookingScreen> {
         });
         _reprice();
       },
-      onError: (e) => _snack(e.safeMessage ?? 'Failed to load timeslots'),
+      onError: (e) => _snack(e.safeMessage),
     );
   }
 
@@ -171,7 +172,7 @@ class _PlaceBookingScreenState extends State<PlaceBookingScreen> {
       onError: (e) {
         if (!mounted) return;
         setState(() => _pricing = false);
-        _snack(e.safeMessage ?? 'Failed to fetch price');
+        _snack(e.safeMessage);
       },
     );
   }
@@ -214,7 +215,7 @@ class _PlaceBookingScreenState extends State<PlaceBookingScreen> {
         _snack('Booking confirmed');
         Navigator.of(context).maybePop(data);
       },
-      onError: (e) => _snack(e.safeMessage ?? 'Booking failed'),
+      onError: (e) => _snack(e.safeMessage),
     );
 
     if (mounted) setState(() => _submitting = false);
@@ -596,5 +597,5 @@ class _FareSummary extends StatelessWidget {
     if (v is num) return v;
     if (v is String) return num.tryParse(v);
     return null;
-    }
+  }
 }

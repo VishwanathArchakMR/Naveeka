@@ -1,5 +1,6 @@
 // lib/features/places/presentation/widgets/distance_indicator.dart
 
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../../../models/place.dart';
@@ -39,10 +40,20 @@ class DistanceIndicator extends StatelessWidget {
     int precisionMi = 1,
     String labelSuffix = 'away',
   }) {
+    // Read a flexible JSON map from Place and pick common lat/lng keys.
+    Map<String, dynamic> j = const <String, dynamic>{};
+    try {
+      final dyn = place as dynamic;
+      final m = dyn.toJson();
+      if (m is Map<String, dynamic>) j = m;
+    } catch (_) {}
+    final tLat = _parseDouble(j['lat'] ?? j['latitude'] ?? j['coord_lat'] ?? j['location_lat']);
+    final tLng = _parseDouble(j['lng'] ?? j['lon'] ?? j['longitude'] ?? j['coord_lng'] ?? j['location_lng']);
+
     return DistanceIndicator(
       key: key,
-      targetLat: place.lat,
-      targetLng: place.lng,
+      targetLat: tLat,
+      targetLng: tLng,
       originLat: originLat,
       originLng: originLng,
       unit: unit,
@@ -68,15 +79,11 @@ class DistanceIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (originLat == null ||
-        originLng == null ||
-        targetLat == null ||
-        targetLng == null) {
+    if (originLat == null || originLng == null || targetLat == null || targetLng == null) {
       return const SizedBox.shrink();
     }
 
-    final meters =
-        _haversineMeters(originLat!, originLng!, targetLat!, targetLng!);
+    final meters = _haversineMeters(originLat!, originLng!, targetLat!, targetLng!);
     final text = _formatDistance(meters);
 
     if (compact) {
@@ -102,17 +109,16 @@ class DistanceIndicator extends StatelessWidget {
   // ---------------------------
 
   // Haversine distance in meters.
-  // R ≈ 6371 km (mean Earth radius), converted to meters. [15]
-  double _haversineMeters(
-      double lat1, double lon1, double lat2, double lon2) {
+  // R ≈ 6371 km (mean Earth radius), converted to meters.
+  double _haversineMeters(double lat1, double lon1, double lat2, double lon2) {
     const R = 6371000.0; // meters
     final phi1 = _deg2rad(lat1);
     final phi2 = _deg2rad(lat2);
     final dPhi = _deg2rad(lat2 - lat1);
     final dLam = _deg2rad(lon2 - lon1);
 
-    final a = _hav(dPhi) + (Math.cos(phi1) * Math.cos(phi2) * _hav(dLam));
-    final c = 2 * Math.asin(Math.sqrt(a));
+    final a = _hav(dPhi) + (math.cos(phi1) * math.cos(phi2) * _hav(dLam));
+    final c = 2 * math.asin(math.sqrt(a));
     return R * c;
   }
 
@@ -127,7 +133,7 @@ class DistanceIndicator extends StatelessWidget {
           return '${km.toStringAsFixed(precisionKm)} km $labelSuffix';
         }
       case UnitSystem.imperial:
-        // 1 mile = 1.609344 km ≈ 0.621371 miles per km. [18]
+        // 1 mile = 1.609344 km ≈ 0.621371 miles per km.
         final miles = meters / 1000.0 * 0.621371;
         if (miles < 0.1) {
           // Show feet under ~0.1 mi for finer granularity (1 m ≈ 3.28084 ft).
@@ -142,16 +148,15 @@ class DistanceIndicator extends StatelessWidget {
   double _deg2rad(double d) => d * (3.141592653589793 / 180.0);
 
   double _hav(double x) {
-    final s = Math.sin(x / 2);
+    final s = math.sin(x / 2);
     return s * s;
   }
-}
 
-/// Small namespace for math functions to avoid dart:math name collisions in this snippet.
-class Math {
-  static double sin(double x) => _m.sin(x);
-  static double cos(double x) => _m.cos(x);
-  static double sqrt(double x) => _m.sqrt(x);
-  static double asin(double x) => _m.asin(x);
+  // Static parser for the factory.
+  static double? _parseDouble(dynamic v) {
+    if (v is double) return v;
+    if (v is int) return v.toDouble();
+    if (v is String) return double.tryParse(v);
+    return null;
+  }
 }
-

@@ -49,7 +49,8 @@ class _RefundsTabState extends State<RefundsTab> {
               padding: const EdgeInsets.all(24),
               children: [
                 const SizedBox(height: 48),
-                Icon(Icons.receipt_refund_outlined,
+                // Replaced unsupported icon with a valid Material icon.
+                Icon(Icons.receipt_long_outlined,
                     size: 48, color: Theme.of(context).colorScheme.outline),
                 const SizedBox(height: 12),
                 Text(
@@ -317,7 +318,7 @@ class _RefundRow extends StatelessWidget {
                       style: const TextStyle(color: Colors.black54)),
                 ],
               ),
-            ], // LinearProgressIndicator for in-flight refunds [1][2]
+            ],
             const SizedBox(height: 8),
             // Actions
             Row(

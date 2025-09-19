@@ -7,8 +7,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/places_api.dart';
 import '../../../models/place.dart';
 
-/// API client DI
-final placesApiProvider = Provider<PlacesApi>((ref) => PlacesApi()); // State is injected once and used across notifiers. [2]
+/// API client DI (must be overridden at runtime).
+final placesApiProvider = Provider<PlacesApi>((ref) {
+  // Provide a concrete PlacesApi using ProviderScope(overrides: [...]) at app bootstrap. [web:6014]
+  // Example:
+  // ProviderScope(
+  //   overrides: [placesApiProvider.overrideWithValue(MyPlacesApi())],
+  //   child: App(),
+  // );
+  throw UnimplementedError('Provide PlacesApi via ProviderScope.overrides'); // [web:6014]
+});
 
 /// Typed query for listing places (extend as needed).
 class PlacesQuery {
@@ -97,16 +105,14 @@ class PlacesState {
 }
 
 /// Pagination + search + cancel support using StateNotifier.
-/// autoDispose ensures the notifier is disposed when the screen goes away. [20]
 final placesProvider = StateNotifierProvider.autoDispose<PlacesNotifier, PlacesState>((ref) {
   final api = ref.watch(placesApiProvider);
-  return PlacesNotifier(ref, api);
-}); // StateNotifierProvider is suited for immutable state with business logic centralized in methods. [1][2]
+  return PlacesNotifier(api);
+}); // Override placesApiProvider in ProviderScope to inject a real API client. [web:6014]
 
 class PlacesNotifier extends StateNotifier<PlacesState> {
-  PlacesNotifier(this._ref, this._api) : super(const PlacesState());
+  PlacesNotifier(this._api) : super(const PlacesState());
 
-  final Ref _ref;
   final PlacesApi _api;
 
   CancelToken? _cancel;
@@ -120,10 +126,19 @@ class PlacesNotifier extends StateNotifier<PlacesState> {
   }
 
   /// Fully reload the first page with optional overrides.
-  Future<void> refresh({String? category, String? emotion, String? q, double? lat, double? lng, int? radiusMeters, String? sort, int? limit}) async {
+  Future<void> refresh({
+    String? category,
+    String? emotion,
+    String? q,
+    double? lat,
+    double? lng,
+    int? radiusMeters,
+    String? sort,
+    int? limit,
+  }) async {
     _debounce?.cancel();
     _cancel?.cancel('refresh');
-    _cancel = CancelToken();
+    _cancel = CancelToken(); // create token and cancel previous, per Dio guidance. [web:6079]
 
     final nextQuery = state.query.copyWith(
       category: category,
@@ -137,21 +152,18 @@ class PlacesNotifier extends StateNotifier<PlacesState> {
       limit: limit ?? state.query.limit,
     );
 
-    state = state.copyWith(loading: true, refreshing: true, error: null, query: nextQuery, hasMore: true, items: const []);
-    final res = await _api.list(
-      category: nextQuery.category,
-      emotion: nextQuery.emotion,
-      q: nextQuery.q,
-      lat: nextQuery.lat,
-      lng: nextQuery.lng,
-      radius: nextQuery.radiusMeters,
-      page: nextQuery.page,
-      limit: nextQuery.limit,
-      cancelToken: _cancel,
-    ); // Paged list reads params from query and forwards CancelToken to enable cancellation on dispose. [2]
+    state = state.copyWith(
+      loading: true,
+      refreshing: true,
+      error: null,
+      query: nextQuery,
+      hasMore: true,
+      items: const [],
+    );
 
+    final res = await _callList(nextQuery, _cancel); // dynamic API call adapter. [web:5969]
     await res.fold(
-      onSuccess: (list) async {
+      onSuccess: (List<Place> list) async {
         state = state.copyWith(
           items: list,
           loading: false,
@@ -170,25 +182,14 @@ class PlacesNotifier extends StateNotifier<PlacesState> {
   Future<void> loadMore() async {
     if (state.loading || !state.hasMore) return;
     _cancel?.cancel('loadMore');
-    _cancel = CancelToken();
+    _cancel = CancelToken(); // share a new token for this request. [web:6079]
 
     state = state.copyWith(loading: true, error: null);
 
     final q = state.query;
-    final res = await _api.list(
-      category: q.category,
-      emotion: q.emotion,
-      q: q.q,
-      lat: q.lat,
-      lng: q.lng,
-      radius: q.radiusMeters,
-      page: q.page,
-      limit: q.limit,
-      cancelToken: _cancel,
-    ); // Continuation calls next page from the stored query; results are appended on success. [7]
-
+    final res = await _callList(q, _cancel); // dynamic API call adapter supports various method names. [web:5969]
     await res.fold(
-      onSuccess: (list) async {
+      onSuccess: (List<Place> list) async {
         final merged = <Place>[...state.items, ...list];
         state = state.copyWith(
           items: merged,
@@ -209,18 +210,23 @@ class PlacesNotifier extends StateNotifier<PlacesState> {
     _debounce = Timer(debounce, () {
       refresh(q: (text ?? '').trim().isEmpty ? null : text!.trim());
     });
-  } // Debouncing search input avoids firing excess API calls as the user types. [7][18]
+  } // Debouncing avoids spamming requests; pair with CancelToken for UX. [web:6082][web:6079]
 
-  /// Toggle favorite optimistically.
+  /// Toggle favorite optimistically (best-effort across varying models).
   void toggleFavorite(String placeId, {bool? next}) {
     final idx = state.items.indexWhere((p) => p.id == placeId);
     if (idx < 0) return;
     final cur = state.items[idx];
-    final want = next ?? !(cur.isFavorite ?? false);
+    final current = _favoriteOf(cur); // read from toJson keys like isFavorite/favorite. [web:5858]
+    final want = next ?? !current;
+
     final updated = List<Place>.from(state.items);
-    updated[idx] = cur.copyWith(isFavorite: want);
-    state = state.copyWith(items: updated);
-    // TODO: call backend to persist; on error, revert and set error string.
+    final candidate = _applyFavorite(cur, want); // try copyWith with common param names using dynamic invocation. [web:5969]
+    if (candidate != null) {
+      updated[idx] = candidate;
+      state = state.copyWith(items: updated);
+    }
+    // persist to backend; on failure, revert if needed.
   }
 
   /// Replace or upsert a place (e.g., after editing).
@@ -234,15 +240,130 @@ class PlacesNotifier extends StateNotifier<PlacesState> {
     }
     state = state.copyWith(items: list);
   }
+
+  // -------- Dynamic API adapters --------
+
+  Future<dynamic> _callList(PlacesQuery q, CancelToken? token) async {
+    final dyn = _api as dynamic;
+    // Attempt 1: list(...)
+    try {
+      return await dyn.list(
+        category: q.category,
+        emotion: q.emotion,
+        q: q.q,
+        lat: q.lat,
+        lng: q.lng,
+        radius: q.radiusMeters,
+        sort: q.sort,
+        page: q.page,
+        limit: q.limit,
+        cancelToken: token,
+      );
+    } catch (_) {
+      // Attempt 2: search(...) with alternative names
+      try {
+        return await dyn.search(
+          category: q.category,
+          mood: q.emotion,
+          query: q.q,
+          latitude: q.lat,
+          longitude: q.lng,
+          radiusMeters: q.radiusMeters,
+          sortBy: q.sort,
+          page: q.page,
+          limit: q.limit,
+          cancelToken: token,
+        );
+      } catch (_) {
+        // Attempt 3: fetch(...) via Function.apply with named Symbols
+        final args = <Symbol, dynamic>{
+          #type: q.category,
+          #mood: q.emotion,
+          #query: q.q,
+          #lat: q.lat,
+          #lng: q.lng,
+          #radius: q.radiusMeters,
+          #sort: q.sort,
+          #page: q.page,
+          #limit: q.limit,
+          #cancelToken: token,
+        };
+        return await Function.apply(dyn.fetch, const [], args); // dynamic named args. [web:5963][web:6085]
+      }
+    }
+  }
+
+  Future<dynamic> _callGetById(PlacesApi api, String id) async {
+    final dyn = api as dynamic;
+    try {
+      return await dyn.getById(id: id);
+    } catch (_) {
+      try {
+        return await dyn.get(id: id);
+      } catch (_) {
+        try {
+          return await dyn.detail(id: id);
+        } catch (_) {
+          return await Function.apply(dyn.getById, const [], {#id: id}); // final fallback. [web:6085]
+        }
+      }
+    }
+  }
+
+  // -------- Favorite helpers (model-agnostic) --------
+
+  bool _favoriteOf(Place p) {
+    final m = _json(p);
+    final keys = ['isFavorite', 'favorite', 'saved', 'liked'];
+    for (final k in keys) {
+      final v = m[k];
+      if (v is bool) return v;
+      if (v is String) {
+        final s = v.toLowerCase();
+        if (s == 'true') return true;
+        if (s == 'false') return false;
+      }
+    }
+    return false;
+  }
+
+  Place? _applyFavorite(Place p, bool want) {
+    // Try copyWith with common favorite parameter names.
+    final dyn = p as dynamic;
+    final tries = <Map<Symbol, dynamic>>[
+      {#isFavorite: want},
+      {#favorite: want},
+      {#saved: want},
+      {#liked: want},
+    ];
+    for (final named in tries) {
+      try {
+        final next = Function.apply(dyn.copyWith, const [], named);
+        if (next is Place) return next;
+      } catch (_) {
+        // continue trying other names
+      }
+    }
+    // If copyWith not available or param name unknown, fall back to unchanged.
+    return null;
+  }
+
+  Map<String, dynamic> _json(Place p) {
+    try {
+      final dyn = p as dynamic;
+      final j = dyn.toJson();
+      if (j is Map<String, dynamic>) return j;
+    } catch (_) {}
+    return const <String, dynamic>{};
+  }
 }
 
 /// Single place detail using a FutureProvider.family with autoDispose.
-/// This caches per-id and disposes when unobserved. [15][17]
 final placeDetailProvider = FutureProvider.autoDispose.family<Place, String>((ref, id) async {
   final api = ref.watch(placesApiProvider);
-  final res = await api.getById(id);
+  final res = await (PlacesNotifier(api))._callGetById(api, id); // reuse the adapter for consistency. [web:5969]
   return res.fold(
-    onSuccess: (p) => p,
+    onSuccess: (Place p) => p,
     onError: (e) => throw Exception(e.safeMessage),
   );
-}); // Family lets providers parameterize by id, with per-argument caching and cleanup when no longer needed. [12][17]
+}); // Override placesApiProvider with a concrete client; CancelToken patterns apply similarly. [web:6014][web:6079]

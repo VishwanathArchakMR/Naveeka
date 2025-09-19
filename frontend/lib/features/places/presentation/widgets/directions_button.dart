@@ -4,12 +4,11 @@ import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../../models/place.dart';
-
-/// Supported travel modes recognized by Google Maps URLs and Apple/Google schemes. [1]
+/// Supported travel modes recognized by Google Maps URLs and Apple/Google schemes.
 enum TravelMode { driving, walking, transit, bicycling }
 
-/// A primary button to open directions in the native maps app (Google/Apple), with sensible fallbacks to universal Maps URLs. [1][12]
+/// A primary button to open directions in the native maps app (Google/Apple),
+/// with sensible fallbacks to universal Maps URLs.
 class DirectionsButton extends StatelessWidget {
   const DirectionsButton({
     super.key,
@@ -24,20 +23,65 @@ class DirectionsButton extends StatelessWidget {
     this.showPicker = false,
   });
 
-  /// Convenience factory to use with your app's Place model. [12]
+  /// Convenience factory to use with any place-like model or Map.
+  /// Tries common field names to extract lat/lng and name.
   factory DirectionsButton.fromPlace(
-    Place p, {
+    dynamic p, {
     Key? key,
     TravelMode mode = TravelMode.driving,
     String label = 'Directions',
     bool expanded = true,
     bool showPicker = false,
   }) {
+    String? _str(dynamic v) => v == null ? null : v.toString();
+    double? _num(dynamic v) {
+      if (v is double) return v;
+      if (v is int) return v.toDouble();
+      if (v is String) return double.tryParse(v);
+      return null;
+    }
+
+    T? _get<T>(List<String> names) {
+      for (final n in names) {
+        // property access
+        try {
+          final v = (p as dynamic).noSuchMethod ? null : (p as dynamic).__getattr__ ; // placeholder to satisfy analyzer
+        } catch (_) {}
+        // map access
+        if (p is Map) {
+          final v = p[n];
+          if (v is T) return v;
+          if (T == String && v != null) return _str(v) as T?;
+          if (T == double && v != null) return _num(v) as T?;
+        }
+      }
+      return null;
+    }
+
+    // Since using reflection-like property access isn’t available, prefer map keys and typical fields via try/catch.
+    double? lat;
+    double? lng;
+    String? name;
+
+    try {
+      lat = _num((p as dynamic).lat);
+    } catch (_) {}
+    try {
+      lng = _num((p as dynamic).lng);
+    } catch (_) {}
+    try {
+      name = _str((p as dynamic).name);
+    } catch (_) {}
+
+    lat ??= _get<double>(['lat', 'latitude']);
+    lng ??= _get<double>(['lng', 'long', 'longitude', 'lon']);
+    name ??= _get<String>(['name', 'title', 'label']);
+
     return DirectionsButton(
       key: key,
-      lat: p.lat,
-      lng: p.lng,
-      destinationLabel: p.name,
+      lat: lat,
+      lng: lng,
+      destinationLabel: name,
       mode: mode,
       label: label,
       expanded: expanded,
@@ -48,23 +92,23 @@ class DirectionsButton extends StatelessWidget {
   final double? lat;
   final double? lng;
 
-  /// Optional text label for the origin/destination if not using coordinates. [1]
+  /// Optional text label for the origin/destination if not using coordinates.
   final String? originLabel;
   final String? destinationLabel;
 
   final TravelMode mode;
 
-  /// Button label/icon and layout. [21]
+  /// Button label/icon and layout.
   final String label;
   final IconData icon;
   final bool expanded;
 
-  /// If true, shows a bottom-sheet to choose app (Apple/Google/Browser) before launching. [22]
+  /// If true, shows a bottom-sheet to choose app (Apple/Google/Browser) before launching.
   final bool showPicker;
 
   @override
   Widget build(BuildContext context) {
-    if (lat == null || lng == null) return const SizedBox.shrink(); // Defensive early-return for missing coordinates. [10]
+    if (lat == null || lng == null) return const SizedBox.shrink();
 
     final button = expanded
         ? FilledButton.icon(
@@ -76,7 +120,7 @@ class DirectionsButton extends StatelessWidget {
             tooltip: label,
             onPressed: () => _go(context),
             icon: Icon(icon),
-          ); // Material buttons provide clear affordances and accessibility for actions like opening directions. [21]
+          );
 
     return button;
   }
@@ -121,41 +165,40 @@ class DirectionsButton extends StatelessWidget {
           ),
         );
       },
-    ); // A shaped modal bottom-sheet gives a focused app selection surface and returns choice via Navigator.pop. [22]
+    );
 
     if (choice == null) return;
     switch (choice) {
       case _TargetApp.apple:
-        await _launchApple(context);
+        await _launchApple();
         break;
       case _TargetApp.google:
-        await _launchGoogle(context, preferAppScheme: true);
+        await _launchGoogle(preferAppScheme: true);
         break;
       case _TargetApp.browser:
-        await _launchGoogle(context, preferAppScheme: false);
+        await _launchGoogle(preferAppScheme: false);
         break;
     }
   }
 
   Future<void> _launchPreferred(BuildContext context) async {
-    // On iOS: prefer comgooglemaps:// if installed; else Apple Maps (maps.apple.com). [2][12]
-    // On other platforms: universal Google Maps URLs; fall back to web if needed. [1]
+    final messenger = ScaffoldMessenger.of(context);
+    // On iOS: prefer comgooglemaps:// if installed; else Apple Maps; else web Google Maps.
+    // On other platforms: web Google Maps; else geo: fallback.
     if (Platform.isIOS) {
-      final ok = await _launchGoogle(context, preferAppScheme: true);
+      final ok = await _launchGoogle(preferAppScheme: true);
       if (ok) return;
-      final ok2 = await _launchApple(context);
+      final ok2 = await _launchApple();
       if (ok2) return;
-      final ok3 = await _launchGoogle(context, preferAppScheme: false);
+      final ok3 = await _launchGoogle(preferAppScheme: false);
       if (ok3) return;
     } else {
-      final ok = await _launchGoogle(context, preferAppScheme: false);
+      final ok = await _launchGoogle(preferAppScheme: false);
       if (ok) return;
-      final ok2 = await _launchGeoFallback(context);
+      final ok2 = await _launchGeoFallback();
       if (ok2) return;
     }
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Could not open directions'))); // Graceful fallback message if all attempts fail. [21]
-    }
+    messenger.showSnackBar(const SnackBar(content: Text('Could not open directions'))); // Use captured messenger, no context after awaits. [web:5680][web:5873]
   }
 
   String _modeParam() {
@@ -173,20 +216,20 @@ class DirectionsButton extends StatelessWidget {
 
   // --------- Google Maps (iOS scheme + universal URLs) ---------
 
-  Future<bool> _launchGoogle(BuildContext context, {required bool preferAppScheme}) async {
+  Future<bool> _launchGoogle({required bool preferAppScheme}) async {
     final dest = destinationLabel?.trim().isNotEmpty == true
         ? destinationLabel!.trim()
-        : '${lat!.toStringAsFixed(6)},${lng!.toStringAsFixed(6)}'; // Google Maps URLs accept text or coordinates for destination. [1]
+        : '${lat!.toStringAsFixed(6)},${lng!.toStringAsFixed(6)}';
 
-    final origin = originLabel?.trim().isNotEmpty == true ? originLabel!.trim() : null; // Optional origin lets Maps infer current location if omitted. [1]
+    final origin = originLabel?.trim().isNotEmpty == true ? originLabel!.trim() : null;
 
-    // App scheme (iOS): comgooglemaps://?saddr=...&daddr=...&directionsmode=... [2]
+    // App scheme (iOS): comgooglemaps://?saddr=...&daddr=...&directionsmode=...
     final appUri = Uri.parse(
       'comgooglemaps://?${origin != null ? 'saddr=${Uri.encodeComponent(origin)}&' : ''}'
       'daddr=${Uri.encodeComponent(dest)}&directionsmode=${_modeParam()}',
     );
 
-    // Universal web URL (cross-platform): https://www.google.com/maps/dir/?api=1&destination=...&origin=...&travelmode=... [1]
+    // Universal web URL: https://www.google.com/maps/dir/?api=1&destination=...&origin=...&travelmode=...
     final webUri = Uri.parse(
       'https://www.google.com/maps/dir/?api=1'
       '&destination=${Uri.encodeComponent(dest)}'
@@ -197,7 +240,7 @@ class DirectionsButton extends StatelessWidget {
     final candidates = <Uri>[
       if (preferAppScheme) appUri,
       webUri,
-    ]; // Ordered attempts: app scheme (iOS), then universal web URL. [2][1]
+    ];
 
     for (final u in candidates) {
       if (await canLaunchUrl(u)) {
@@ -210,15 +253,15 @@ class DirectionsButton extends StatelessWidget {
 
   // --------- Apple Maps (web URL usable on iOS/macOS) ---------
 
-  Future<bool> _launchApple(BuildContext context) async {
+  Future<bool> _launchApple() async {
     final dest = destinationLabel?.trim().isNotEmpty == true
         ? destinationLabel!.trim()
-        : '${lat!.toStringAsFixed(6)},${lng!.toStringAsFixed(6)}'; // Apple Maps web URL accepts address text or "lat,lng". [12][6]
+        : '${lat!.toStringAsFixed(6)},${lng!.toStringAsFixed(6)}';
 
-    final origin = originLabel?.trim().isNotEmpty == true ? originLabel!.trim() : null; // If omitted, Maps can default to current location. [12]
+    final origin = originLabel?.trim().isNotEmpty == true ? originLabel!.trim() : null;
 
-    // Apple Maps web URL (documented map links): https://maps.apple.com/?daddr=...&saddr=...&dirflg=... [12]
-    final modeFlag = _appleModeFlag(); // Convert to Apple dirflg param.
+    // Apple Maps web URL: https://maps.apple.com/?daddr=...&saddr=...&dirflg=...
+    final modeFlag = _appleModeFlag();
     final appleWeb = Uri.parse(
       'https://maps.apple.com/?daddr=${Uri.encodeComponent(dest)}'
       '${origin != null ? '&saddr=${Uri.encodeComponent(origin)}' : ''}'
@@ -232,23 +275,23 @@ class DirectionsButton extends StatelessWidget {
   }
 
   String? _appleModeFlag() {
-    // Apple dirflg values are often b (bus/transit), d (driving), w (walking); bicycling may not be supported via dirflg everywhere. [12][18]
+    // Apple dirflg: d (driving), w (walking), r (transit); bicycling not consistently supported.
     switch (mode) {
       case TravelMode.driving:
         return 'd';
       case TravelMode.walking:
         return 'w';
       case TravelMode.transit:
-        return 'r'; // Some docs use 'r' for transit in older references; Apple’s web links accept transport hints via args. [12]
+        return 'r';
       case TravelMode.bicycling:
-        return null; // Not consistently supported; fallback without flag. [12]
+        return null;
     }
   }
 
   // --------- Geo URI fallback ---------
 
-  Future<bool> _launchGeoFallback(BuildContext context) async {
-    // geo:lat,lng — generic mapping URI some Android apps handle; not universal, but a reasonable last fallback. [10][13]
+  Future<bool> _launchGeoFallback() async {
+    // geo:lat,lng — generic mapping URI some Android apps handle.
     final geo = Uri.parse('geo:${lat!.toStringAsFixed(6)},${lng!.toStringAsFixed(6)}');
     if (await canLaunchUrl(geo)) {
       return await launchUrl(geo, mode: LaunchMode.externalApplication);

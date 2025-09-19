@@ -97,7 +97,7 @@ abstract class FavoritesRepository {
 /// Provide a concrete implementation at app bootstrap with overrideWithValue.
 final favoritesRepositoryProvider = Provider<FavoritesRepository>((ref) {
   throw UnimplementedError('Inject FavoritesRepository in main.dart');
-}); // A repository Provider centralizes data access and is easily overridden for tests/boot. [22][8]
+}); // A repository Provider centralizes data access and is easily overridden for tests/boot. [web:5786]
 
 /// Stateless filter for listing favorites (used by family providers).
 @immutable
@@ -143,7 +143,7 @@ final favoritesFirstPageProvider = FutureProvider.family.autoDispose<FavoritesPa
     query: (q.search ?? '').trim().isEmpty ? null : q.search!.trim(),
   );
   return page;
-}); // FutureProvider.family is ideal for parameterized, cached async fetches. [22][23]
+}); // FutureProvider.family is ideal for parameterized, cached async fetches. [web:5774]
 
 /// Paging + cache + optimistic toggle: controller holds current list and cursor.
 @immutable
@@ -184,9 +184,9 @@ class FavoritesController extends AsyncNotifier<FavoritesState> {
 
   @override
   FutureOr<FavoritesState> build() async {
-    // If a query was provided via init(query), use it; otherwise stay empty until init() called.
+    // If a query was provided via init(query), use it; otherwise stay empty until init() called. [web:5774]
     return FavoritesState.empty;
-  } // AsyncNotifier build provides AsyncValue and access to ref for reads/side-effects. [21][24]
+  }
 
   /// Optional one-time initializer to set filters and prefetch.
   Future<void> init(FavoritesQuery query) async {
@@ -201,10 +201,10 @@ class FavoritesController extends AsyncNotifier<FavoritesState> {
           cursor: null,
           limit: _q.pageSize,
           tags: _q.tags.isEmpty ? null : _q.tags,
-          query: ( _q.search ?? '').trim().isEmpty ? null : _q.search!.trim(),
+          query: (_q.search ?? '').trim().isEmpty ? null : _q.search!.trim(),
         ));
-    state = res.whenData((page) => AsyncData(FavoritesState(items: page.items, cursor: page.nextCursor, loading: false)).value);
-  }
+    state = res.whenData((page) => FavoritesState(items: page.items, cursor: page.nextCursor, loading: false));
+  } // Use whenData to map AsyncValue<FavoritesPage> into AsyncValue<FavoritesState>. [web:5774]
 
   Future<void> loadMore() async {
     final current = state.valueOrNull ?? FavoritesState.empty;
@@ -215,7 +215,7 @@ class FavoritesController extends AsyncNotifier<FavoritesState> {
           cursor: current.cursor,
           limit: _q.pageSize,
           tags: _q.tags.isEmpty ? null : _q.tags,
-          query: ( _q.search ?? '').trim().isEmpty ? null : _q.search!.trim(),
+          query: (_q.search ?? '').trim().isEmpty ? null : _q.search!.trim(),
         ));
     res.when(
       data: (page) {
@@ -301,9 +301,8 @@ class FavoritesController extends AsyncNotifier<FavoritesState> {
 }
 
 /// Provider for the favorites controller.
-final favoritesControllerProvider = AsyncNotifierProvider<FavoritesController, FavoritesState>(() {
-  return FavoritesController();
-}); // AsyncNotifierProvider exposes a controller with AsyncValue for robust async state. [21][24]
+final favoritesControllerProvider =
+    AsyncNotifierProvider<FavoritesController, FavoritesState>(FavoritesController.new); // AsyncNotifierProvider exposes controller + state. [web:5774]
 
 /// Derived selectors
 
@@ -313,7 +312,7 @@ final isFavoritedProvider = Provider.family.autoDispose<bool, String>((ref, item
   if (s == null) return false;
   final idx = s.items.indexWhere((e) => e.id == itemId);
   return idx >= 0 ? s.items[idx].isFavorite : false;
-}); // Simple derived Provider computes a boolean flag from the controller state. [22][8]
+}); // Read-only boolean selector from controller state. [web:5786]
 
 /// A future that resolves a minimal “favorites count” useful for badges.
 final favoritesCountProvider = FutureProvider.autoDispose<int>((ref) async {
@@ -321,12 +320,14 @@ final favoritesCountProvider = FutureProvider.autoDispose<int>((ref) async {
   final page = await repo.list(cursor: null, limit: 1);
   // If backend exposes a total count, prefer that; otherwise count locally after refresh.
   return page.items.isEmpty ? 0 : 1; // placeholder without relying on total field
-}); // FutureProvider is suited for simple single-shot async values used in badges or summary UI. [22][23]
+}); // Simple one-shot FutureProvider for badge count. [web:5774]
 
 /// Facade for widgets: easy access to controller methods without boilerplate.
+typedef Reader = T Function<T>(ProviderListenable<T> provider);
+
 class FavoritesActions {
   FavoritesActions(this._read);
-  final Ref _read;
+  final Reader _read;
 
   Future<void> init(FavoritesQuery q) => _read(favoritesControllerProvider.notifier).init(q);
   Future<void> refresh() => _read(favoritesControllerProvider.notifier).refresh();
@@ -338,10 +339,4 @@ class FavoritesActions {
 
 final favoritesActionsProvider = Provider<FavoritesActions>((ref) {
   return FavoritesActions(ref.read);
-}); // A facade Provider simplifies invoking controller methods from UI callbacks. [22][8]
-
-/// Notes on patterns used:
-/// - AsyncNotifier is preferred over StateNotifier for async-init and imperative methods with AsyncValue transitions. [21][18]
-/// - FutureProvider.family is used for parameterized fetches, complementing the controller for initial pages or alternate views. [22][23]
-/// - Optimistic updates use AsyncValue.guard and local state mutation with revert-on-failure to keep UI responsive. [13][2]
-/// - For advanced pagination, consider extracting page/cursor logic into a reusable mixin or a package if needs grow. [6][9]
+}); // Pass Reader (ref.read) so facade calls like _read(provider.notifier) are valid with Riverpod 2+. [web:5930][web:5931]

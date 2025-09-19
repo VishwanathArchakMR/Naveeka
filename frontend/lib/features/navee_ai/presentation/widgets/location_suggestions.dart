@@ -3,7 +3,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 
-import '../../../journey/core/storage/location_cache.dart';
+// Fixed import path to match lib/core/storage/location_cache.dart
+import '../../../../core/storage/location_cache.dart';
 
 /// A debounced, bottom-sheet-friendly location suggester with:
 /// - Debounced text search via a callback
@@ -17,8 +18,7 @@ class LocationSuggestions extends StatefulWidget {
   const LocationSuggestions({
     super.key,
     required this.searchLocations, // Future<List<Map<String,dynamic>>> Function(String q, {double? lat, double? lng})
-    this.popular = const <Map<String,
-        dynamic>>[], // [{name, secondary?, country?, lat?, lng?}]
+    this.popular = const <Map<String, dynamic>>[], // [{name, secondary?, country?, lat?, lng?}]
     this.reverseGeocode, // Future<Map<String,dynamic>?> Function(double lat,double lng)
     this.title = 'Pick a location',
     this.initialQuery = '',
@@ -32,8 +32,7 @@ class LocationSuggestions extends StatefulWidget {
 
   final List<Map<String, dynamic>> popular;
 
-  final Future<Map<String, dynamic>?> Function(double lat, double lng)?
-      reverseGeocode;
+  final Future<Map<String, dynamic>?> Function(double lat, double lng)? reverseGeocode;
 
   final String title;
   final String initialQuery;
@@ -69,7 +68,7 @@ class LocationSuggestions extends StatefulWidget {
           initialQuery: initialQuery,
         ),
       ),
-    ); // Present a modal bottom sheet and return the selection via Navigator.pop for a focused, contextual picker flow. [12][15]
+    );
   }
 
   @override
@@ -121,7 +120,7 @@ class _LocationSuggestionsState extends State<LocationSuggestions> {
     _debounce = Timer(_debounceDuration, () {
       _performSearch(q.trim());
     });
-  } // Debouncing the TextField onChanged avoids excessive API calls while the user types and improves responsiveness. [10][19]
+  }
 
   Future<void> _performSearch(String q) async {
     if (q.isEmpty) {
@@ -142,7 +141,7 @@ class _LocationSuggestionsState extends State<LocationSuggestions> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _loading = false);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to load locations'))); // SnackBars give simple, route-safe feedback for failed network calls. [1]
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to load locations')));
     }
   }
 
@@ -343,6 +342,6 @@ class _LocationSuggestionsState extends State<LocationSuggestions> {
           const SizedBox(height: 12),
         ],
       ),
-    ); // ListTile rows offer a compact, accessible pattern for list results with leading icons, title, subtitle, and trailing indicators in Material apps. [1][11]
+    );
   }
 }

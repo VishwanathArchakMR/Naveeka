@@ -28,7 +28,7 @@ class QueuedTask {
 }
 
 /// Central offline/online coordination, connectivity observation,
-/// app-level offline mode, and a simple retry queue for transient failures. [9]
+/// app-level offline mode, and a simple retry queue for transient failures.
 class OfflineManager {
   OfflineManager._();
   static final OfflineManager _instance = OfflineManager._();
@@ -49,7 +49,7 @@ class OfflineManager {
   Timer? _drainTimer;
 
   // Debounce connectivity notifications
-  StreamSubscription<ConnectivityResult>? _connSub;
+  StreamSubscription<List<ConnectivityResult>>? _connSub;
 
   // Keys for LocalStorage
   static const String _kOfflineMode = 'app_offline_mode';
@@ -57,7 +57,7 @@ class OfflineManager {
 
   bool _initialized = false;
 
-  /// Initialize listeners, load offline mode and set initial state. [1]
+  /// Initialize listeners, load offline mode and set initial state.
   Future<void> init() async {
     if (_initialized) return;
     _initialized = true;
@@ -65,13 +65,13 @@ class OfflineManager {
     // Restore offline mode preference
     _offlineMode = await LocalStorage.instance.getBool(_kOfflineMode) ?? false;
 
-    // Determine initial connectivity
-    final result = await _connectivity.checkConnectivity();
-    _updateStatusFromConnectivity(result);
+    // Determine initial connectivity (now returns a List<ConnectivityResult>)
+    final List<ConnectivityResult> results = await _connectivity.checkConnectivity();
+    _updateStatusFromResults(results);
 
-    // Listen for changes
-    _connSub = _connectivity.onConnectivityChanged.listen((result) {
-      _updateStatusFromConnectivity(result);
+    // Listen for changes (now emits List<ConnectivityResult>)
+    _connSub = _connectivity.onConnectivityChanged.listen((List<ConnectivityResult> results) {
+      _updateStatusFromResults(results);
     });
   }
 
@@ -87,14 +87,14 @@ class OfflineManager {
 
   NetworkStatus get status => _status;
 
-  /// True if app can attempt network operations (connectivity online AND not forced offline). [1]
+  /// True if app can attempt network operations (connectivity online AND not forced offline).
   bool get canGoOnline => _status == NetworkStatus.online && !_offlineMode;
 
   bool get isOfflineMode => _offlineMode;
 
   Stream<NetworkStatus> get statusStream => _statusCtrl.stream;
 
-  /// Manually toggle app offline mode (still listens to OS connectivity). [9]
+  /// Manually toggle app offline mode (still listens to OS connectivity).
   Future<void> setOfflineMode(bool value) async {
     _offlineMode = value;
     await LocalStorage.instance.setBool(_kOfflineMode, value);
@@ -116,7 +116,7 @@ class OfflineManager {
     return taskId;
   }
 
-  /// Attempts to run queued tasks while online. Implements a gentle backoff if tasks keep failing. [7]
+  /// Attempts to run queued tasks while online. Implements a gentle backoff if tasks keep failing.
   void _scheduleQueueDrain({bool immediate = false}) {
     _drainTimer?.cancel();
     if (!canGoOnline) return;
@@ -168,21 +168,18 @@ class OfflineManager {
 
   // ------------- Connectivity mapping -------------
 
-  void _updateStatusFromConnectivity(ConnectivityResult result) {
+  // New mapper for List<ConnectivityResult> per connectivity_plus v6+ API.
+  void _updateStatusFromResults(List<ConnectivityResult> results) {
     final wasOnline = _status == NetworkStatus.online;
 
-    switch (result) {
-      case ConnectivityResult.bluetooth:
-      case ConnectivityResult.vpn:
-      case ConnectivityResult.other:
-      case ConnectivityResult.wifi:
-      case ConnectivityResult.ethernet:
-      case ConnectivityResult.mobile:
-        _status = NetworkStatus.online;
-        break;
-      case ConnectivityResult.none:
-        _status = NetworkStatus.offline;
-        break;
+    // Treat a single [none] entry as offline; any other available type as online.
+    // If empty, keep unknown to be conservative.
+    if (results.isEmpty) {
+      _status = NetworkStatus.unknown;
+    } else if (results.contains(ConnectivityResult.none) && results.length == 1) {
+      _status = NetworkStatus.offline;
+    } else {
+      _status = NetworkStatus.online;
     }
 
     _statusCtrl.add(_status);

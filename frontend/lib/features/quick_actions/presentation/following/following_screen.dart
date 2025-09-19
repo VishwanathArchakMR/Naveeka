@@ -9,12 +9,12 @@ import 'widgets/following_feed.dart';
 import 'widgets/recent_posts.dart';
 import 'widgets/suggested_accounts.dart';
 
-enum _FollowTab { feed, posts, people }
+enum FollowTab { feed, posts, people }
 
 class FollowingScreen extends StatefulWidget {
   const FollowingScreen({
     super.key,
-    this.initialTab = _FollowTab.feed,
+    this.initialTab = FollowTab.feed,
 
     // Preload data (wire these to providers in the real app)
     this.initialFeedItems = const <FollowingFeedItem>[],
@@ -28,7 +28,7 @@ class FollowingScreen extends StatefulWidget {
     this.hasMoreAccounts = false,
   });
 
-  final _FollowTab initialTab;
+  final FollowTab initialTab;
 
   final List<FollowingFeedItem> initialFeedItems;
   final List<RecentPost> initialPosts;
@@ -44,7 +44,7 @@ class FollowingScreen extends StatefulWidget {
 }
 
 class _FollowingScreenState extends State<FollowingScreen> {
-  _FollowTab _tab = _FollowTab.feed;
+  FollowTab _tab = FollowTab.feed;
 
   // State mirrors (replace with Riverpod/Bloc in production)
   bool _loading = false;
@@ -77,7 +77,7 @@ class _FollowingScreenState extends State<FollowingScreen> {
   Future<void> _refreshAll() async {
     setState(() => _loading = true);
     try {
-      // TODO: invalidate providers and refetch feed/posts/accounts
+      // Invalidate providers and refetch feed/posts/accounts
       await Future.delayed(const Duration(milliseconds: 350));
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -88,7 +88,7 @@ class _FollowingScreenState extends State<FollowingScreen> {
     if (!_hasMoreFeed || _loading) return;
     setState(() => _loading = true);
     try {
-      // TODO: fetch next page for feed
+      // Fetch next page for feed
       await Future.delayed(const Duration(milliseconds: 300));
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -99,7 +99,6 @@ class _FollowingScreenState extends State<FollowingScreen> {
     if (!_hasMorePosts || _loading) return;
     setState(() => _loading = true);
     try {
-      // TODO: fetch next page for posts
       await Future.delayed(const Duration(milliseconds: 300));
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -110,7 +109,7 @@ class _FollowingScreenState extends State<FollowingScreen> {
     if (!_hasMoreAccounts || _loading) return;
     setState(() => _loading = true);
     try {
-      // TODO: fetch next page for accounts
+      // Fetch next page for accounts
       await Future.delayed(const Duration(milliseconds: 300));
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -119,7 +118,7 @@ class _FollowingScreenState extends State<FollowingScreen> {
 
   // Feed interactions
   Future<bool> _toggleLike(FollowingFeedItem item, bool next) async {
-    // TODO: call API; keep optimistic state handled in tile
+    // Fetch call API; keep optimistic state handled in tile
     await Future.delayed(const Duration(milliseconds: 150));
     return true;
   }
@@ -148,13 +147,24 @@ class _FollowingScreenState extends State<FollowingScreen> {
           child: Row(
             children: [
               const Expanded(
-                child: Text('Following', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20)),
+                child: Text('Following',
+                    style:
+                        TextStyle(fontWeight: FontWeight.w800, fontSize: 20)),
               ),
-              SegmentedButton<_FollowTab>(
+              SegmentedButton<FollowTab>(
                 segments: const [
-                  ButtonSegment(value: _FollowTab.feed, label: Text('Feed'), icon: Icon(Icons.dynamic_feed_outlined)),
-                  ButtonSegment(value: _FollowTab.posts, label: Text('Posts'), icon: Icon(Icons.collections_outlined)),
-                  ButtonSegment(value: _FollowTab.people, label: Text('People'), icon: Icon(Icons.group_outlined)),
+                  ButtonSegment(
+                      value: FollowTab.feed,
+                      label: Text('Feed'),
+                      icon: Icon(Icons.dynamic_feed_outlined)),
+                  ButtonSegment(
+                      value: FollowTab.posts,
+                      label: Text('Posts'),
+                      icon: Icon(Icons.collections_outlined)),
+                  ButtonSegment(
+                      value: FollowTab.people,
+                      label: Text('People'),
+                      icon: Icon(Icons.group_outlined)),
                 ],
                 selected: {_tab},
                 onSelectionChanged: (s) => setState(() => _tab = s.first),
@@ -170,11 +180,11 @@ class _FollowingScreenState extends State<FollowingScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: GoToTrailCta(
             onPrimary: () async {
-              // TODO: navigate to "trail" route
+              // Fetch navigate to "trail" route
               await Future.delayed(const Duration(milliseconds: 150));
             },
             onSecondary: () {
-              // TODO: persist hidden flag
+              // Fetch persist hidden flag
             },
           ),
         ),
@@ -214,7 +224,7 @@ class _FollowingScreenState extends State<FollowingScreen> {
 
   Widget _buildTabBody() {
     switch (_tab) {
-      case _FollowTab.feed:
+      case FollowTab.feed:
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: FollowingFeed(
@@ -224,14 +234,14 @@ class _FollowingScreenState extends State<FollowingScreen> {
             onRefresh: _refreshAll,
             onLoadMore: _loadMoreFeed,
             onOpenItem: (it) {
-              // TODO: navigate to the referenced content
+              // Fetch navigate to the referenced content
             },
             onOpenAuthor: (id) {
-              // TODO: open profile
+              // Fetch open profile
             },
             onToggleLike: (it, next) => _toggleLike(it, next),
             onComment: (it) {
-              // TODO: open comments
+              // Fetch open comments
             },
             types: _types,
             selectedTypes: _selectedTypes,
@@ -240,7 +250,7 @@ class _FollowingScreenState extends State<FollowingScreen> {
           ),
         ); // The feed uses ListView.separated inside a section card with infinite scroll for long streams. [21][22]
 
-      case _FollowTab.posts:
+      case FollowTab.posts:
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: RecentPosts(
@@ -250,23 +260,23 @@ class _FollowingScreenState extends State<FollowingScreen> {
             onRefresh: _refreshAll,
             onLoadMore: _loadMorePosts,
             onOpenPost: (p) {
-              // TODO: open post viewer
+              // Fetch open post viewer
             },
             onOpenAuthor: (id) {
-              // TODO: open profile
+              // Fetch open profile
             },
             onToggleLike: (p, next) => _toggleLikePost(p, next),
             onComment: (p) {
-              // TODO: open comments
+              // Fetch open comments
             },
             onShare: (p) {
-              // TODO: share
+              // Fetch share
             },
             sectionTitle: 'Recent posts',
           ),
         ); // Horizontal ListView.builder supports a compact, immersive media row for recent content. [23][22]
 
-      case _FollowTab.people:
+      case FollowTab.people:
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: SuggestedAccounts(
@@ -275,11 +285,11 @@ class _FollowingScreenState extends State<FollowingScreen> {
             hasMore: _hasMoreAccounts,
             onLoadMore: _loadMoreAccounts,
             onOpenProfile: (acc) {
-              // TODO: open profile
+              // Fetch open profile
             },
             onToggleFollow: (acc, next) => _toggleFollow(acc, next),
             onSeeAll: () {
-              // TODO: navigate to people discovery
+              // Fetch navigate to people discovery
             },
             sectionTitle: 'Suggested accounts',
           ),

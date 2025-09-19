@@ -11,20 +11,21 @@ class PlaceSearchScreen extends StatefulWidget {
     super.key,
     this.title = 'Search things to do',
     this.initialDestination,
-    this.initialCategory = _Category.attractions,
+    this.initialCategory = Category.attractions,
     this.currency = '₹',
   });
 
   final String title;
   final String? initialDestination;
-  final _Category initialCategory;
+  final Category initialCategory;
   final String currency;
 
   @override
   State<PlaceSearchScreen> createState() => _PlaceSearchScreenState();
 }
 
-enum _Category { attractions, experiences, activities }
+// Public enum to avoid exposing a private type in a public API. [web:6155]
+enum Category { attractions, experiences, activities }
 
 class _PlaceSearchScreenState extends State<PlaceSearchScreen> {
   final _dfLong = DateFormat.yMMMEd();
@@ -37,7 +38,7 @@ class _PlaceSearchScreenState extends State<PlaceSearchScreen> {
   double? _centerLat;
   double? _centerLng;
 
-  _Category _cat = _Category.attractions;
+  Category _cat = Category.attractions;
 
   @override
   void initState() {
@@ -53,7 +54,7 @@ class _PlaceSearchScreenState extends State<PlaceSearchScreen> {
   }
 
   void _snack(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg))); // SnackBars via ScaffoldMessenger are the recommended transient feedback pattern in Flutter apps [7]
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   Future<void> _pickDate() async {
@@ -63,7 +64,7 @@ class _PlaceSearchScreenState extends State<PlaceSearchScreen> {
       initialDate: _date ?? now,
       firstDate: now,
       lastDate: now.add(const Duration(days: 365)),
-    ); // Use showDatePicker for a Material date dialog; it returns a Future resolving to the chosen date or null [1]
+    );
     if (picked != null) {
       setState(() => _date = DateTime(picked.year, picked.month, picked.day));
     }
@@ -75,7 +76,7 @@ class _PlaceSearchScreenState extends State<PlaceSearchScreen> {
       title: 'Choose map center',
       initialLat: _centerLat,
       initialLng: _centerLng,
-    ); // Present a shaped modal bottom sheet with showModalBottomSheet to pick a map center and return lat/lng via Navigator.pop [9]
+    );
     if (res != null) {
       setState(() {
         _centerLat = (res['lat'] as double?) ?? _centerLat;
@@ -93,9 +94,9 @@ class _PlaceSearchScreenState extends State<PlaceSearchScreen> {
 
     final dateIso = _date != null ? _dfIso.format(_date!) : null;
     final category = switch (_cat) {
-      _Category.attractions => 'Attractions',
-      _Category.experiences => 'Experiences',
-      _Category.activities => 'Activities',
+      Category.attractions => 'Attractions',
+      Category.experiences => 'Experiences',
+      Category.activities => 'Activities',
     };
 
     Navigator.of(context).push(MaterialPageRoute<void>(
@@ -108,7 +109,7 @@ class _PlaceSearchScreenState extends State<PlaceSearchScreen> {
         centerLng: _centerLng,
         title: 'Things to do',
       ),
-    )); // Handoff passes normalized text inputs and optional ISO date and map center to a paginated results screen following standard form→route patterns [10]
+    ));
   }
 
   @override
@@ -137,7 +138,7 @@ class _PlaceSearchScreenState extends State<PlaceSearchScreen> {
                   onPressed: _pickCenterOnMap,
                 ),
               ),
-            ), // TextFormField is the standard input control used within Forms and supports validators when needed per cookbook patterns [10][13]
+            ),
 
             const SizedBox(height: 12),
 
@@ -146,17 +147,17 @@ class _PlaceSearchScreenState extends State<PlaceSearchScreen> {
               children: [
                 const Icon(Icons.category_outlined, size: 18, color: Colors.black54),
                 const SizedBox(width: 8),
-                SegmentedButton<_Category>(
+                SegmentedButton<Category>(
                   segments: const [
-                    ButtonSegment(value: _Category.attractions, label: Text('Attractions')),
-                    ButtonSegment(value: _Category.experiences, label: Text('Experiences')),
-                    ButtonSegment(value: _Category.activities, label: Text('Activities')),
+                    ButtonSegment(value: Category.attractions, label: Text('Attractions')),
+                    ButtonSegment(value: Category.experiences, label: Text('Experiences')),
+                    ButtonSegment(value: Category.activities, label: Text('Activities')),
                   ],
                   selected: {_cat},
                   onSelectionChanged: (s) => setState(() => _cat = s.first),
                 ),
               ],
-            ), // SegmentedButton offers a compact toggle among a small, fixed set of options, suitable for category selection in Material apps [10]
+            ),
 
             const SizedBox(height: 12),
 
@@ -167,7 +168,7 @@ class _PlaceSearchScreenState extends State<PlaceSearchScreen> {
               title: Text(dateLabel, maxLines: 1, overflow: TextOverflow.ellipsis),
               subtitle: const Text('Optional date'),
               trailing: const Icon(Icons.edit_calendar_outlined),
-            ), // The Material date picker dialog opened by showDatePicker is appropriate for availability/date-prefilter in this flow [1]
+            ),
 
             const SizedBox(height: 8),
 
@@ -178,7 +179,7 @@ class _PlaceSearchScreenState extends State<PlaceSearchScreen> {
               title: const Text('Map center'),
               subtitle: Text(centerBadge, maxLines: 1, overflow: TextOverflow.ellipsis),
               trailing: const Icon(Icons.chevron_right),
-            ), // Using a modal bottom sheet for the map center picker keeps the main form concise while supporting spatial relevance [9]
+            ),
 
             const SizedBox(height: 20),
 
@@ -189,7 +190,7 @@ class _PlaceSearchScreenState extends State<PlaceSearchScreen> {
                 icon: const Icon(Icons.search),
                 label: const Text('Search'),
               ),
-            ), // Submit triggers straightforward route navigation after basic input validation per cookbook guidance on form workflows [7][10]
+            ),
           ],
         ),
       ),

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // Messaging providers and models (ensure these imports exist in your project)
-import '../../../messages/providers/messages_providers.dart';
+import '../../../quick_actions/providers/messages_providers.dart';
 // If you support location share in chat, also import your ShareLocation type:
 // import '../../../messages/presentation/widgets/location_share.dart' show ShareLocationRequest, GeoPoint;
 

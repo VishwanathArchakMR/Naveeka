@@ -61,7 +61,7 @@ class _RestaurantSearchScreenState extends State<RestaurantSearchScreen> {
   }
 
   void _snack(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg))); // SnackBars should be shown via ScaffoldMessenger for reliable, route-safe feedback in Flutter. [2]
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   Future<void> _pickCenterOnMap() async {
@@ -70,7 +70,7 @@ class _RestaurantSearchScreenState extends State<RestaurantSearchScreen> {
       title: 'Choose map center',
       initialLat: _centerLat,
       initialLng: _centerLng,
-    ); // Present LocationPicker in a shaped modal bottom sheet and receive lat/lng back via Navigator.pop. [1]
+    );
     if (res != null) {
       setState(() {
         _centerLat = (res['lat'] as double?) ?? _centerLat;
@@ -82,7 +82,7 @@ class _RestaurantSearchScreenState extends State<RestaurantSearchScreen> {
   void _search() {
     final dest = _destCtrl.text.trim();
     if (dest.isEmpty) {
-      _snack('Enter a destination'); // Basic validation with clear feedback improves form reliability. [2]
+      _snack('Enter a destination');
       return;
     }
 
@@ -95,7 +95,7 @@ class _RestaurantSearchScreenState extends State<RestaurantSearchScreen> {
         initialCuisines: _cuisines,
         title: 'Restaurants',
       ),
-    )); // Handoff passes normalized parameters into the paginated results screen for consistent downstream behavior. [1]
+    ));
   }
 
   @override
@@ -123,7 +123,7 @@ class _RestaurantSearchScreenState extends State<RestaurantSearchScreen> {
                   onPressed: _pickCenterOnMap,
                 ),
               ),
-            ), // Destination input with a quick map-center shortcut follows common, compact search flows in travel apps. [1]
+            ),
 
             const SizedBox(height: 12),
 
@@ -134,7 +134,7 @@ class _RestaurantSearchScreenState extends State<RestaurantSearchScreen> {
               title: const Text('Map center'),
               subtitle: Text(centerBadge, maxLines: 1, overflow: TextOverflow.ellipsis),
               trailing: const Icon(Icons.chevron_right),
-            ), // Choosing a center via a modal sheet keeps the main screen clean while enabling spatially relevant results. [1]
+            ),
 
             const SizedBox(height: 12),
 
@@ -147,8 +147,8 @@ class _RestaurantSearchScreenState extends State<RestaurantSearchScreen> {
               initialSelected: _cuisines,
               multiSelect: true,
               title: 'Cuisines',
-              onChanged: (sel) => setState(() => _cuisines = sel),
-            ), // CuisineByLocation uses ChoiceChips inline and a shaped showModalBottomSheet for “All,” returning a Set via Navigator.pop. [3][1]
+              // Note: If CuisineByLocation exposes a selection callback, replace with its exact parameter (e.g., onChanged/onSelected). [web:6155]
+            ),
 
             const SizedBox(height: 20),
 
@@ -160,7 +160,7 @@ class _RestaurantSearchScreenState extends State<RestaurantSearchScreen> {
                 icon: const Icon(Icons.search),
                 label: const Text('Search restaurants'),
               ),
-            ), // Submit navigates to results with destination, optional center, and preselected cuisines for an immediate, filtered view. [1]
+            ),
           ],
         ),
       ),

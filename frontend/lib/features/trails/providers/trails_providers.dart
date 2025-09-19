@@ -16,7 +16,8 @@ final trailsApiProvider = Provider<TrailsApi>((ref) {
 
 /// Provide a concrete TrailLocationApi (override at app bootstrap).
 final trailLocationApiProvider = Provider<TrailLocationApi>((ref) {
-  throw UnimplementedError('Override trailLocationApiProvider with a real TrailLocationApi');
+  throw UnimplementedError(
+      'Override trailLocationApiProvider with a real TrailLocationApi');
 });
 
 /// ---------------- Filters and shared view state ----------------
@@ -57,24 +58,35 @@ class TrailsFilters {
 /// Mirrors the UI enum for list/map toggle (kept here for provider-only reuse).
 enum TrailsViewMode { list, map }
 
-/// Single source of truth for filters; screens/widgets read/write this to coordinate. [Riverpod state providers] [3]
-final trailsFiltersProvider = StateProvider<TrailsFilters>((ref) => const TrailsFilters());
+/// Single source of truth for filters; screens/widgets read/write this to coordinate. [Riverpod state providers]
+final trailsFiltersProvider =
+    StateProvider<TrailsFilters>((ref) => const TrailsFilters());
 
 /// ---------------- Generic paged state ----------------
 
 @immutable
 class PagedState<T> {
-  const PagedState({required this.items, required this.cursor, required this.loading, this.error});
+  const PagedState(
+      {required this.items,
+      required this.cursor,
+      required this.loading,
+      this.error});
   final List<T> items;
   final String? cursor;
   final bool loading;
   final Object? error;
 
-  PagedState<T> copy({List<T>? items, String? cursor, bool? loading, Object? error}) =>
-      PagedState<T>(items: items ?? this.items, cursor: cursor ?? this.cursor, loading: loading ?? this.loading, error: error);
+  PagedState<T> copy(
+          {List<T>? items, String? cursor, bool? loading, Object? error}) =>
+      PagedState<T>(
+          items: items ?? this.items,
+          cursor: cursor ?? this.cursor,
+          loading: loading ?? this.loading,
+          error: error);
 
-  static PagedState<T> empty<T>() => PagedState<T>(items: const <T>[], cursor: null, loading: false);
-}
+  static PagedState<T> empty<T>() => PagedState<T>(
+      items: const <dynamic>[] as List<T>, cursor: null, loading: false);
+} // Non-const generic literal avoids invalid_type_argument_in_const_literal. [web:5888]
 
 /// ---------------- Trails list controller (filters -> paged list) ----------------
 
@@ -83,7 +95,7 @@ class TrailsListController extends AsyncNotifier<PagedState<TrailSummary>> {
 
   @override
   FutureOr<PagedState<TrailSummary>> build() async {
-    // Rebuild automatically when filters change; this sets up the dependency. [1]
+    // Rebuild automatically when filters change; this sets up the dependency.
     final f = ref.watch(trailsFiltersProvider);
     final page = await _api.list(
       query: f.query.isEmpty ? null : f.query,
@@ -95,11 +107,11 @@ class TrailsListController extends AsyncNotifier<PagedState<TrailSummary>> {
       limit: 20,
       cursor: null,
     );
-    return PagedState<TrailSummary>(items: page.items, cursor: page.nextCursor, loading: false);
+    return PagedState<TrailSummary>(
+        items: page.items, cursor: page.nextCursor, loading: false);
   }
 
   Future<void> refresh() async {
-    final current = state.valueOrNull ?? PagedState.empty<TrailSummary>();
     state = const AsyncLoading();
     final f = ref.read(trailsFiltersProvider);
     final page = await _api.list(
@@ -112,8 +124,9 @@ class TrailsListController extends AsyncNotifier<PagedState<TrailSummary>> {
       limit: 20,
       cursor: null,
     );
-    state = AsyncData(PagedState<TrailSummary>(items: page.items, cursor: page.nextCursor, loading: false)).value;
-  } // AsyncNotifier + explicit refresh for pull-to-refresh UX. [1]
+    state = AsyncData(PagedState<TrailSummary>(
+        items: page.items, cursor: page.nextCursor, loading: false));
+  } // Use AsyncData/AsyncLoading on AsyncNotifier.state. [web:5774]
 
   Future<void> loadMore() async {
     final current = state.valueOrNull ?? PagedState.empty<TrailSummary>();
@@ -131,58 +144,61 @@ class TrailsListController extends AsyncNotifier<PagedState<TrailSummary>> {
         limit: 20,
         cursor: current.cursor,
       );
-      state = AsyncData(current.copy(items: [...current.items, ...page.items], cursor: page.nextCursor, loading: false));
+      state = AsyncData(current.copy(
+          items: [...current.items, ...page.items],
+          cursor: page.nextCursor,
+          loading: false));
     } catch (e, st) {
       state = AsyncError(e, st);
       state = AsyncData(current.copy(loading: false, error: e));
     }
-  } // Cursor pagination pattern for stable scrolling and merging pages. [2]
+  } // Cursor pagination merging pages. [web:5774]
 }
 
 final trailsListControllerProvider =
-    AsyncNotifierProvider<TrailsListController, PagedState<TrailSummary>>(TrailsListController.new); // [1]
+    AsyncNotifierProvider<TrailsListController, PagedState<TrailSummary>>(
+        TrailsListController.new);
 
 /// ---------------- Trail detail & geometry ----------------
 
-/// Fetch full detail for a trail by id; simple FutureProvider is sufficient. [3]
-final trailDetailProvider = FutureProvider.family<TrailDetail, String>((ref, trailId) async {
+/// Fetch full detail for a trail by id; simple FutureProvider is sufficient.
+final trailDetailProvider =
+    FutureProvider.family<TrailDetail, String>((ref, trailId) async {
   final api = ref.watch(trailsApiProvider);
   return api.getTrail(trailId);
 });
 
-/// Fetch geometry points for a trail; uses TrailLocationApi if a separate geometry endpoint is preferred. [3]
-final trailGeometryProvider = FutureProvider.family<List<GeoPoint>, String>((ref, trailId) async {
+/// Fetch geometry points for a trail; uses TrailLocationApi if a separate geometry endpoint is preferred.
+final trailGeometryProvider =
+    FutureProvider.family<List<GeoPoint>, String>((ref, trailId) async {
   final loc = ref.watch(trailLocationApiProvider);
   return loc.getGeometry(trailId);
 });
 
-/// Fetch aggregated stats for a trail (review count, rating, favorites). [3]
-final trailStatsProvider = FutureProvider.family<TrailStats, String>((ref, trailId) async {
+/// Fetch aggregated stats for a trail (review count, rating, favorites).
+final trailStatsProvider =
+    FutureProvider.family<TrailStats, String>((ref, trailId) async {
   final api = ref.watch(trailsApiProvider);
   return api.getStats(trailId);
 });
 
 /// ---------------- Reviews pagination per trail ----------------
 
-class TrailReviewsController extends AsyncNotifier<PagedState<TrailReview>> {
-  late String _trailId;
+class TrailReviewsController
+    extends FamilyAsyncNotifier<PagedState<TrailReview>, String> {
+  TrailsApi get _api => ref.read(trailsApiProvider);
 
   @override
-  FutureOr<PagedState<TrailReview>> build() async {
+  FutureOr<PagedState<TrailReview>> build(String trailId) async {
     return PagedState.empty();
-  } // Family-style manual init keeps API simple while allowing pagination. [1]
-
-  Future<void> init(String trailId) async {
-    _trailId = trailId;
-    await refresh();
-  }
-
-  TrailsApi get _api => ref.read(trailsApiProvider);
+  } // FamilyAsyncNotifier: arg is available via this.arg. [web:5912]
 
   Future<void> refresh({String? sort}) async {
     state = const AsyncLoading();
-    final page = await _api.getReviews(trailId: _trailId, limit: 20, cursor: null, sort: sort);
-    state = AsyncData(PagedState<TrailReview>(items: page.items, cursor: page.nextCursor, loading: false)).value;
+    final page = await _api.getReviews(
+        trailId: arg, limit: 20, cursor: null, sort: sort);
+    state = AsyncData(PagedState<TrailReview>(
+        items: page.items, cursor: page.nextCursor, loading: false));
   }
 
   Future<void> loadMore({String? sort}) async {
@@ -190,8 +206,12 @@ class TrailReviewsController extends AsyncNotifier<PagedState<TrailReview>> {
     if (current.loading || current.cursor == null) return;
     state = AsyncData(current.copy(loading: true));
     try {
-      final page = await _api.getReviews(trailId: _trailId, limit: 20, cursor: current.cursor, sort: sort);
-      state = AsyncData(current.copy(items: [...current.items, ...page.items], cursor: page.nextCursor, loading: false));
+      final page = await _api.getReviews(
+          trailId: arg, limit: 20, cursor: current.cursor, sort: sort);
+      state = AsyncData(current.copy(
+          items: [...current.items, ...page.items],
+          cursor: page.nextCursor,
+          loading: false));
     } catch (e, st) {
       state = AsyncError(e, st);
       state = AsyncData(current.copy(loading: false, error: e));
@@ -199,66 +219,83 @@ class TrailReviewsController extends AsyncNotifier<PagedState<TrailReview>> {
   }
 }
 
-final trailReviewsControllerProvider = AsyncNotifierProvider.family<TrailReviewsController, PagedState<TrailReview>, String>(
-  () => TrailReviewsController(),
-); // Use .init(trailId) from UI once before refresh/loadMore. [1]
+final trailReviewsControllerProvider = AsyncNotifierProvider.family<
+        TrailReviewsController, PagedState<TrailReview>, String>(
+    TrailReviewsController.new); // Family notifier. [web:5912][web:5770]
 
 /// ---------------- Nearby trails ----------------
 
-/// Quick nearby lookup around a center within radius; returns a sorted, truncated list. [3]
-final nearbyTrailsProvider = FutureProvider.family<List<TrailSummary>, ({GeoPoint center, double radiusKm, List<String>? tags})>(
+/// Quick nearby lookup around a center within radius; returns a sorted, truncated list.
+final nearbyTrailsProvider = FutureProvider.family<List<TrailSummary>,
+    ({GeoPoint center, double radiusKm, List<String>? tags})>(
   (ref, args) async {
     final loc = ref.watch(trailLocationApiProvider);
-    return loc.nearby(center: args.center, radiusKm: args.radiusKm, limit: 50, tags: args.tags);
+    return loc.nearby(
+        center: args.center,
+        radiusKm: args.radiusKm,
+        limit: 50,
+        tags: args.tags);
   },
 );
 
 /// ---------------- Quick actions (favorite, helpful, post review) ----------------
 
-/// Toggle favorite for a trail; returns final favorite state. [3]
-final toggleFavoriteProvider = FutureProvider.family.autoDispose<bool, ({String trailId, bool next})>((ref, args) async {
+/// Toggle favorite for a trail; returns final favorite state.
+final toggleFavoriteProvider = FutureProvider.family
+    .autoDispose<bool, ({String trailId, bool next})>((ref, args) async {
   final api = ref.watch(trailsApiProvider);
   return api.toggleFavorite(trailId: args.trailId, nextValue: args.next);
 });
 
-/// Mark/unmark a review as helpful; returns server-accepted state (true if helpful). [3]
-final toggleReviewHelpfulProvider = FutureProvider.family.autoDispose<bool, ({String trailId, String reviewId, bool next})>(
+/// Mark/unmark a review as helpful; returns server-accepted state (true if helpful).
+final toggleReviewHelpfulProvider = FutureProvider.family
+    .autoDispose<bool, ({String trailId, String reviewId, bool next})>(
   (ref, args) async {
     final api = ref.watch(trailsApiProvider);
-    return api.toggleReviewHelpful(trailId: args.trailId, reviewId: args.reviewId, nextValue: args.next);
+    return api.toggleReviewHelpful(
+        trailId: args.trailId, reviewId: args.reviewId, nextValue: args.next);
   },
 );
 
-/// Post a text/rating review (photos handled by higher-level screen if needed). [3]
-final postReviewProvider = FutureProvider.family.autoDispose<TrailReview, ({String trailId, int rating, String text})>(
+/// Post a text/rating review (photos handled by higher-level screen if needed).
+final postReviewProvider = FutureProvider.family
+    .autoDispose<TrailReview, ({String trailId, int rating, String text})>(
   (ref, args) async {
     final api = ref.watch(trailsApiProvider);
-    return api.postReview(trailId: args.trailId, rating: args.rating, text: args.text, photoFiles: null);
+    return api.postReview(
+        trailId: args.trailId,
+        rating: args.rating,
+        text: args.text,
+        photoFiles: null);
   },
 );
 
 /// ---------------- Facade for widgets/screens ----------------
 
+typedef Reader = T Function<T>(ProviderListenable<T> provider);
+
 class TrailsActions {
   TrailsActions(this._read);
-  final Ref _read;
+  final Reader _read;
 
   // Filters
   void setQuery(String q) {
     final curr = _read(trailsFiltersProvider);
-    _read(trailsFiltersProvider.notifier).state = curr.copyWith(query: q.trim());
+    _read(trailsFiltersProvider.notifier).state =
+        curr.copyWith(query: q.trim());
   }
 
   void toggleDifficulty(String key, bool next) {
     final curr = _read(trailsFiltersProvider);
-    final set = {...curr.difficulties};
+    final set = <String>{...curr.difficulties};
     if (next) {
       set.add(key);
     } else {
       set.remove(key);
     }
-    _read(trailsFiltersProvider.notifier).state = curr.copyWith(difficulties: set);
-  }
+    _read(trailsFiltersProvider.notifier).state =
+        curr.copyWith(difficulties: set);
+  } // Explicit <String>{...} removes set/map ambiguity. [web:5914]
 
   void setViewMode(TrailsViewMode m) {
     final curr = _read(trailsFiltersProvider);
@@ -267,27 +304,37 @@ class TrailsActions {
 
   void setCenter(GeoPoint? c, {double? radiusKm}) {
     final curr = _read(trailsFiltersProvider);
-    _read(trailsFiltersProvider.notifier).state = curr.copyWith(center: c, radiusKm: radiusKm ?? curr.radiusKm);
+    _read(trailsFiltersProvider.notifier).state =
+        curr.copyWith(center: c, radiusKm: radiusKm ?? curr.radiusKm);
   }
 
   // List
-  Future<void> refreshList() => _read(trailsListControllerProvider.notifier).refresh();
-  Future<void> loadMoreList() => _read(trailsListControllerProvider.notifier).loadMore();
+  Future<void> refreshList() =>
+      _read(trailsListControllerProvider.notifier).refresh();
+  Future<void> loadMoreList() =>
+      _read(trailsListControllerProvider.notifier).loadMore();
 
-  // Reviews (family controller requires init)
-  Future<void> initReviews(String trailId) => _read(trailReviewsControllerProvider(trailId).notifier).init(trailId);
+  // Reviews (family controller)
+  Future<void> initReviews(String trailId) =>
+      _read(trailReviewsControllerProvider(trailId).notifier).refresh();
   Future<void> refreshReviews(String trailId, {String? sort}) =>
-      _read(trailReviewsControllerProvider(trailId).notifier).refresh(sort: sort);
+      _read(trailReviewsControllerProvider(trailId).notifier)
+          .refresh(sort: sort);
   Future<void> loadMoreReviews(String trailId, {String? sort}) =>
-      _read(trailReviewsControllerProvider(trailId).notifier).loadMore(sort: sort);
+      _read(trailReviewsControllerProvider(trailId).notifier)
+          .loadMore(sort: sort);
 
   // Actions
   Future<bool> toggleFavorite(String trailId, bool next) =>
       _read(toggleFavoriteProvider((trailId: trailId, next: next)).future);
-  Future<bool> toggleReviewHelpful(String trailId, String reviewId, bool next) =>
-      _read(toggleReviewHelpfulProvider((trailId: trailId, reviewId: reviewId, next: next)).future);
+  Future<bool> toggleReviewHelpful(
+          String trailId, String reviewId, bool next) =>
+      _read(toggleReviewHelpfulProvider(
+          (trailId: trailId, reviewId: reviewId, next: next)).future);
   Future<TrailReview> postReview(String trailId, int rating, String text) =>
-      _read(postReviewProvider((trailId: trailId, rating: rating, text: text)).future);
+      _read(postReviewProvider((trailId: trailId, rating: rating, text: text))
+          .future);
 }
 
-final trailsActionsProvider = Provider<TrailsActions>((ref) => TrailsActions(ref.read));
+final trailsActionsProvider = Provider<TrailsActions>((ref) =>
+    TrailsActions(ref.read)); // Pass Reader for facade invocations. [web:5774]

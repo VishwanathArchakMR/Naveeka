@@ -4,8 +4,21 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-// Reuse the share payload used by MessageThread/LocationShare UI for consistency.
-import '../presentation/messages/widgets/location_share.dart' show ShareLocationRequest, GeoPoint;
+// Local minimal types when the UI widget file doesn't export them.
+@immutable
+class GeoPoint {
+  final double lat;
+  final double lng;
+  const GeoPoint(this.lat, this.lng);
+}
+
+@immutable
+class ShareLocationRequest {
+  final double lat;
+  final double lng;
+  final String? label;
+  const ShareLocationRequest({required this.lat, required this.lng, this.label});
+}
 
 /// ---------------- Domain models ----------------
 
@@ -135,7 +148,7 @@ abstract class MessagesRepository {
 /// Inject a concrete implementation in app bootstrap with overrideWithValue.
 final messagesRepositoryProvider = Provider<MessagesRepository>((ref) {
   throw UnimplementedError('Provide MessagesRepository via override in main/bootstrap');
-}); // A repository Provider centralizes I/O and is easily overridden for tests/environments. [2][3]
+}); // Repository Provider is overridden in app bootstrap for I/O; throwing by default is a common pattern. [web:5777]
 
 /// ---------------- Simple read-only providers ----------------
 
@@ -155,12 +168,12 @@ class ConversationQuery {
 final conversationsFirstPageProvider = FutureProvider.family.autoDispose<CursorPage<ConversationSummary>, ConversationQuery>((ref, q) async {
   final repo = ref.watch(messagesRepositoryProvider);
   return repo.listConversations(cursor: null, limit: q.pageSize, query: (q.query ?? '').trim().isEmpty ? null : q.query!.trim());
-}); // FutureProvider.family is ideal for parameterized one-shot fetches with caching and autoDispose. [2][4]
+}); // FutureProvider.family handles parameterized fetches with caching and autoDispose per Riverpod patterns. [web:5777]
 
 final threadFirstPageProvider = FutureProvider.family.autoDispose<CursorPage<MessageItem>, String>((ref, conversationId) async {
   final repo = ref.watch(messagesRepositoryProvider);
   return repo.listMessages(conversationId: conversationId, cursor: null);
-}); // A per-thread first page provider keeps initial loads simple and cacheable by key. [2][5]
+}); // A per-thread first-page provider simplifies initial loads per key. [web:5777]
 
 /// ---------------- Controllers (pagination + mutations) ----------------
 
@@ -175,8 +188,8 @@ class PagedState<T> {
   PagedState<T> copy({List<T>? items, String? cursor, bool? loading, Object? error}) =>
       PagedState<T>(items: items ?? this.items, cursor: cursor ?? this.cursor, loading: loading ?? this.loading, error: error);
 
-  static PagedState<T> empty<T>() => PagedState<T>(items: const <T>[], cursor: null, loading: false);
-}
+  static PagedState<T> empty<T>() => PagedState<T>(items: <T>[], cursor: null, loading: false);
+} // Use a non-const generic list to avoid invalid_type_argument_in_const_literal with <T>[]. [web:5888][web:5889]
 
 /// Conversations controller with pagination and optimistic updates for mute/pin/read.
 class ConversationsController extends AsyncNotifier<PagedState<ConversationSummary>> {
@@ -185,7 +198,7 @@ class ConversationsController extends AsyncNotifier<PagedState<ConversationSumma
   @override
   FutureOr<PagedState<ConversationSummary>> build() async {
     return PagedState.empty();
-  } // AsyncNotifier enables async init and imperative methods with consistent AsyncValue handling. [1][6]
+  } // AsyncNotifier allows async initialization using build with FutureOr. [web:5774][web:5892]
 
   Future<void> init(ConversationQuery query) async {
     _q = query;
@@ -195,8 +208,8 @@ class ConversationsController extends AsyncNotifier<PagedState<ConversationSumma
   Future<void> refresh() async {
     final repo = ref.read(messagesRepositoryProvider);
     state = const AsyncLoading();
-    final res = await AsyncValue.guard(() => repo.listConversations(cursor: null, limit: _q.pageSize, query: ( _q.query ?? '').trim().isEmpty ? null : _q.query!.trim()));
-    state = res.whenData((page) => AsyncData(PagedState<ConversationSummary>(items: page.items, cursor: page.nextCursor, loading: false)).value);
+    final res = await AsyncValue.guard(() => repo.listConversations(cursor: null, limit: _q.pageSize, query: (_q.query ?? '').trim().isEmpty ? null : _q.query!.trim()));
+    state = res.whenData((page) => PagedState<ConversationSummary>(items: page.items, cursor: page.nextCursor, loading: false));
   }
 
   Future<void> loadMore() async {
@@ -204,7 +217,7 @@ class ConversationsController extends AsyncNotifier<PagedState<ConversationSumma
     if (current.loading || current.cursor == null) return;
     final repo = ref.read(messagesRepositoryProvider);
     state = AsyncData(current.copy(loading: true));
-    final res = await AsyncValue.guard(() => repo.listConversations(cursor: current.cursor, limit: _q.pageSize, query: ( _q.query ?? '').trim().isEmpty ? null : _q.query!.trim()));
+    final res = await AsyncValue.guard(() => repo.listConversations(cursor: current.cursor, limit: _q.pageSize, query: (_q.query ?? '').trim().isEmpty ? null : _q.query!.trim()));
     res.when(
       data: (page) => state = AsyncData(current.copy(items: [...current.items, ...page.items], cursor: page.nextCursor, loading: false)),
       loading: () => state = AsyncData(current.copy(loading: true)),
@@ -213,7 +226,7 @@ class ConversationsController extends AsyncNotifier<PagedState<ConversationSumma
         state = AsyncData(current.copy(loading: false, error: e));
       },
     );
-  } // This mirrors Riverpod pagination patterns with AsyncValue.guard and incremental merges. [7][8]
+  }
 
   Future<bool> setMuted(String conversationId, bool next) async {
     final current = state.valueOrNull ?? PagedState.empty<ConversationSummary>();
@@ -232,7 +245,7 @@ class ConversationsController extends AsyncNotifier<PagedState<ConversationSumma
       state = AsyncData((state.valueOrNull ?? current).copy(items: revert));
     }
     return ok;
-  } // Optimistic toggle updates UI instantly and reverts on failure, per Riverpod mutation guidance. [6][9]
+  }
 
   Future<bool> setPinned(String conversationId, bool next) async {
     final current = state.valueOrNull ?? PagedState.empty<ConversationSummary>();
@@ -276,9 +289,9 @@ class ConversationsController extends AsyncNotifier<PagedState<ConversationSumma
   }
 }
 
-final conversationsControllerProvider = AsyncNotifierProvider<ConversationsController, PagedState<ConversationSummary>>(ConversationsController.new); // AsyncNotifierProvider exposes a watchable AsyncValue for conversations with paging and mutations. [1][10]
+final conversationsControllerProvider = AsyncNotifierProvider<ConversationsController, PagedState<ConversationSummary>>(ConversationsController.new); // AsyncNotifierProvider exposes AsyncNotifier + state cleanly. [web:5892][web:5777]
 
-/// Thread store keeps multiple threads keyed by conversationId to avoid family boilerplate while supporting many open chats.
+/// Thread store keeps multiple threads keyed by conversationId.
 @immutable
 class ThreadStore {
   const ThreadStore({required this.threads});
@@ -292,7 +305,7 @@ class ThreadsController extends AsyncNotifier<ThreadStore> {
   @override
   FutureOr<ThreadStore> build() async {
     return ThreadStore.empty;
-  } // A single AsyncNotifier can manage multiple keyed threads to simplify consumption and pagination. [1][10]
+  } // Async initialization of multi-thread store via AsyncNotifier. [web:5774]
 
   PagedState<MessageItem> _get(String cid) => (state.valueOrNull ?? ThreadStore.empty).threads[cid] ?? PagedState.empty<MessageItem>();
 
@@ -331,11 +344,10 @@ class ThreadsController extends AsyncNotifier<ThreadStore> {
         _put(conversationId, curr.copy(loading: false, error: e));
       },
     );
-  } // This mirrors Riverpod pagination strategies while keeping thread state normalized by key. [7][11]
+  }
 
   Future<MessageItem> sendText(String conversationId, String text) async {
     final repo = ref.read(messagesRepositoryProvider);
-    // Optimistic local echo
     final curr = _get(conversationId);
     final echo = MessageItem(id: 'local-${DateTime.now().microsecondsSinceEpoch}', senderId: 'me', sentAt: DateTime.now(), text: text, isMine: true);
     _put(conversationId, curr.copy(items: [echo, ...curr.items]));
@@ -343,20 +355,18 @@ class ThreadsController extends AsyncNotifier<ThreadStore> {
     return res.when(
       data: (msg) {
         final after = _get(conversationId);
-        // Replace echo with server message by id fallback (keep order newest first)
         final items = [msg, ...after.items.where((m) => m.id != echo.id)];
         _put(conversationId, after.copy(items: items));
         return msg;
       },
       loading: () => echo,
       error: (e, st) {
-        // Remove echo on failure
         final after = _get(conversationId);
         _put(conversationId, after.copy(items: after.items.where((m) => m.id != echo.id).toList()));
         throw e;
       },
     );
-  } // Optimistic send improves perceived latency and aligns with mutation best practices. [6][9]
+  }
 
   Future<MessageItem> sendAttachment(String conversationId, Uri fileOrUrl) async {
     final repo = ref.read(messagesRepositoryProvider);
@@ -417,19 +427,21 @@ class ThreadsController extends AsyncNotifier<ThreadStore> {
   }
 }
 
-final threadsControllerProvider = AsyncNotifierProvider<ThreadsController, ThreadStore>(ThreadsController.new); // A single controller maintains many threads keyed by conversationId for simplified consumption. [1][10]
+final threadsControllerProvider = AsyncNotifierProvider<ThreadsController, ThreadStore>(ThreadsController.new); // Expose multi-thread controller via AsyncNotifierProvider. [web:5892]
 
 /// Selector for a single thread state by conversationId (read-only view on the store).
 final threadByIdProvider = Provider.family.autoDispose<PagedState<MessageItem>, String>((ref, conversationId) {
   final store = ref.watch(threadsControllerProvider).valueOrNull ?? ThreadStore.empty;
   return store.threads[conversationId] ?? PagedState.empty<MessageItem>();
-}); // A derived Provider.family exposes a specific thread for widgets without extra fetching logic. [2][5]
+}); // Derived provider reads specific thread state without extra fetching. [web:5777]
 
 /// ---------------- Facade for widgets/screens ----------------
 
+typedef Reader = T Function<T>(ProviderListenable<T> provider);
+
 class MessagesActions {
   MessagesActions(this._read);
-  final Ref _read;
+  final Reader _read;
 
   // Conversations
   Future<void> initConversations(ConversationQuery q) => _read(conversationsControllerProvider.notifier).init(q);
@@ -451,4 +463,4 @@ class MessagesActions {
   Future<void> setTypingRemote(String cid, bool typing) => _read(messagesRepositoryProvider).setTyping(conversationId: cid, typing: typing);
 }
 
-final messagesActionsProvider = Provider<MessagesActions>((ref) => MessagesActions(ref.read)); // A simple facade reduces UI boilerplate and centralizes access to controllers and repository. [2][3]
+final messagesActionsProvider = Provider<MessagesActions>((ref) => MessagesActions(ref.read)); // Pass Reader (ref.read) so facade can call _read(provider.notifier). [web:5885]

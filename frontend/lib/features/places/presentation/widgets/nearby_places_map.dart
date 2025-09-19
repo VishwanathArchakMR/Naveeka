@@ -8,7 +8,8 @@ import 'directions_button.dart';
 import 'favorite_heart_button.dart';
 
 typedef MarkerTap = void Function(String placeId);
-typedef NearbyMapBuilder = Widget Function(BuildContext context, NearbyMapConfig config);
+typedef NearbyMapBuilder = Widget Function(
+    BuildContext context, NearbyMapConfig config);
 
 /// Configuration passed to the injected map builder so it can draw pins and wire callbacks.
 class NearbyMapConfig {
@@ -96,15 +97,19 @@ class _NearbyPlacesMapState extends State<NearbyPlacesMap> {
 
   @override
   Widget build(BuildContext context) {
-    final markers = widget.places
-        .where((p) => p.lat != null && p.lng != null)
-        .map((p) => NearbyMarker(
-              id: p.id.toString(),
-              lat: p.lat!,
-              lng: p.lng!,
-              selected: p.id.toString() == _selectedId,
-            ))
-        .toList(growable: false);
+    final markers = <NearbyMarker>[];
+    for (final p in widget.places) {
+      final la = _lat(p);
+      final ln = _lng(p);
+      if (la != null && ln != null) {
+        markers.add(NearbyMarker(
+          id: p.id.toString(),
+          lat: la,
+          lng: ln,
+          selected: p.id.toString() == _selectedId,
+        ));
+      }
+    }
 
     final map = widget.mapBuilder != null
         ? widget.mapBuilder!(
@@ -118,7 +123,8 @@ class _NearbyPlacesMapState extends State<NearbyPlacesMap> {
               onRecenter: _recenter,
             ),
           )
-        : _placeholderMap(context); // Provide a graceful fallback if no mapBuilder is supplied.
+        : _placeholderMap(
+            context); // Provide a graceful fallback if no mapBuilder is supplied.
 
     final selected = _selectedId == null
         ? null
@@ -168,9 +174,39 @@ class _NearbyPlacesMapState extends State<NearbyPlacesMap> {
     );
   }
 
+  double? _lat(Place p) {
+    try {
+      final d = p as dynamic;
+      final v = (d.lat ?? d.latitude ?? d.locationLat ?? d.coordLat) as Object?;
+      if (v is double) return v;
+      if (v is int) return v.toDouble();
+      if (v is String) return double.tryParse(v);
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  double? _lng(Place p) {
+    try {
+      final d = p as dynamic;
+      final v =
+          (d.lng ?? d.longitude ?? d.locationLng ?? d.coordLng) as Object?;
+      if (v is double) return v;
+      if (v is int) return v.toDouble();
+      if (v is String) return double.tryParse(v);
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
   void _onMarkerTap(String id) {
     setState(() => _selectedId = id);
-    final p = widget.places.where((e) => e.id.toString() == id).cast<Place?>().firstWhere((e) => e != null, orElse: () => null);
+    final p = widget.places
+        .where((e) => e.id.toString() == id)
+        .cast<Place?>()
+        .firstWhere((e) => e != null, orElse: () => null);
     if (p != null && widget.onSelectPlace != null) {
       widget.onSelectPlace!(p);
     }
@@ -198,7 +234,8 @@ class _NearbyPlacesMapState extends State<NearbyPlacesMap> {
     );
   }
 
-  Widget _fabIcon(BuildContext context, IconData icon, String tooltip, VoidCallback onPressed) {
+  Widget _fabIcon(BuildContext context, IconData icon, String tooltip,
+      VoidCallback onPressed) {
     return Material(
       color: Theme.of(context).colorScheme.surfaceContainerHigh,
       shape: const CircleBorder(),
@@ -234,7 +271,7 @@ class _PeekCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasOrigin = originLat != null && originLng != null;
-    final hasCoords = place.lat != null && place.lng != null;
+    final hasCoords = _lat(place) != null && _lng(place) != null;
 
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -249,7 +286,7 @@ class _PeekCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    (place.name ?? 'Place').trim(),
+                    place.name.trim(),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(fontWeight: FontWeight.w800),
@@ -319,12 +356,57 @@ class _PeekCard extends StatelessWidget {
     );
   }
 
+  double? _lat(Place p) {
+    try {
+      final d = p as dynamic;
+      final v = (d.lat ?? d.latitude ?? d.locationLat ?? d.coordLat) as Object?;
+      if (v is double) return v;
+      if (v is int) return v.toDouble();
+      if (v is String) return double.tryParse(v);
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  double? _lng(Place p) {
+    try {
+      final d = p as dynamic;
+      final v =
+          (d.lng ?? d.longitude ?? d.locationLng ?? d.coordLng) as Object?;
+      if (v is double) return v;
+      if (v is int) return v.toDouble();
+      if (v is String) return double.tryParse(v);
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
   String _subtitle() {
+    Map<String, dynamic> m = const <String, dynamic>{};
+    try {
+      final dyn = place as dynamic;
+      final j = dyn.toJson?.call();
+      if (j is Map<String, dynamic>) m = j;
+    } catch (_) {}
+
+    String? pick(List<String> keys) {
+      for (final k in keys) {
+        final v = m[k];
+        if (v is String && v.trim().isNotEmpty) return v.trim();
+      }
+      return null;
+    }
+
     final parts = <String>[
-      if ((place.address ?? '').trim().isNotEmpty) place.address!.trim(),
-      if ((place.city ?? '').trim().isNotEmpty) place.city!.trim(),
-      if ((place.region ?? '').trim().isNotEmpty) place.region!.trim(),
-      if ((place.country ?? '').trim().isNotEmpty) place.country!.trim(),
+      if ((pick(['address', 'formattedAddress', 'addr']) ?? '').isNotEmpty)
+        pick(['address', 'formattedAddress', 'addr'])!,
+      if ((pick(['city', 'locality']) ?? '').isNotEmpty)
+        pick(['city', 'locality'])!,
+      if ((pick(['region', 'state']) ?? '').isNotEmpty)
+        pick(['region', 'state'])!,
+      if ((pick(['country']) ?? '').isNotEmpty) pick(['country'])!,
     ];
     return parts.isEmpty ? '' : parts.join(', ');
   }

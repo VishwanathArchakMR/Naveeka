@@ -224,10 +224,10 @@ class _HotelResultsScreenState extends State<HotelResultsScreen> {
     final results = <Map<String, dynamic>>[];
     final count = page >= 3 ? (limit ~/ 2) : limit;
     for (var i = 0; i < count; i++) {
-      final id = 'HTL-${page}-${i + 1}';
+      final id = 'HTL-$page-${i + 1}';
       results.add({
         'id': id,
-        'name': 'Hotel ${destination.toUpperCase()} ${page}-${i + 1}',
+        'name': 'Hotel ${destination.toUpperCase()} $page-${i + 1}',
         'city': destination,
         'area': i % 2 == 0 ? 'Center' : 'Suburb',
         'imageUrl': null,

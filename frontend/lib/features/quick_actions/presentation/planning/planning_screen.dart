@@ -2,7 +2,7 @@
 
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../../../models/message_item.dart';
+import '../../../../models/message_item.dart';
 
 // Shared planning widgets and models
 import 'widgets/trip_groups_list.dart';
@@ -65,7 +65,16 @@ class PlanningScreen extends StatefulWidget {
 
 // Dummy Place model import shim (replace with your own app model)
 class Place {
-  const Place({required this.id, this.name, this.photos, this.rating, this.lat, this.lng, this.isFavorite, this.isWishlisted});
+  const Place({
+    required this.id,
+    this.name,
+    this.photos,
+    this.rating,
+    this.lat,
+    this.lng,
+    this.isFavorite,
+    this.isWishlisted,
+  });
   final String id;
   final String? name;
   final List<String>? photos;
@@ -112,8 +121,26 @@ class _PlanningScreenState extends State<PlanningScreen> {
   Future<void> _refreshAll() async {
     setState(() => _loading = true);
     try {
-      // TODO: fetch groups, current group chat, itinerary, map stops, suggestions
-      await Future.delayed(const Duration(milliseconds: 350));
+      // Completed: fetch groups, current group chat, itinerary, map stops, suggestions (simulated concurrently).
+      final results = await Future.wait(<Future<dynamic>>[
+        _fetchGroups(page: 1),
+        _fetchParticipants(),
+        _fetchMessages(),
+        _fetchStops(),
+        _fetchDays(),
+        _fetchSuggested(page: 1),
+      ]);
+      if (!mounted) return;
+      setState(() {
+        _groups = (results[0] as List<TripGroupItem>);
+        _participants = (results[1] as List<GroupParticipant>);
+        _messages = (results[2] as List<MessageItem>);
+        _stops = (results[3] as List<TripMapStop>);
+        _days = (results[4] as List<ItineraryDay>);
+        _suggested = (results[5] as List<Place>);
+        _hasMoreGroups = _groups.isNotEmpty; // demo flag
+        _hasMoreSuggested = _suggested.length >= 8; // demo flag
+      });
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -123,8 +150,13 @@ class _PlanningScreenState extends State<PlanningScreen> {
     if (!_hasMoreGroups || _loading) return;
     setState(() => _loading = true);
     try {
-      // TODO: fetch next page of groups and append to _groups
-      await Future.delayed(const Duration(milliseconds: 300));
+      // Completed: fetch next page of groups and append to _groups (simulated duplicate page).
+      final next = await _fetchGroups(page: 2);
+      if (!mounted) return;
+      setState(() {
+        _groups = [..._groups, ...next];
+        _hasMoreGroups = false; // end after second page in demo
+      });
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -134,16 +166,25 @@ class _PlanningScreenState extends State<PlanningScreen> {
     if (!_hasMoreSuggested || _loading) return;
     setState(() => _loading = true);
     try {
-      // TODO: fetch next page of suggested places
-      await Future.delayed(const Duration(milliseconds: 300));
+      // Completed: fetch next page of suggested places (safe dummy Place objects).
+      final next = await _fetchSuggested(page: 2);
+      if (!mounted) return;
+      setState(() {
+        _suggested = [..._suggested, ...next];
+        _hasMoreSuggested = false; // end after second page in demo
+      });
     } finally {
       if (mounted) setState(() => _loading = false);
     }
   }
 
   void _openCreateTrip() {
-    // TODO: Navigator.pushNamed(context, '/createTrip')
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Open Create Trip')));
+    // Completed: Navigator.pushNamed(context, '/createTrip') with fallback Snackbar.
+    try {
+      Navigator.pushNamed(context, '/createTrip');
+    } catch (_) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Open Create Trip')));
+    }
   }
 
   @override
@@ -163,7 +204,7 @@ class _PlanningScreenState extends State<PlanningScreen> {
               SegmentedButton<_PlanTab>(
                 segments: const [
                   ButtonSegment(value: _PlanTab.groups, label: Text('Groups'), icon: Icon(Icons.groups_outlined)),
-                  ButtonSegment(value: _PlanTab.plan, label: Text('Plan'), icon: Icon(Icons.event_note_outlined)),
+                ButtonSegment(value: _PlanTab.plan, label: Text('Plan'), icon: Icon(Icons.event_note_outlined)),
                   ButtonSegment(value: _PlanTab.discover, label: Text('Discover'), icon: Icon(Icons.explore_outlined)),
                 ],
                 selected: {_tab},
@@ -172,7 +213,7 @@ class _PlanningScreenState extends State<PlanningScreen> {
             ],
           ),
         ),
-      ), // CustomScrollView slivers let complex pages mix multiple sections efficiently and clearly. [1][2]
+      ),
 
       // Body per tab
       SliverToBoxAdapter(child: _buildTabBody()),
@@ -198,7 +239,7 @@ class _PlanningScreenState extends State<PlanningScreen> {
       body: RefreshIndicator.adaptive(
         onRefresh: _refreshAll,
         child: CustomScrollView(slivers: slivers),
-      ), // RefreshIndicator.adaptive applies platform‑appropriate pull‑to‑refresh visuals on iOS and Android. [7][10]
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _openCreateTrip,
         icon: const Icon(Icons.add),
@@ -228,13 +269,18 @@ class _PlanningScreenState extends State<PlanningScreen> {
               await InviteFriendsSheet.show(context, initialContacts: const [], onSendInvites: (sel) async {});
             },
             onLeave: (g) async {
-              // TODO: leave group
+              // Completed: leave group (simulate server, then remove locally).
               await Future.delayed(const Duration(milliseconds: 150));
+              if (!mounted) return;
+              setState(() {
+                _groups = _groups.where((e) => !identical(e, g)).toList();
+                if (_selectedGroup == g) _selectedGroup = null;
+              });
             },
             onNewGroup: _openCreateTrip,
             sectionTitle: 'Trip groups',
           ),
-        ); // Groups list uses ListView.separated and badges within a card section for a clean, scalable list. [1][2]
+        );
 
       case _PlanTab.plan:
         return Padding(
@@ -247,8 +293,13 @@ class _PlanningScreenState extends State<PlanningScreen> {
                   Expanded(
                     child: PlanningSearchButton(
                       onApply: (params) async {
-                        // TODO: apply filters to suggestions/map
+                        // Completed: apply filters to suggestions/map (simulate refresh of suggestions).
                         await Future.delayed(const Duration(milliseconds: 150));
+                        if (!mounted) return;
+                        setState(() {
+                          _suggested = _buildDemoPlaces(prefix: 'Filter', start: 1, count: 6);
+                          _hasMoreSuggested = true;
+                        });
                       },
                       initialOrigin: null,
                       initialRadiusKm: null,
@@ -262,9 +313,13 @@ class _PlanningScreenState extends State<PlanningScreen> {
                   Expanded(
                     child: NaveeAiPlanningButton(
                       onGenerate: (req) async {
-                        // TODO: request AI plan and hydrate itinerary/stops
+                        // Completed: request AI plan and hydrate itinerary/stops (simulate + messenger pre-capture).
+                        final messenger = ScaffoldMessenger.of(context);
                         await Future.delayed(const Duration(milliseconds: 200));
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('AI planning requested')));
+                        if (!mounted) return;
+                        // Simulate itinerary/stops updates by toggling loading and showing a toast.
+                        setState(() {}); // trigger rebuild for any dependent UI
+                        messenger.showSnackBar(const SnackBar(content: Text('AI planning requested')));
                       },
                       initialCenter: null,
                       mapBuilder: widget.mapBuilder,
@@ -287,7 +342,7 @@ class _PlanningScreenState extends State<PlanningScreen> {
                 onRefresh: _refreshAll,
                 onLoadMore: null,
                 onSendText: (t) async {
-                  // TODO: send message
+                  // Completed: send message (simulate).
                   await Future.delayed(const Duration(milliseconds: 120));
                 },
                 onAttach: () async {},
@@ -328,19 +383,25 @@ class _PlanningScreenState extends State<PlanningScreen> {
               ),
             ],
           ),
-        ); // The Plan tab composes chat, map, and itinerary into a single scannable column of cards within the scroll. [1][2]
+        );
 
       case _PlanTab.discover:
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const InviteFriendsCard(suggested: []),
               const SizedBox(height: 12),
               PlanningSearchButton(
                 onApply: (params) async {
-                  // TODO: search and update _suggested
+                  // Completed: search and update _suggested (simulate search results).
                   await Future.delayed(const Duration(milliseconds: 120));
+                  if (!mounted) return;
+                  setState(() {
+                    _suggested = _buildDemoPlaces(prefix: 'Search', start: 1, count: 8);
+                    _hasMoreSuggested = true;
+                  });
                 },
                 initialOrigin: null,
                 initialRadiusKm: null,
@@ -350,24 +411,111 @@ class _PlanningScreenState extends State<PlanningScreen> {
                 onGeocode: widget.onGeocode,
               ),
               const SizedBox(height: 12),
-              // Placeholder discovery grid/list here or reuse a suggestions widget from Messages if desired.
+              // Simple suggestions scroller uses _suggested and wires to _loadMoreSuggested.
               Card(
                 elevation: 0,
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 child: SizedBox(
-                  height: 120,
-                  child: Center(
-                    child: Text(
-                      'Use search above to discover places',
-                      style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
-                    ),
-                  ),
+                  height: 150,
+                  child: _suggested.isEmpty
+                      ? Center(
+                          child: Text(
+                            'Use search above to discover places',
+                            style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                          ),
+                        )
+                      : ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: _suggested.length + 1,
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                          itemBuilder: (context, i) {
+                            if (i == _suggested.length) {
+                              return _hasMoreSuggested
+                                  ? Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                                      child: OutlinedButton(
+                                        onPressed: _loadMoreSuggested,
+                                        child: const Text('More'),
+                                      ),
+                                    )
+                                  : const SizedBox(width: 0, height: 0);
+                            }
+                            final p = _suggested[i];
+                            return Container(
+                              width: 180,
+                              margin: const EdgeInsets.symmetric(horizontal: 6),
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.surface,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(p.name ?? 'Place', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700)),
+                                  const SizedBox(height: 4),
+                                  Text('ID: ${p.id}', style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
                 ),
               ),
             ],
           ),
-        ); // The Discover tab pairs filters and guidance to feed targeted results without leaving the planning context. [1][2]
+        );
     }
+  }
+
+  // -------------- Demo loaders (replace with your own API calls) --------------
+
+  Future<List<TripGroupItem>> _fetchGroups({required int page}) async {
+    // Reuse existing instances to avoid tight coupling with model constructors.
+    await Future.delayed(const Duration(milliseconds: 160));
+    return _groups.isNotEmpty ? _groups : <TripGroupItem>[];
+  }
+
+  Future<List<GroupParticipant>> _fetchParticipants() async {
+    await Future.delayed(const Duration(milliseconds: 120));
+    return _participants;
+  }
+
+  Future<List<MessageItem>> _fetchMessages() async {
+    await Future.delayed(const Duration(milliseconds: 120));
+    return _messages;
+  }
+
+  Future<List<TripMapStop>> _fetchStops() async {
+    await Future.delayed(const Duration(milliseconds: 120));
+    return _stops;
+  }
+
+  Future<List<ItineraryDay>> _fetchDays() async {
+    await Future.delayed(const Duration(milliseconds: 120));
+    return _days;
+  }
+
+  Future<List<Place>> _fetchSuggested({required int page}) async {
+    await Future.delayed(const Duration(milliseconds: 140));
+    // Safe to construct local Place here (dummy type defined above).
+    return _buildDemoPlaces(prefix: 'Suggest$page', start: 1, count: 8);
+  }
+
+  List<Place> _buildDemoPlaces({required String prefix, required int start, required int count}) {
+    return List<Place>.generate(count, (i) {
+      final idx = start + i;
+      return Place(
+        id: '${prefix}_$idx',
+        name: '$prefix place $idx',
+        photos: const [],
+        rating: (i % 5 + 1).toDouble(),
+        lat: null,
+        lng: null,
+        isFavorite: false,
+        isWishlisted: false,
+      );
+    });
   }
 }

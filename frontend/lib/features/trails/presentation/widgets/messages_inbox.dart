@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../messages/providers/messages_providers.dart';
+import '../../../quick_actions/providers/messages_providers.dart';
 
 class MessagesInbox extends ConsumerStatefulWidget {
   const MessagesInbox({

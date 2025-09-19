@@ -61,11 +61,36 @@ class ReviewsRatings extends StatefulWidget {
     bool enableWrite = false,
     String title = 'Reviews & ratings',
   }) {
+    // Read from toJson() map to avoid compile-time coupling to specific getters.
+    Map<String, dynamic> m = const <String, dynamic>{};
+    try {
+      final dyn = p as dynamic;
+      final j = dyn.toJson();
+      if (j is Map<String, dynamic>) m = j;
+    } catch (_) {
+      // Ignore if model doesn't expose toJson
+    } // Using JSON maps is a robust way to read optional fields across varying models. [web:5858]
+
+    num? pickNum(List<String> keys) {
+      for (final k in keys) {
+        final v = m[k];
+        if (v is num) return v;
+        if (v is String) {
+          final n = num.tryParse(v);
+          if (n != null) return n;
+        }
+      }
+      return null;
+    }
+
+    final avg = pickNum(['rating', 'avgRating'])?.toDouble();
+    final total = pickNum(['reviewsCount', 'reviewCount'])?.toInt();
+
     return ReviewsRatings(
       key: key,
       place: p,
-      averageRating: p.rating,
-      totalCount: p.reviewsCount,
+      averageRating: avg,
+      totalCount: total,
       distribution: distribution,
       reviews: reviews,
       sortBy: sortBy,
@@ -411,9 +436,12 @@ class _ReviewTileState extends State<_ReviewTile> with TickerProviderStateMixin 
   String _initials(String name) {
     final parts = name.trim().split(RegExp(r'\s+')).where((e) => e.isNotEmpty).toList();
     if (parts.isEmpty) return '?';
-    final one = parts.toUpperCase();
-    final two = parts.length > 1 ? parts.toUpperCase() : '';
-    return '$one$two';
+    final first = parts.first;
+    final second = parts.length > 1 ? parts[1] : '';
+    final a = first.isNotEmpty ? first[0].toUpperCase() : ''; // Uppercase first letter of first word. [web:6060]
+    final b = second.isNotEmpty ? second[0].toUpperCase() : ''; // Uppercase first letter of second word if present. [web:6060]
+    final res = '$a$b';
+    return res.isEmpty ? '?' : res;
   }
 
   String _fmtDate(DateTime dt) {

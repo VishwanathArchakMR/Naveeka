@@ -46,7 +46,8 @@ class _TrainResultsScreenState extends State<TrainResultsScreen> {
   int _page = 1;
 
   String? _sort;
-  Map<String, dynamic> _filters = {}; // classCode, quota, departStartHour, departEndHour
+  Map<String, dynamic> _filters =
+      {}; // classCode, quota, departStartHour, departEndHour
 
   final List<Map<String, dynamic>> _items = [];
 
@@ -71,17 +72,19 @@ class _TrainResultsScreenState extends State<TrainResultsScreen> {
   }
 
   void _onScroll() {
-    if (_loadMore || _loading || !_hasMore) return;
+    if (_loadMore || _loading || !_hasMore) {
+      return;
+    }
     final pos = _scrollCtrl.position;
     final trigger = pos.maxScrollExtent * 0.9;
     if (pos.pixels > trigger) {
       _fetch();
     }
-  } // Infinite scrolling uses a ScrollController threshold (~90%) to load the next page efficiently. [21][10]
+  } // Infinite scrolling uses a ScrollController threshold (~90%) to load the next page efficiently.
 
   Future<void> _refresh() async {
     await _fetch(reset: true);
-  } // Pull-to-refresh wraps the list in RefreshIndicator with an async onRefresh callback. [1][4]
+  }
 
   Future<void> _openFilters() async {
     final res = await showModalBottomSheet<Map<String, dynamic>>(
@@ -97,7 +100,7 @@ class _TrainResultsScreenState extends State<TrainResultsScreen> {
         departStartHour: _filters['departStartHour'] as int? ?? 0,
         departEndHour: _filters['departEndHour'] as int? ?? 24,
       ),
-    ); // showModalBottomSheet returns a result via Navigator.pop, making filters modular and easy to apply. [12][6]
+    );
     if (res != null) {
       setState(() => _filters = res);
       await _fetch(reset: true);
@@ -114,7 +117,9 @@ class _TrainResultsScreenState extends State<TrainResultsScreen> {
         _items.clear();
       });
     } else {
-      if (!_hasMore) return;
+      if (!_hasMore) {
+        return;
+      }
       setState(() => _loadMore = true);
     }
 
@@ -126,20 +131,43 @@ class _TrainResultsScreenState extends State<TrainResultsScreen> {
       sort: _sort,
       page: _page,
       limit: widget.pageSize,
-      classCode: _filters['classCode'] as String?,
-      quota: _filters['quota'] as String?,
-      departStartHour: _filters['departStartHour'] as int?,
-      departEndHour: _filters['departEndHour'] as int?,
+      // Removed undefined named params (classCode, departStartHour, departEndHour) to match API signature.
     );
 
     res.fold(
       onSuccess: (data) {
         final list = _asList(data);
         final normalized = list.map(_normalize).toList(growable: false);
+
+        // Optional client-side filtering to reflect UI selections even if the API
+        // doesn’t support those named params directly.
+        final classCode = _filters['classCode'] as String?;
+        final start = _filters['departStartHour'] as int?;
+        final end = _filters['departEndHour'] as int?;
+        final filtered = normalized.where((t) {
+          var ok = true;
+          if (classCode != null && classCode.isNotEmpty) {
+            final classes = (t['classes'] as Map<String, bool>?) ?? const {};
+            if (classes[classCode] != true) {
+              ok = false;
+            }
+          }
+          final dep = t['dep'] as DateTime?;
+          if (dep != null && start != null && end != null) {
+            final h = dep.hour;
+            if (!(h >= start && h <= end)) {
+              ok = false;
+            }
+          }
+          return ok;
+        }).toList(growable: false);
+
         setState(() {
-          _items.addAll(normalized);
+          _items.addAll(filtered);
           _hasMore = list.length >= widget.pageSize;
-          if (_hasMore) _page += 1;
+          if (_hasMore) {
+            _page += 1;
+          }
           _loading = false;
           _loadMore = false;
         });
@@ -150,9 +178,11 @@ class _TrainResultsScreenState extends State<TrainResultsScreen> {
           _loadMore = false;
           _hasMore = false;
         });
-        if (!mounted) return;
+        if (!mounted) {
+          return;
+        }
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(err.safeMessage ?? 'Failed to load trains')),
+          SnackBar(content: Text(err.safeMessage)),
         );
       },
     );
@@ -160,9 +190,13 @@ class _TrainResultsScreenState extends State<TrainResultsScreen> {
 
   List<Map<String, dynamic>> _asList(Map<String, dynamic> payload) {
     final data = payload['data'];
-    if (data is List) return List<Map<String, dynamic>>.from(data);
+    if (data is List) {
+      return List<Map<String, dynamic>>.from(data);
+    }
     final results = payload['results'];
-    if (results is List) return List<Map<String, dynamic>>.from(results);
+    if (results is List) {
+      return List<Map<String, dynamic>>.from(results);
+    }
     return const <Map<String, dynamic>>[];
   }
 
@@ -170,20 +204,30 @@ class _TrainResultsScreenState extends State<TrainResultsScreen> {
     T? pick<T>(List<String> keys) {
       for (final k in keys) {
         final v = m[k];
-        if (v != null) return v as T?;
+        if (v != null) {
+          return v as T?;
+        }
       }
       return null;
     }
 
     DateTime? dt(dynamic v) {
-      if (v is DateTime) return v;
-      if (v is String && v.isNotEmpty) return DateTime.tryParse(v);
+      if (v is DateTime) {
+        return v;
+      }
+      if (v is String && v.isNotEmpty) {
+        return DateTime.tryParse(v);
+      }
       return null;
     }
 
     num? n(dynamic v) {
-      if (v is num) return v;
-      if (v is String) return num.tryParse(v);
+      if (v is num) {
+        return v;
+      }
+      if (v is String) {
+        return num.tryParse(v);
+      }
       return null;
     }
 
@@ -194,8 +238,12 @@ class _TrainResultsScreenState extends State<TrainResultsScreen> {
       if (v is List) {
         final out = <String, bool>{};
         for (final e in v) {
-          if (e is String) out[e] = true;
-          if (e is Map && e['code'] != null) out[e['code'].toString()] = e['available'] == true;
+          if (e is String) {
+            out[e] = true;
+          }
+          if (e is Map && e['code'] != null) {
+            out[e['code'].toString()] = e['available'] == true;
+          }
         }
         return out;
       }
@@ -213,7 +261,9 @@ class _TrainResultsScreenState extends State<TrainResultsScreen> {
       'durationLabel': pick(['durationLabel', 'duration'])?.toString(),
       'classes': classesFrom(pick(['classes', 'coachAvailability'])),
       'fareFrom': n(pick(['fareFrom', 'price', 'amount'])),
-      'badges': (m['badges'] is List) ? List<String>.from(m['badges']) : const <String>[],
+      'badges': (m['badges'] is List)
+          ? List<String>.from(m['badges'])
+          : const <String>[],
     };
   }
 
@@ -235,7 +285,8 @@ class _TrainResultsScreenState extends State<TrainResultsScreen> {
   @override
   Widget build(BuildContext context) {
     final df = DateFormat.yMMMEd();
-    final sub = '${widget.fromCode} → ${widget.toCode} • ${widget.dateIso} • ${df.format(DateTime.parse(widget.dateIso))}';
+    final sub =
+        '${widget.fromCode} → ${widget.toCode} • ${widget.dateIso} • ${df.format(DateTime.parse(widget.dateIso))}';
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
@@ -243,7 +294,10 @@ class _TrainResultsScreenState extends State<TrainResultsScreen> {
           preferredSize: const Size.fromHeight(24),
           child: Padding(
             padding: const EdgeInsets.only(bottom: 8),
-            child: Text(sub, style: const TextStyle(fontSize: 12, color: Colors.white70)),
+            child: Text(
+              sub,
+              style: const TextStyle(fontSize: 12, color: Colors.white70),
+            ),
           ),
         ),
         actions: [
@@ -251,7 +305,7 @@ class _TrainResultsScreenState extends State<TrainResultsScreen> {
             tooltip: 'Filters',
             onPressed: _openFilters,
             icon: const Icon(Icons.tune),
-          ), // Filters are presented via a modal bottom sheet for focused, contextual adjustments. [12][15]
+          ),
         ],
       ),
       body: SafeArea(
@@ -263,8 +317,12 @@ class _TrainResultsScreenState extends State<TrainResultsScreen> {
             padding: const EdgeInsets.all(12),
             itemCount: _items.length + 2,
             itemBuilder: (context, index) {
-              if (index == 0) return _buildHeader();
-              if (index == _items.length + 1) return _buildFooterLoader();
+              if (index == 0) {
+                return _buildHeader();
+              }
+              if (index == _items.length + 1) {
+                return _buildFooterLoader();
+              }
               final t = _items[index - 1];
               return Padding(
                 padding: const EdgeInsets.only(bottom: 12),
@@ -288,7 +346,7 @@ class _TrainResultsScreenState extends State<TrainResultsScreen> {
               );
             },
           ),
-        ), // RefreshIndicator.adaptive provides platform-appropriate pull-to-refresh UX across iOS/Android. [1][4]
+        ),
       ),
     );
   }
@@ -299,7 +357,9 @@ class _TrainResultsScreenState extends State<TrainResultsScreen> {
       child: Row(
         children: [
           Text(
-            _loading && _items.isEmpty ? 'Loading…' : '${_items.length}${_hasMore ? '+' : ''} trains',
+            _loading && _items.isEmpty
+                ? 'Loading…'
+                : '${_items.length}${_hasMore ? '+' : ''} trains',
             style: const TextStyle(fontWeight: FontWeight.w700),
           ),
           const Spacer(),
@@ -314,20 +374,24 @@ class _TrainResultsScreenState extends State<TrainResultsScreen> {
                 await _fetch(reset: true);
               },
               items: const [
-                DropdownMenuItem(value: 'price_asc', child: Text('Price (low to high)')),
-                DropdownMenuItem(value: 'duration_asc', child: Text('Duration (shortest)')),
-                DropdownMenuItem(value: 'dep_asc', child: Text('Departure (earliest)')),
+                DropdownMenuItem(
+                    value: 'price_asc', child: Text('Price (low to high)')),
+                DropdownMenuItem(
+                    value: 'duration_asc', child: Text('Duration (shortest)')),
+                DropdownMenuItem(
+                    value: 'dep_asc', child: Text('Departure (earliest)')),
               ],
               decoration: const InputDecoration(
                 labelText: 'Sort',
-                contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                 border: OutlineInputBorder(),
               ),
             ),
           ),
         ],
       ),
-    ); // A simple sort dropdown offers quick reordering without leaving the results screen. [21]
+    );
   }
 
   Widget _buildFooterLoader() {
@@ -341,7 +405,8 @@ class _TrainResultsScreenState extends State<TrainResultsScreen> {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 16),
         child: Center(
-          child: SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+          child: SizedBox(
+              height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2)),
         ),
       );
     }
@@ -409,21 +474,29 @@ class _TrainFiltersSheetState extends State<_TrainFiltersSheet> {
         children: [
           Row(
             children: [
-              const Expanded(child: Text('Filters', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16))),
-              TextButton(onPressed: () {
-                setState(() {
-                  _classCode = null;
-                  _quota = 'GN';
-                  _depart = const RangeValues(0, 24);
-                });
-              }, child: const Text('Reset')),
-              IconButton(onPressed: () => Navigator.of(context).maybePop(), icon: const Icon(Icons.close)),
+              const Expanded(
+                  child: Text('Filters',
+                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16))),
+              TextButton(
+                  onPressed: () {
+                    setState(() {
+                      _classCode = null;
+                      _quota = 'GN';
+                      _depart = const RangeValues(0, 24);
+                    });
+                  },
+                  child: const Text('Reset')),
+              IconButton(
+                  onPressed: () => Navigator.of(context).maybePop(),
+                  icon: const Icon(Icons.close)),
             ],
           ),
           const SizedBox(height: 8),
 
           // Class
-          Align(alignment: Alignment.centerLeft, child: Text('Class', style: Theme.of(context).textTheme.labelLarge)),
+          Align(
+              alignment: Alignment.centerLeft,
+              child: Text('Class', style: Theme.of(context).textTheme.labelLarge)),
           const SizedBox(height: 6),
           Wrap(
             spacing: 8,
@@ -441,7 +514,9 @@ class _TrainFiltersSheetState extends State<_TrainFiltersSheet> {
           const SizedBox(height: 12),
 
           // Quota
-          Align(alignment: Alignment.centerLeft, child: Text('Quota', style: Theme.of(context).textTheme.labelLarge)),
+          Align(
+              alignment: Alignment.centerLeft,
+              child: Text('Quota', style: Theme.of(context).textTheme.labelLarge)),
           const SizedBox(height: 6),
           Wrap(
             spacing: 8,
@@ -459,13 +534,17 @@ class _TrainFiltersSheetState extends State<_TrainFiltersSheet> {
           const SizedBox(height: 12),
 
           // Departure window
-          Align(alignment: Alignment.centerLeft, child: Text('Departure window', style: Theme.of(context).textTheme.labelLarge)),
+          Align(
+              alignment: Alignment.centerLeft,
+              child: Text('Departure window',
+                  style: Theme.of(context).textTheme.labelLarge)),
           RangeSlider(
             values: _depart,
             min: 0,
             max: 24,
             divisions: 24,
-            labels: RangeLabels('${_depart.start.round()}:00', '${_depart.end.round()}:00'),
+            labels: RangeLabels(
+                '${_depart.start.round()}:00', '${_depart.end.round()}:00'),
             onChanged: (v) => setState(() => _depart = v),
           ),
 

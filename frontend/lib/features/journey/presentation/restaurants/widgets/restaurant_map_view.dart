@@ -49,14 +49,16 @@ class RestaurantMapView extends StatelessWidget {
     }
 
     // Fallback center if none
-    final fallbackCenter = const LatLng(20.5937, 78.9629); // India centroid
+    const fallbackCenter = LatLng(20.5937, 78.9629); // India centroid
 
     // Bounds for auto-fit on first paint; add tiny delta if only one point
     LatLngBounds? bounds;
     if (points.isNotEmpty) {
       if (points.length == 1) {
         final p = points.first;
-        bounds = LatLngBounds.fromPoints([p, LatLng(p.latitude + 0.0005, p.longitude + 0.0005)]);
+        bounds = LatLngBounds.fromPoints(
+          [p, LatLng(p.latitude + 0.0005, p.longitude + 0.0005)],
+        );
       } else {
         bounds = LatLngBounds.fromPoints(points);
       }
@@ -68,24 +70,22 @@ class RestaurantMapView extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         child: FlutterMap(
           options: MapOptions(
-            // Initial camera fit so all pins are visible with padding
-            cameraFit: bounds != null
+            // Use initialCameraFit when bounds exist; otherwise fall back to initialCenter/initialZoom
+            initialCameraFit: bounds != null
                 ? CameraFit.bounds(
                     bounds: bounds,
                     padding: const EdgeInsets.all(28),
                     maxZoom: 16,
                   )
-                : CameraFit.coordinates(
-                    coordinates: [fallbackCenter],
-                    zoom: initialZoom,
-                  ),
+                : null,
+            initialCenter: fallbackCenter,
             initialZoom: initialZoom,
             interactionOptions: const InteractionOptions(
               flags: InteractiveFlag.pinchZoom |
                   InteractiveFlag.drag |
                   InteractiveFlag.doubleTapZoom,
             ),
-          ), // CameraFit.bounds configures initial viewport to include bounds; use coordinates when empty [9][6]
+          ),
           children: [
             TileLayer(
               urlTemplate: tileUrl,
@@ -106,7 +106,7 @@ class RestaurantMapView extends StatelessWidget {
                       showPriceLevel: showPriceLevel,
                     ),
               ],
-            ), // MarkerLayer accepts arbitrary widgets; add GestureDetector inside marker for taps per docs [1][2]
+            ),
           ],
         ),
       ),
@@ -121,10 +121,16 @@ class RestaurantMapView extends StatelessWidget {
     required bool selected,
     required bool showPriceLevel,
   }) {
-    final rating = (restaurant['rating'] is num) ? (restaurant['rating'] as num).toDouble() : null;
+    final rating = (restaurant['rating'] is num)
+        ? (restaurant['rating'] as num).toDouble()
+        : null;
     final open = restaurant['openNow'] == true;
-    final priceLevel = restaurant['priceLevel'] is int ? (restaurant['priceLevel'] as int) : null;
-    final costForTwo = restaurant['costForTwo'] is num ? (restaurant['costForTwo'] as num) : null;
+    final priceLevel = restaurant['priceLevel'] is int
+        ? (restaurant['priceLevel'] as int)
+        : null;
+    final costForTwo = restaurant['costForTwo'] is num
+        ? (restaurant['costForTwo'] as num)
+        : null;
 
     return Marker(
       point: point,
@@ -153,6 +159,7 @@ class RestaurantMapView extends StatelessWidget {
       if (v is String) return double.tryParse(v);
       return null;
     }
+
     final la = d(lat), ln = d(lng);
     if (la == null || ln == null) return null;
     return LatLng(la, ln);
@@ -181,7 +188,8 @@ class _Pin extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bg = selected ? Theme.of(context).colorScheme.primary : Colors.white;
-    final fg = selected ? Theme.of(context).colorScheme.onPrimary : Colors.black87;
+    final fg =
+        selected ? Theme.of(context).colorScheme.onPrimary : Colors.black87;
 
     final label = showPriceLevel
         ? _priceLabel()
@@ -200,7 +208,9 @@ class _Pin extends StatelessWidget {
           ),
         ],
         border: Border.all(
-          color: selected ? Theme.of(context).colorScheme.primary : Colors.black12,
+          color: selected
+              ? Theme.of(context).colorScheme.primary
+              : Colors.black12,
         ),
       ),
       child: Row(
@@ -208,7 +218,11 @@ class _Pin extends StatelessWidget {
         children: [
           Text(label, style: TextStyle(color: fg, fontWeight: FontWeight.w800)),
           const SizedBox(width: 6),
-          Icon(openNow ? Icons.circle : Icons.circle_outlined, size: 10, color: openNow ? Colors.green : Colors.red),
+          Icon(
+            openNow ? Icons.circle : Icons.circle_outlined,
+            size: 10,
+            color: openNow ? Colors.green : Colors.red,
+          ),
         ],
       ),
     );

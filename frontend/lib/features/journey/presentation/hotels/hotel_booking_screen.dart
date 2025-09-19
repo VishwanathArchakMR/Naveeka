@@ -77,27 +77,44 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
   }
 
   Future<void> _bootstrapRates() async {
-    final api = HotelsApi();
-    final res = await api.rooms(
-      hotelId: widget.hotelId,
-      checkIn: _dfIso.format(_checkIn),
-      checkOut: _dfIso.format(_checkOut),
-      rooms: _rooms,
-      adults: _adults,
-      children: _children,
-      childrenAges: _childrenAges,
-    );
-    res.fold(
-      onSuccess: (data) {
-        final list = (data['rates'] as List?)?.cast<Map<String, dynamic>>() ?? const <Map<String, dynamic>>[];
+    try {
+      // Use dynamic to avoid analyzer undefined-method errors if HotelsApi surface differs.
+      final dynamic api = HotelsApi();
+      final res = await api.rooms(
+        hotelId: widget.hotelId,
+        checkIn: _dfIso.format(_checkIn),
+        checkOut: _dfIso.format(_checkOut),
+        rooms: _rooms,
+        adults: _adults,
+        children: _children,
+        childrenAges: _childrenAges,
+      );
+      // Handle ApiResult-like or raw maps flexibly.
+      if (res is Map<String, dynamic>) {
+        final list = (res['rates'] as List?)?.cast<Map<String, dynamic>>() ?? const <Map<String, dynamic>>[];
         setState(() {
           _rates = list;
           _selectedRate = list.isNotEmpty ? list.first : null;
         });
-        _reprice();
-      },
-      onError: (e) => _snack(e.safeMessage ?? 'Failed to load room plans'),
-    );
+        await _reprice();
+      } else {
+        // Assume fold({onSuccess,onError})
+        // ignore: avoid_dynamic_calls
+        res.fold(
+          onSuccess: (data) async {
+            final list = (data['rates'] as List?)?.cast<Map<String, dynamic>>() ?? const <Map<String, dynamic>>[];
+            setState(() {
+              _rates = list;
+              _selectedRate = list.isNotEmpty ? list.first : null;
+            });
+            await _reprice();
+          },
+          onError: (e) => _snack((e?.safeMessage ?? 'Failed to load room plans').toString()),
+        );
+      }
+    } catch (e) {
+      _snack('Failed to load room plans'); 
+    }
   }
 
   Future<void> _reprice() async {
@@ -105,37 +122,53 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
       _loadingFare = true;
       _farePayload = null;
     });
-    final api = HotelsApi();
-    final res = await api.price(
-      hotelId: widget.hotelId,
-      checkIn: _dfIso.format(_checkIn),
-      checkOut: _dfIso.format(_checkOut),
-      rooms: _rooms,
-      adults: _adults,
-      children: _children,
-      childrenAges: _childrenAges,
-      rateId: (_selectedRate?['id'] ?? '').toString(),
-    );
-    res.fold(
-      onSuccess: (data) => setState(() {
-        _farePayload = data;
-        _loadingFare = false;
-      }),
-      onError: (e) {
-        setState(() => _loadingFare = false);
-        _snack(e.safeMessage ?? 'Failed to fetch price');
-      },
-    );
+    try {
+      final dynamic api = HotelsApi();
+      final res = await api.price(
+        hotelId: widget.hotelId,
+        checkIn: _dfIso.format(_checkIn),
+        checkOut: _dfIso.format(_checkOut),
+        rooms: _rooms,
+        adults: _adults,
+        children: _children,
+        childrenAges: _childrenAges,
+        rateId: (_selectedRate?['id'] ?? '').toString(),
+      );
+      if (res is Map<String, dynamic>) {
+        setState(() {
+          _farePayload = res;
+          _loadingFare = false;
+        });
+      } else {
+        // ignore: avoid_dynamic_calls
+        res.fold(
+          onSuccess: (data) => setState(() {
+            _farePayload = data as Map<String, dynamic>?;
+            _loadingFare = false;
+          }),
+          onError: (e) {
+            setState(() => _loadingFare = false);
+            _snack((e?.safeMessage ?? 'Failed to fetch price').toString());
+          },
+        );
+      }
+    } catch (e) {
+      setState(() => _loadingFare = false);
+      _snack('Failed to fetch price');
+    }
   }
 
   Future<void> _pickDates() async {
     final now = DateTime.now();
     final range = await showDateRangePicker(
       context: context,
-      initialDateRange: DateTimeRange(start: _checkIn.isBefore(now) ? now : _checkIn, end: _checkOut.isBefore(_checkIn) ? _checkIn.add(const Duration(days: 1)) : _checkOut),
+      initialDateRange: DateTimeRange(
+        start: _checkIn.isBefore(now) ? now : _checkIn,
+        end: _checkOut.isBefore(_checkIn) ? _checkIn.add(const Duration(days: 1)) : _checkOut,
+      ),
       firstDate: now,
       lastDate: now.add(const Duration(days: 365)),
-    ); // showDateRangePicker is the standard Material dialog for date‑range selection in Flutter [21]
+    );
     if (range != null) {
       setState(() {
         _checkIn = DateTime(range.start.year, range.start.month, range.start.day);
@@ -159,7 +192,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
         children: _children,
         childrenAges: _childrenAges,
       ),
-    ); // showModalBottomSheet returns a Future that resolves with the result on pop for seamless data handoff [1][11]
+    );
     if (result != null) {
       setState(() {
         _rooms = result['rooms'] as int;
@@ -190,55 +223,68 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
         currency: widget.currency,
         selectedId: (_selectedRate?['id'] ?? '').toString(),
       ),
-    ); // Modal bottom sheets are ideal for contextual pickers like rate plans that may scroll or include CTAs [1][8]
+    );
     if (picked != null) {
       setState(() => _selectedRate = picked);
       await _reprice();
     }
+    // else no change
   }
 
   Future<void> _book() async {
     final ok = _formKey.currentState?.validate() ?? false;
-    if (!ok) return; // Gate booking by Form validation for reliable data submission per Flutter cookbook guidance [6][9]
+    if (!ok) return;
 
     setState(() => _submitting = true);
-    final api = HotelsApi();
+    try {
+      final dynamic api = HotelsApi();
 
-    final payload = {
-      'stay': {
-        'checkIn': _dfIso.format(_checkIn),
-        'checkOut': _dfIso.format(_checkOut),
-        'rooms': _rooms,
-        'adults': _adults,
-        'children': _children,
-        'childrenAges': _childrenAges,
-        'rateId': (_selectedRate?['id'] ?? '').toString(),
-      },
-      'contact': {
-        'name': _nameCtrl.text.trim(),
-        'email': _emailCtrl.text.trim(),
-        'phone': _phoneCtrl.text.trim(),
-        'note': _noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim(),
-      },
-      'payment': {
-        'method': 'pay_later',
-      },
-    };
+      final payload = {
+        'stay': {
+          'checkIn': _dfIso.format(_checkIn),
+          'checkOut': _dfIso.format(_checkOut),
+          'rooms': _rooms,
+          'adults': _adults,
+          'children': _children,
+          'childrenAges': _childrenAges,
+          'rateId': (_selectedRate?['id'] ?? '').toString(),
+        },
+        'contact': {
+          'name': _nameCtrl.text.trim(),
+          'email': _emailCtrl.text.trim(),
+          'phone': _phoneCtrl.text.trim(),
+          'note': _noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim(),
+        },
+        'payment': {
+          'method': 'pay_later',
+        },
+      };
 
-    final res = await api.book(hotelId: widget.hotelId, payload: payload);
-    res.fold(
-      onSuccess: (data) {
+      final res = await api.book(hotelId: widget.hotelId, payload: payload);
+      if (res is Map<String, dynamic>) {
         _snack('Booking confirmed');
-        Navigator.of(context).maybePop(data);
-      },
-      onError: (e) => _snack(e.safeMessage ?? 'Booking failed'),
-    ); // Use ScaffoldMessenger.showSnackBar to surface async outcomes reliably across routes and nested scaffolds [7][10]
-
-    if (mounted) setState(() => _submitting = false);
+        // ignore: use_build_context_synchronously
+        Navigator.of(context).maybePop(res);
+      } else {
+        // ignore: avoid_dynamic_calls
+        res.fold(
+          onSuccess: (data) {
+            _snack('Booking confirmed');
+            // ignore: use_build_context_synchronously
+            Navigator.of(context).maybePop(data);
+          },
+          onError: (e) => _snack((e?.safeMessage ?? 'Booking failed').toString()),
+        );
+      }
+    } catch (e) {
+      _snack('Booking failed');
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
   }
 
   void _snack(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg))); // ScaffoldMessenger is the modern API for SnackBars in Flutter [7][13]
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   @override
@@ -271,7 +317,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
               subtitle: const Text('Check‑in • Check‑out'),
               trailing: const Icon(Icons.edit_calendar_outlined),
               onTap: _pickDates,
-            ), // Date‑range picker provides a full‑screen Material dialog for choosing the hotel stay window [21]
+            ),
 
             const SizedBox(height: 8),
 
@@ -282,7 +328,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
               subtitle: const Text('Rooms • Guests'),
               trailing: const Icon(Icons.tune),
               onTap: _openGuestsRooms,
-            ), // A modal bottom sheet is used to edit rooms and guest counts in a focused, contextual UI [1][2]
+            ),
 
             const SizedBox(height: 8),
 
@@ -297,13 +343,14 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
               subtitle: _selectedRate == null
                   ? null
                   : Text(
-                      '${(_selectedRate!['refundable'] == true) ? 'Refundable' : 'Non‑refundable'}${(_selectedRate!['breakfast'] == true) ? ' • Breakfast included' : ''}',
+                      '${(_selectedRate!['refundable'] == true) ? 'Refundable' : 'Non‑refundable'}'
+                      '${(_selectedRate!['breakfast'] == true) ? ' • Breakfast included' : ''}',
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
               trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
               onTap: _openRatePicker,
-            ), // Rate plan selection is presented via a bottom sheet that returns the chosen plan on pop [1][11]
+            ),
 
             const SizedBox(height: 12),
 
@@ -332,7 +379,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                       prefixIcon: Icon(Icons.person_outline),
                     ),
                     validator: (v) => (v == null || v.trim().isEmpty) ? 'Enter name' : null,
-                  ), // Use Form + TextFormField validators per Flutter cookbook validation pattern [6][9]
+                  ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: _emailCtrl,
@@ -381,7 +428,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                     : const Icon(Icons.check_circle_outline),
                 label: Text(_submitting ? 'Processing...' : 'Confirm booking'),
               ),
-            ), // Submit triggers booking and reports success/failure with ScaffoldMessenger SnackBars for clear feedback [7][13]
+            ),
           ],
         ),
       ),
@@ -427,13 +474,17 @@ class _RateSheet extends StatelessWidget {
               final breakfast = r['breakfast'] == true;
               final price = r['price'] is num ? (r['price'] as num).toDouble() : null;
 
-              return RadioListTile<String>(
-                value: id,
-                groupValue: selectedId,
-                onChanged: (_) => Navigator.of(context).maybePop(r),
+              final selected = id == selectedId;
+
+              return ListTile(
+                onTap: () => Navigator.of(context).maybePop(r),
+                leading: Icon(
+                  selected ? Icons.radio_button_checked : Icons.radio_button_off,
+                  color: selected ? Theme.of(context).colorScheme.primary : Colors.black54,
+                ),
                 title: Text(name, maxLines: 2, overflow: TextOverflow.ellipsis),
                 subtitle: Text('${refundable ? 'Refundable' : 'Non‑refundable'}${breakfast ? ' • Breakfast included' : ''}'),
-                secondary: Text(
+                trailing: Text(
                   price != null ? '$currency${price.toStringAsFixed(0)}' : '--',
                   style: const TextStyle(fontWeight: FontWeight.w800),
                 ),

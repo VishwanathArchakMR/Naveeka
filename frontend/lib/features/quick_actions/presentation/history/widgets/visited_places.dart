@@ -2,9 +2,9 @@
 
 import 'package:flutter/material.dart';
 
-import '../../../../models/place.dart';
-import '../../../places/presentation/widgets/distance_indicator.dart';
-import '../../../../ui/components/buttons/favorite_button.dart';
+import '/../../../models/place.dart';
+import '../../../../places/presentation/widgets/distance_indicator.dart';
+import '/../../../ui/components/buttons/favorite_button.dart';
 import 'rebook_button.dart';
 
 class VisitedPlaceRow {
@@ -59,7 +59,7 @@ class VisitedPlaces extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme; // Use theme colors for consistent styling [web:132].
 
     return Card(
       elevation: 0,
@@ -120,7 +120,7 @@ class VisitedPlaces extends StatelessWidget {
                               final row = items[i];
                               return _VisitedCard(
                                 row: row,
-                                heroTag: '$heroPrefix-${row.place.id}',
+                                heroTag: '$heroPrefix-${_idOf(row.place)}',
                                 onOpen: onOpenPlace,
                                 onToggleFavorite: onToggleFavorite,
                                 onRebook: onRebook,
@@ -130,7 +130,7 @@ class VisitedPlaces extends StatelessWidget {
                         },
                       ),
               ),
-            ), // GridView.builder lazily builds visible tiles and adapts columns responsively with a SliverGridDelegate. [2][1]
+            ), // GridView.builder lazily builds visible tiles and adapts columns responsively with a SliverGridDelegate [web:255].
           ],
         ),
       ),
@@ -139,12 +139,28 @@ class VisitedPlaces extends StatelessWidget {
 
   Widget _footer(bool loading, bool hasMore) {
     if (loading && hasMore) {
-      return const Center(child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator(strokeWidth: 2)));
+      return const Center(
+          child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator(strokeWidth: 2)));
     }
     if (!hasMore) {
       return const Center(child: Padding(padding: EdgeInsets.all(20), child: Text('No more places')));
     }
     return const SizedBox.shrink();
+  }
+
+  // JSON helpers (top-level to reuse in cards)
+  Map<String, dynamic> _json(Place p) {
+    try {
+      final dyn = p as dynamic;
+      final j = dyn.toJson();
+      if (j is Map<String, dynamic>) return j;
+    } catch (_) {}
+    return const <String, dynamic>{};
+  }
+
+  String _idOf(Place p) {
+    final j = _json(p);
+    return (j['id'] ?? j['_id'] ?? j['placeId'] ?? '').toString();
   }
 }
 
@@ -165,10 +181,10 @@ class _VisitedCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme; // Themed colors used for chips and text [web:132].
     final p = row.place;
+    final name = _nameOf(p);
     final img = _coverUrl(p);
-    final name = (p.name ?? 'Place').trim();
 
     return Card(
       elevation: 1,
@@ -213,14 +229,21 @@ class _VisitedCard extends StatelessWidget {
                     ),
                   ),
                   FavoriteButton(
-                    isFavorite: p.isFavorite ?? (p.isWishlisted ?? false) == true,
-                    compact: true,
-                    size: 28,
-                    onChanged: onToggleFavorite == null ? null : (next) => onToggleFavorite!(p, next),
-                  ),
+  value: _isFavorite(p),
+  compact: true,
+  size: 28,
+  onChanged: (next) {
+    final handler = onToggleFavorite;
+    if (handler != null) {
+      // No `await` needed; FutureOr<void> accepts either sync void or a Future.
+      handler(p, next);
+    }
+  },
+),
+
                 ],
               ),
-            ), // Card is an accessible Material container for related content like a place tile. [9][12]
+            ), // Card shows place name and favorite toggle using a void-returning onChanged wrapper for compatibility [web:255].
 
             // Meta: last visited + total + distance
             Padding(
@@ -229,7 +252,10 @@ class _VisitedCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _VisitsPill(lastVisited: row.lastVisited, total: row.totalVisits, cs: cs),
-                  if (row.originLat != null && row.originLng != null && p.lat != null && p.lng != null)
+                  if (row.originLat != null &&
+                      row.originLng != null &&
+                      _latOf(p) != null &&
+                      _lngOf(p) != null)
                     Padding(
                       padding: const EdgeInsets.only(top: 4),
                       child: DistanceIndicator.fromPlace(
@@ -283,9 +309,59 @@ class _VisitedCard extends StatelessWidget {
     );
   }
 
+  // ---- Helpers for _VisitedCard ----
+
+  Map<String, dynamic> _json(Place p) {
+    try {
+      final dyn = p as dynamic;
+      final j = dyn.toJson();
+      if (j is Map<String, dynamic>) return j;
+    } catch (_) {}
+    return const <String, dynamic>{};
+  }
+
+  String _nameOf(Place p) {
+    final j = _json(p);
+    final v = (j['name'] ?? j['title'] ?? j['label'] ?? 'Place').toString();
+    return v.trim();
+  }
+
   String? _coverUrl(Place p) {
-    final list = p.photos ?? const <String>[];
-    return list.isNotEmpty && list.first.trim().isNotEmpty ? list.first.trim() : null;
+    final j = _json(p);
+    final v = j['photos'] ?? j['images'] ?? j['gallery'];
+    if (v is List && v.isNotEmpty) {
+      final first = v.first?.toString().trim();
+      if (first != null && first.isNotEmpty) return first;
+    }
+    return null;
+  }
+
+  double? _latOf(Place p) {
+    final j = _json(p);
+    final v = j['lat'] ?? j['latitude'] ?? j['coord_lat'] ?? j['location_lat'];
+    return _d(v);
+  }
+
+  double? _lngOf(Place p) {
+    final j = _json(p);
+    final v = j['lng'] ?? j['lon'] ?? j['longitude'] ?? j['coord_lng'] ?? j['location_lng'];
+    return _d(v);
+  }
+
+  bool _isFavorite(Place p) {
+    final j = _json(p);
+    final f = j['isFavorite'];
+    final w = j['isWishlisted'] ?? j['wishlisted'];
+    final fv = (f is bool) ? f : (f is String ? f.toLowerCase() == 'true' : false);
+    final wv = (w is bool) ? w : (w is String ? w.toLowerCase() == 'true' : false);
+    return fv || wv;
+  }
+
+  double? _d(dynamic v) {
+    if (v is double) return v;
+    if (v is int) return v.toDouble();
+    if (v is String) return double.tryParse(v);
+    return null;
   }
 
   Widget _fallbackImage() {
@@ -313,7 +389,7 @@ class _VisitsPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final when = _fmt(lastVisited);
+    final when = _fmt(context, lastVisited); // Pass BuildContext to formatting function [web:255].
     return Row(
       children: [
         Container(
@@ -340,7 +416,7 @@ class _VisitsPill extends StatelessWidget {
     );
   }
 
-  String _fmt(DateTime dt) {
+  String _fmt(BuildContext context, DateTime dt) {
     final local = dt.toLocal();
     final date = '${local.year}-${local.month.toString().padLeft(2, '0')}-${local.day.toString().padLeft(2, '0')}';
     final t = TimeOfDay.fromDateTime(local);

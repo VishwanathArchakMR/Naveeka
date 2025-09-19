@@ -137,7 +137,8 @@ class HistoryPage<T> {
   final List<T> items;
   final String? nextCursor;
 
-  HistoryPage<T> merge(HistoryPage<T> next) => HistoryPage<T>(items: [...items, ...next.items], nextCursor: next.nextCursor);
+  HistoryPage<T> merge(HistoryPage<T> next) => HistoryPage<T>(
+      items: [...items, ...next.items], nextCursor: next.nextCursor);
 }
 
 abstract class HistoryRepository {
@@ -172,70 +173,86 @@ abstract class HistoryRepository {
 /// Inject your concrete implementation at app bootstrap with overrideWithValue.
 final historyRepositoryProvider = Provider<HistoryRepository>((ref) {
   throw UnimplementedError('Provide HistoryRepository via override');
-}); // A repository Provider centralizes data access and is easily overridden for tests/app bootstrap. [15][21]
+}); // A repository Provider centralizes data access and is easily overridden for tests/app bootstrap. [web:5777]
 
 /// ---------------- Filters and simple read-only providers ----------------
 
 /// App-wide filters value; screens/widgets can watch or update this.
 final historyFiltersProvider = StateProvider<HistoryFilterSelection>((ref) {
   return const HistoryFilterSelection();
-}); // A StateProvider holds the current filters that downstream providers read from. [15][9]
+}); // A StateProvider holds the current filters that downstream providers read from. [web:5777]
 
 /// First page read-only fetches (cacheable) per type.
-final historyPointsFirstPageProvider = FutureProvider.autoDispose<HistoryPage<HistoryPoint>>((ref) async {
+final historyPointsFirstPageProvider =
+    FutureProvider.autoDispose<HistoryPage<HistoryPoint>>((ref) async {
   final repo = ref.watch(historyRepositoryProvider);
   final f = ref.watch(historyFiltersProvider);
   return repo.listPoints(filters: f, cursor: null);
-}); // FutureProvider is ideal for single-shot async fetches with caching and autoDispose lifecycles. [15][9]
+}); // FutureProvider is ideal for single-shot async fetches with caching and autoDispose lifecycles. [web:5777]
 
-final routeFirstPageProvider = FutureProvider.autoDispose<HistoryPage<RouteHistoryItem>>((ref) async {
+final routeFirstPageProvider =
+    FutureProvider.autoDispose<HistoryPage<RouteHistoryItem>>((ref) async {
   final repo = ref.watch(historyRepositoryProvider);
   final f = ref.watch(historyFiltersProvider);
   return repo.listRoute(filters: f, cursor: null);
-}); // These per-type providers separate concerns and keep call-sites concise. [15][9]
+}); // These per-type providers separate concerns and keep call-sites concise. [web:5777]
 
-final transportFirstPageProvider = FutureProvider.autoDispose<HistoryPage<TransportSegment>>((ref) async {
+final transportFirstPageProvider =
+    FutureProvider.autoDispose<HistoryPage<TransportSegment>>((ref) async {
   final repo = ref.watch(historyRepositoryProvider);
   final f = ref.watch(historyFiltersProvider);
   return repo.listTransport(filters: f, cursor: null);
-}); // Family modifiers are not needed here since filters are globally provided, but families are available if needed. [15][9]
+}); // Family modifiers are not needed here since filters are globally provided, but families are available if needed. [web:5777]
 
-final placesFirstPageProvider = FutureProvider.autoDispose<HistoryPage<VisitedPlaceRow>>((ref) async {
+final placesFirstPageProvider =
+    FutureProvider.autoDispose<HistoryPage<VisitedPlaceRow>>((ref) async {
   final repo = ref.watch(historyRepositoryProvider);
   final f = ref.watch(historyFiltersProvider);
   return repo.listPlaces(filters: f, cursor: null);
-}); // Reading filters inside keeps a single source of truth and consistent caching behavior. [15][9]
+}); // Reading filters inside keeps a single source of truth and consistent caching behavior. [web:5777]
 
 /// ---------------- Controllers for pagination and mutations ----------------
 
 @immutable
 class PagedState<T> {
-  const PagedState({required this.items, required this.cursor, required this.loading, this.error});
+  const PagedState(
+      {required this.items,
+      required this.cursor,
+      required this.loading,
+      this.error});
   final List<T> items;
   final String? cursor;
   final bool loading;
   final Object? error;
 
-  PagedState<T> copy({List<T>? items, String? cursor, bool? loading, Object? error}) =>
-      PagedState<T>(items: items ?? this.items, cursor: cursor ?? this.cursor, loading: loading ?? this.loading, error: error);
+  PagedState<T> copy(
+          {List<T>? items, String? cursor, bool? loading, Object? error}) =>
+      PagedState<T>(
+          items: items ?? this.items,
+          cursor: cursor ?? this.cursor,
+          loading: loading ?? this.loading,
+          error: error);
 
-  static PagedState<T> empty<T>() => PagedState<T>(items: const <T>[], cursor: null, loading: false);
-}
+  static PagedState<T> empty<T>() => PagedState<T>(
+      items: const <dynamic>[] as List<T>, cursor: null, loading: false);
+} // Use non-const generic list to avoid const-with-type-parameter error. [web:5888]
 
 /// Map points controller
 class PointsController extends AsyncNotifier<PagedState<HistoryPoint>> {
   @override
   FutureOr<PagedState<HistoryPoint>> build() async {
     return PagedState.empty();
-  } // AsyncNotifier is ideal for async-init and imperative methods with AsyncValue handling. [2][1]
+  } // AsyncNotifier is ideal for async-init and imperative methods with AsyncValue handling. [web:5892]
 
   HistoryFilterSelection get _filters => ref.read(historyFiltersProvider);
 
   Future<void> refresh() async {
     final repo = ref.read(historyRepositoryProvider);
     state = const AsyncLoading();
-    final res = await AsyncValue.guard(() => repo.listPoints(filters: _filters, cursor: null));
-    state = res.whenData((page) => AsyncData(PagedState<HistoryPoint>(items: page.items, cursor: page.nextCursor, loading: false)).value);
+    final res = await AsyncValue.guard(
+        () => repo.listPoints(filters: _filters, cursor: null));
+    state = res.whenData((page) => PagedState<HistoryPoint>(
+        items: page.items, cursor: page.nextCursor, loading: false));
   }
 
   Future<void> loadMore() async {
@@ -243,9 +260,13 @@ class PointsController extends AsyncNotifier<PagedState<HistoryPoint>> {
     if (current.loading || current.cursor == null) return;
     final repo = ref.read(historyRepositoryProvider);
     state = AsyncData(current.copy(loading: true));
-    final res = await AsyncValue.guard(() => repo.listPoints(filters: _filters, cursor: current.cursor));
+    final res = await AsyncValue.guard(
+        () => repo.listPoints(filters: _filters, cursor: current.cursor));
     res.when(
-      data: (page) => state = AsyncData(current.copy(items: [...current.items, ...page.items], cursor: page.nextCursor, loading: false)),
+      data: (page) => state = AsyncData(current.copy(
+          items: [...current.items, ...page.items],
+          cursor: page.nextCursor,
+          loading: false)),
       loading: () => state = AsyncData(current.copy(loading: true)),
       error: (e, st) {
         state = AsyncError(e, st);
@@ -255,22 +276,27 @@ class PointsController extends AsyncNotifier<PagedState<HistoryPoint>> {
   }
 }
 
-final pointsControllerProvider = AsyncNotifierProvider<PointsController, PagedState<HistoryPoint>>(PointsController.new); // Exposes a watchable AsyncValue for map points with paging. [2][4]
+final pointsControllerProvider = AsyncNotifierProvider<PointsController,
+        PagedState<HistoryPoint>>(
+    PointsController
+        .new); // Watchable AsyncValue for map points with paging. [web:5892]
 
 /// Route controller
 class RouteController extends AsyncNotifier<PagedState<RouteHistoryItem>> {
   @override
   FutureOr<PagedState<RouteHistoryItem>> build() async {
     return PagedState.empty();
-  } // Build returns initial state; methods mutate with AsyncValue transitions. [2][4]
+  } // Build returns initial state; methods mutate with AsyncValue transitions. [web:5892]
 
   HistoryFilterSelection get _filters => ref.read(historyFiltersProvider);
 
   Future<void> refresh() async {
     final repo = ref.read(historyRepositoryProvider);
     state = const AsyncLoading();
-    final res = await AsyncValue.guard(() => repo.listRoute(filters: _filters, cursor: null));
-    state = res.whenData((page) => AsyncData(PagedState<RouteHistoryItem>(items: page.items, cursor: page.nextCursor, loading: false)).value);
+    final res = await AsyncValue.guard(
+        () => repo.listRoute(filters: _filters, cursor: null));
+    state = res.whenData((page) => PagedState<RouteHistoryItem>(
+        items: page.items, cursor: page.nextCursor, loading: false));
   }
 
   Future<void> loadMore() async {
@@ -278,9 +304,13 @@ class RouteController extends AsyncNotifier<PagedState<RouteHistoryItem>> {
     if (current.loading || current.cursor == null) return;
     final repo = ref.read(historyRepositoryProvider);
     state = AsyncData(current.copy(loading: true));
-    final res = await AsyncValue.guard(() => repo.listRoute(filters: _filters, cursor: current.cursor));
+    final res = await AsyncValue.guard(
+        () => repo.listRoute(filters: _filters, cursor: current.cursor));
     res.when(
-      data: (page) => state = AsyncData(current.copy(items: [...current.items, ...page.items], cursor: page.nextCursor, loading: false)),
+      data: (page) => state = AsyncData(current.copy(
+          items: [...current.items, ...page.items],
+          cursor: page.nextCursor,
+          loading: false)),
       loading: () => state = AsyncData(current.copy(loading: true)),
       error: (e, st) {
         state = AsyncError(e, st);
@@ -307,31 +337,39 @@ class RouteController extends AsyncNotifier<PagedState<RouteHistoryItem>> {
 
   Future<void> clearAll({DateTime? start, DateTime? end}) async {
     final prev = state.valueOrNull ?? PagedState.empty<RouteHistoryItem>();
-    state = const AsyncData(PagedState<RouteHistoryItem>(items: <RouteHistoryItem>[], cursor: null, loading: false));
+    state = const AsyncData(PagedState<RouteHistoryItem>(
+        items: <RouteHistoryItem>[], cursor: null, loading: false));
     final repo = ref.read(historyRepositoryProvider);
-    final res = await AsyncValue.guard(() => repo.clearAll(start: start, end: end));
+    final res =
+        await AsyncValue.guard(() => repo.clearAll(start: start, end: end));
     if (res.hasError) {
       state = AsyncData(prev); // revert on failure
     }
   }
 }
 
-final routeControllerProvider = AsyncNotifierProvider<RouteController, PagedState<RouteHistoryItem>>(RouteController.new); // Controller for RouteHistory list with pagination and clear actions. [2][7]
+final routeControllerProvider = AsyncNotifierProvider<
+    RouteController,
+    PagedState<
+        RouteHistoryItem>>(RouteController
+    .new); // Route list controller with pagination and clear actions. [web:5892]
 
 /// Transport controller
 class TransportController extends AsyncNotifier<PagedState<TransportSegment>> {
   @override
   FutureOr<PagedState<TransportSegment>> build() async {
     return PagedState.empty();
-  } // AsyncNotifier keeps transport list logic encapsulated and testable. [2][8]
+  } // AsyncNotifier keeps transport list logic encapsulated and testable. [web:5892]
 
   HistoryFilterSelection get _filters => ref.read(historyFiltersProvider);
 
   Future<void> refresh() async {
     final repo = ref.read(historyRepositoryProvider);
     state = const AsyncLoading();
-    final res = await AsyncValue.guard(() => repo.listTransport(filters: _filters, cursor: null));
-    state = res.whenData((page) => AsyncData(PagedState<TransportSegment>(items: page.items, cursor: page.nextCursor, loading: false)).value);
+    final res = await AsyncValue.guard(
+        () => repo.listTransport(filters: _filters, cursor: null));
+    state = res.whenData((page) => PagedState<TransportSegment>(
+        items: page.items, cursor: page.nextCursor, loading: false));
   }
 
   Future<void> loadMore() async {
@@ -339,9 +377,13 @@ class TransportController extends AsyncNotifier<PagedState<TransportSegment>> {
     if (current.loading || current.cursor == null) return;
     final repo = ref.read(historyRepositoryProvider);
     state = AsyncData(current.copy(loading: true));
-    final res = await AsyncValue.guard(() => repo.listTransport(filters: _filters, cursor: current.cursor));
+    final res = await AsyncValue.guard(
+        () => repo.listTransport(filters: _filters, cursor: current.cursor));
     res.when(
-      data: (page) => state = AsyncData(current.copy(items: [...current.items, ...page.items], cursor: page.nextCursor, loading: false)),
+      data: (page) => state = AsyncData(current.copy(
+          items: [...current.items, ...page.items],
+          cursor: page.nextCursor,
+          loading: false)),
       loading: () => state = AsyncData(current.copy(loading: true)),
       error: (e, st) {
         state = AsyncError(e, st);
@@ -366,29 +408,37 @@ class TransportController extends AsyncNotifier<PagedState<TransportSegment>> {
 
   Future<void> clearAll({DateTime? start, DateTime? end}) async {
     final prev = state.valueOrNull ?? PagedState.empty<TransportSegment>();
-    state = const AsyncData(PagedState<TransportSegment>(items: <TransportSegment>[], cursor: null, loading: false));
+    state = const AsyncData(PagedState<TransportSegment>(
+        items: <TransportSegment>[], cursor: null, loading: false));
     final repo = ref.read(historyRepositoryProvider);
-    final res = await AsyncValue.guard(() => repo.clearAll(start: start, end: end));
+    final res =
+        await AsyncValue.guard(() => repo.clearAll(start: start, end: end));
     if (res.hasError) state = AsyncData(prev);
   }
 }
 
-final transportControllerProvider = AsyncNotifierProvider<TransportController, PagedState<TransportSegment>>(TransportController.new); // Mirrors RouteController with segment-specific date handling. [2][7]
+final transportControllerProvider = AsyncNotifierProvider<
+    TransportController,
+    PagedState<
+        TransportSegment>>(TransportController
+    .new); // Mirrors RouteController with segment-specific date handling. [web:5892]
 
 /// Places controller
 class PlacesController extends AsyncNotifier<PagedState<VisitedPlaceRow>> {
   @override
   FutureOr<PagedState<VisitedPlaceRow>> build() async {
     return PagedState.empty();
-  } // A simple paged controller for visited places history. [2][1]
+  } // A simple paged controller for visited places history. [web:5892]
 
   HistoryFilterSelection get _filters => ref.read(historyFiltersProvider);
 
   Future<void> refresh() async {
     final repo = ref.read(historyRepositoryProvider);
     state = const AsyncLoading();
-    final res = await AsyncValue.guard(() => repo.listPlaces(filters: _filters, cursor: null));
-    state = res.whenData((page) => AsyncData(PagedState<VisitedPlaceRow>(items: page.items, cursor: page.nextCursor, loading: false)).value);
+    final res = await AsyncValue.guard(
+        () => repo.listPlaces(filters: _filters, cursor: null));
+    state = res.whenData((page) => PagedState<VisitedPlaceRow>(
+        items: page.items, cursor: page.nextCursor, loading: false));
   }
 
   Future<void> loadMore() async {
@@ -396,9 +446,13 @@ class PlacesController extends AsyncNotifier<PagedState<VisitedPlaceRow>> {
     if (current.loading || current.cursor == null) return;
     final repo = ref.read(historyRepositoryProvider);
     state = AsyncData(current.copy(loading: true));
-    final res = await AsyncValue.guard(() => repo.listPlaces(filters: _filters, cursor: current.cursor));
+    final res = await AsyncValue.guard(
+        () => repo.listPlaces(filters: _filters, cursor: current.cursor));
     res.when(
-      data: (page) => state = AsyncData(current.copy(items: [...current.items, ...page.items], cursor: page.nextCursor, loading: false)),
+      data: (page) => state = AsyncData(current.copy(
+          items: [...current.items, ...page.items],
+          cursor: page.nextCursor,
+          loading: false)),
       loading: () => state = AsyncData(current.copy(loading: true)),
       error: (e, st) {
         state = AsyncError(e, st);
@@ -409,48 +463,69 @@ class PlacesController extends AsyncNotifier<PagedState<VisitedPlaceRow>> {
 
   Future<void> clearAll({DateTime? start, DateTime? end}) async {
     final prev = state.valueOrNull ?? PagedState.empty<VisitedPlaceRow>();
-    state = const AsyncData(PagedState<VisitedPlaceRow>(items: <VisitedPlaceRow>[], cursor: null, loading: false));
+    state = const AsyncData(PagedState<VisitedPlaceRow>(
+        items: <VisitedPlaceRow>[], cursor: null, loading: false));
     final repo = ref.read(historyRepositoryProvider);
-    final res = await AsyncValue.guard(() => repo.clearAll(start: start, end: end));
+    final res =
+        await AsyncValue.guard(() => repo.clearAll(start: start, end: end));
     if (res.hasError) state = AsyncData(prev);
   }
 }
 
-final placesControllerProvider = AsyncNotifierProvider<PlacesController, PagedState<VisitedPlaceRow>>(PlacesController.new); // Controller for visited places with paging and clear-all. [2][7]
+final placesControllerProvider = AsyncNotifierProvider<
+    PlacesController,
+    PagedState<
+        VisitedPlaceRow>>(PlacesController
+    .new); // Controller for visited places with paging and clear-all. [web:5892]
 
 /// ---------------- Facade for widgets/screens ----------------
 
+typedef Reader = T Function<T>(ProviderListenable<T> provider);
+
 class HistoryActions {
   HistoryActions(this._read);
-  final Ref _read;
+  final Reader _read;
 
   HistoryFilterSelection get filters => _read(historyFiltersProvider);
 
-  void setFilters(HistoryFilterSelection next) => _read(historyFiltersProvider.notifier).state = next;
+  void setFilters(HistoryFilterSelection next) =>
+      _read(historyFiltersProvider.notifier).state = next;
 
   // Points
-  Future<void> refreshPoints() => _read(pointsControllerProvider.notifier).refresh();
-  Future<void> loadMorePoints() => _read(pointsControllerProvider.notifier).loadMore();
+  Future<void> refreshPoints() =>
+      _read(pointsControllerProvider.notifier).refresh();
+  Future<void> loadMorePoints() =>
+      _read(pointsControllerProvider.notifier).loadMore();
 
   // Route
-  Future<void> refreshRoute() => _read(routeControllerProvider.notifier).refresh();
-  Future<void> loadMoreRoute() => _read(routeControllerProvider.notifier).loadMore();
-  Future<void> clearRouteDay(DateTime day) => _read(routeControllerProvider.notifier).clearDay(day);
+  Future<void> refreshRoute() =>
+      _read(routeControllerProvider.notifier).refresh();
+  Future<void> loadMoreRoute() =>
+      _read(routeControllerProvider.notifier).loadMore();
+  Future<void> clearRouteDay(DateTime day) =>
+      _read(routeControllerProvider.notifier).clearDay(day);
   Future<void> clearRouteAll({DateTime? start, DateTime? end}) =>
       _read(routeControllerProvider.notifier).clearAll(start: start, end: end);
 
   // Transport
-  Future<void> refreshTransport() => _read(transportControllerProvider.notifier).refresh();
-  Future<void> loadMoreTransport() => _read(transportControllerProvider.notifier).loadMore();
-  Future<void> clearTransportDay(DateTime day) => _read(transportControllerProvider.notifier).clearDay(day);
+  Future<void> refreshTransport() =>
+      _read(transportControllerProvider.notifier).refresh();
+  Future<void> loadMoreTransport() =>
+      _read(transportControllerProvider.notifier).loadMore();
+  Future<void> clearTransportDay(DateTime day) =>
+      _read(transportControllerProvider.notifier).clearDay(day);
   Future<void> clearTransportAll({DateTime? start, DateTime? end}) =>
-      _read(transportControllerProvider.notifier).clearAll(start: start, end: end);
+      _read(transportControllerProvider.notifier)
+          .clearAll(start: start, end: end);
 
   // Places
-  Future<void> refreshPlaces() => _read(placesControllerProvider.notifier).refresh();
-  Future<void> loadMorePlaces() => _read(placesControllerProvider.notifier).loadMore();
+  Future<void> refreshPlaces() =>
+      _read(placesControllerProvider.notifier).refresh();
+  Future<void> loadMorePlaces() =>
+      _read(placesControllerProvider.notifier).loadMore();
   Future<void> clearPlacesAll({DateTime? start, DateTime? end}) =>
       _read(placesControllerProvider.notifier).clearAll(start: start, end: end);
 }
 
-final historyActionsProvider = Provider<HistoryActions>((ref) => HistoryActions(ref.read)); // A small facade reduces UI boilerplate and centralizes controller access. [15][1]
+final historyActionsProvider = Provider<HistoryActions>((ref) => HistoryActions(
+    ref.read)); // Pass Reader (ref.read) so facade can call _read(provider.notifier). [web:5885]

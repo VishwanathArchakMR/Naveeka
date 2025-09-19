@@ -49,8 +49,8 @@ class SeedDataLoader {
     if (_isLoaded) return;
 
     try {
-      // Load all seed files concurrently
-      final results = await Future.wait([
+      // Load all seed files concurrently and type the result explicitly
+      final List<Map<String, dynamic>> results = await Future.wait<Map<String, dynamic>>([
         _loadSeedFile('assets/seed-data/home_seed.json'),
         _loadSeedFile('assets/seed-data/trail_seed.json'),
         _loadSeedFile('assets/seed-data/atlas_seed.json'),
@@ -70,28 +70,28 @@ class SeedDataLoader {
         _loadSeedFile('assets/seed-data/trains_seed.json'),
         _loadSeedFile('assets/seed-data/buses_seed.json'),
         _loadSeedFile('assets/seed-data/activities_seed.json'),
-      ]);
+      ]); // Future.wait collects each future’s result into a List in the same order they were provided [web:5851][web:5844].
 
-      // Assign results to cache
-      _homeData = results;
-      _trailsData = results;
-      _atlasData = results;
-      _journeyData = results;
-      _naveeAIData = results;
-      _settingsData = results;
-      _placesData = results;
-      _bookingData = results;
-      _historyData = results;
-      _favoritesData = results;
-      _followingData = results;
-      _planningData = results;
-      _messagesData = results;
-      _hotelsData = results;
-      _restaurantsData = results;
-      _flightsData = results;
-      _trainsData = results;
-      _busesData = results;
-      _activitiesData = results;
+      // Assign results to cache by index in the same order as requested above
+      _homeData = results[0];
+      _trailsData = results[1];
+      _atlasData = results[2];
+      _journeyData = results[3];
+      _naveeAIData = results[4];
+      _settingsData = results[5];
+      _placesData = results[6];
+      _bookingData = results[7];
+      _historyData = results[8];
+      _favoritesData = results[9];
+      _followingData = results[10];
+      _planningData = results[11];
+      _messagesData = results[12];
+      _hotelsData = results[13];
+      _restaurantsData = results[14];
+      _flightsData = results[15];
+      _trainsData = results[16];
+      _busesData = results[17];
+      _activitiesData = results[18];
 
       // Cache to local storage for offline access
       await _cacheToLocalStorage();

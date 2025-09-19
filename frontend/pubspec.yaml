@@ -68,6 +68,8 @@ dependencies:
   geolocator: ^11.0.0
   geocoding: ^2.2.1
   url_launcher: ^6.3.0
+  flutter_map: ^8.2.1        # added
+  latlong2: ^0.9.1           # added
 
   # Voice & AI
   speech_to_text: ^6.6.0

@@ -2,13 +2,13 @@
 
 import 'package:flutter/material.dart';
 
-import '../../../../models/place.dart';
-import '../../../../features/places/presentation/widgets/directions_button.dart';
-import '../../../../features/places/presentation/widgets/distance_indicator.dart';
+import '/models/place.dart';
+import '/../../features/places/presentation/widgets/directions_button.dart';
+import '/../../features/places/presentation/widgets/distance_indicator.dart';
 
 // Reuse the shared map builder contract if present in your app.
 // This keeps your map implementation (Google/Mapbox) decoupled from UI widgets.
-import '../../../../features/places/presentation/widgets/nearby_places_map.dart'
+import '/../../../features/places/presentation/widgets/nearby_places_map.dart'
     show NearbyMapBuilder, NearbyMapConfig, NearbyMarker;
 
 /// A full-bleed map widget for booking discovery:
@@ -64,13 +64,17 @@ class _BookingMapViewState extends State<BookingMapView> {
 
   @override
   Widget build(BuildContext context) {
-    final data = widget.places.where((p) => p.lat != null && p.lng != null).toList(growable: false);
+    // Normalize inputs: only places with coords
+    final data = widget.places
+        .where((p) => _latOf(p) != null && _lngOf(p) != null)
+        .toList(growable: false);
+
     final markers = data
         .map((p) => NearbyMarker(
-              id: p.id.toString(),
-              lat: p.lat!,
-              lng: p.lng!,
-              selected: p.id.toString() == _selectedId,
+              id: _idOf(p),
+              lat: _latOf(p)!,
+              lng: _lngOf(p)!,
+              selected: _idOf(p) == _selectedId,
             ))
         .toList(growable: false);
 
@@ -89,12 +93,14 @@ class _BookingMapViewState extends State<BookingMapView> {
           )
         : _placeholderMap(context);
 
-    final selected = _selectedId == null
-        ? null
-        : data.firstWhere(
-            (p) => p.id.toString() == _selectedId,
-            orElse: () => data.isEmpty ? null : data.first,
-          );
+    // Selected place (only when we have items)
+    Place? selected;
+    if (_selectedId != null && data.isNotEmpty) {
+      selected = data.firstWhere(
+        (p) => _idOf(p) == _selectedId,
+        orElse: () => data.first,
+      );
+    }
 
     return Card(
       elevation: 0,
@@ -148,7 +154,7 @@ class _BookingMapViewState extends State<BookingMapView> {
                   place: selected,
                   originLat: widget.originLat,
                   originLng: widget.originLng,
-                  nextAt: widget.nextAvailableById?[selected.id.toString()],
+                  nextAt: widget.nextAvailableById?[_idOf(selected)],
                   onClose: () => setState(() => _selectedId = null),
                   onOpen: widget.onOpenPlace,
                   onBook: widget.onBook,
@@ -171,9 +177,43 @@ class _BookingMapViewState extends State<BookingMapView> {
 
   (double, double)? _centerOf(List<Place> items) {
     if (items.isEmpty) return null;
-    final lat = items.map((e) => e.lat!).reduce((a, b) => a + b) / items.length;
-    final lng = items.map((e) => e.lng!).reduce((a, b) => a + b) / items.length;
+    final lats = items.map((e) => _latOf(e)!).toList(growable: false);
+    final lngs = items.map((e) => _lngOf(e)!).toList(growable: false);
+    final lat = lats.reduce((a, b) => a + b) / lats.length;
+    final lng = lngs.reduce((a, b) => a + b) / lngs.length;
     return (lat, lng);
+  }
+
+  // Helpers to read common fields from Place via toJson
+  Map<String, dynamic> _json(Place p) {
+    try {
+      final dyn = p as dynamic;
+      final j = dyn.toJson();
+      if (j is Map<String, dynamic>) return j;
+    } catch (_) {}
+    return const <String, dynamic>{};
+  }
+
+  String _idOf(Place p) {
+    final j = _json(p);
+    return (j['id'] ?? j['_id'] ?? j['placeId'] ?? '').toString();
+  }
+
+  double? _latOf(Place p) {
+    final j = _json(p);
+    return _parseDouble(j['lat'] ?? j['latitude'] ?? j['coord_lat'] ?? j['location_lat']);
+  }
+
+  double? _lngOf(Place p) {
+    final j = _json(p);
+    return _parseDouble(j['lng'] ?? j['lon'] ?? j['longitude'] ?? j['coord_lng'] ?? j['location_lng']);
+  }
+
+  double? _parseDouble(dynamic v) {
+    if (v is double) return v;
+    if (v is int) return v.toDouble();
+    if (v is String) return double.tryParse(v);
+    return null;
   }
 
   Widget _placeholderMap(BuildContext context) {
@@ -213,8 +253,16 @@ class _PeekBookingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasCoords = place.lat != null && place.lng != null;
-    final hasOrigin = originLat != null && originLng != null;
+    final j = _json(place);
+
+    // Promote public fields to locals for safe null checks and usage
+    final olat = originLat;
+    final olng = originLng;
+    final hasCoords = _lat(j) != null && _lng(j) != null;
+    final hasOrigin = olat != null && olng != null;
+
+    final rating = _rating(j);
+    final name = (j['name'] ?? j['title'] ?? j['label'] ?? '').toString();
 
     return Card(
       elevation: 4,
@@ -229,7 +277,7 @@ class _PeekBookingCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    (place.name ?? 'Place').trim(),
+                    name,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(fontWeight: FontWeight.w800),
@@ -246,16 +294,16 @@ class _PeekBookingCard extends StatelessWidget {
             // Meta row: rating + distance
             Row(
               children: [
-                if (place.rating != null) _stars(place.rating!),
-                if (place.rating != null && hasCoords && hasOrigin) const SizedBox(width: 8),
+                if (rating != null) _stars(rating),
+                if (rating != null && hasCoords && hasOrigin) const SizedBox(width: 8),
                 if (hasOrigin && hasCoords)
                   Expanded(
                     child: Align(
                       alignment: Alignment.centerLeft,
                       child: DistanceIndicator.fromPlace(
                         place,
-                        originLat: originLat!,
-                        originLng: originLng!,
+                        originLat: olat!, // non-null after guard
+                        originLng: olng!, // non-null after guard
                         unit: UnitSystem.metric,
                         compact: true,
                         labelSuffix: 'away',
@@ -289,15 +337,12 @@ class _PeekBookingCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 if (hasCoords)
-                  OutlinedButton.icon(
-                    onPressed: () => DirectionsButton.fromPlace(
-                      place,
-                      mode: TravelMode.walking,
-                      label: 'Directions',
-                      expanded: false,
-                    ).onPressed?.call(),
-                    icon: const Icon(Icons.directions_outlined),
-                    label: const Text('Directions'),
+                  // Use the widget directly for directions.
+                  DirectionsButton.fromPlace(
+                    place,
+                    mode: TravelMode.walking,
+                    label: 'Directions',
+                    expanded: false,
                   ),
                 const Spacer(),
                 FilledButton.icon(
@@ -313,12 +358,38 @@ class _PeekBookingCard extends StatelessWidget {
     );
   }
 
+  Map<String, dynamic> _json(Place p) {
+    try {
+      final dyn = p as dynamic;
+      final m = dyn.toJson();
+      if (m is Map<String, dynamic>) return m;
+    } catch (_) {}
+    return const <String, dynamic>{};
+  }
+
+  double? _lat(Map<String, dynamic> j) =>
+      _d(j['lat'] ?? j['latitude'] ?? j['coord_lat'] ?? j['location_lat']);
+  double? _lng(Map<String, dynamic> j) =>
+      _d(j['lng'] ?? j['lon'] ?? j['longitude'] ?? j['coord_lng'] ?? j['location_lng']);
+  double? _rating(Map<String, dynamic> j) {
+    final v = j['rating'] ?? j['avgRating'] ?? j['averageRating'];
+    if (v is num) return v.toDouble();
+    if (v is String) return double.tryParse(v);
+    return null;
+  }
+
+  double? _d(dynamic v) {
+    if (v is double) return v;
+    if (v is int) return v.toDouble();
+    if (v is String) return double.tryParse(v);
+    return null;
+  }
+
   Widget _stars(double rating) {
     final icons = <IconData>[];
     for (var i = 1; i <= 5; i++) {
-      final icon = rating >= i - 0.25
-          ? Icons.star
-          : (rating >= i - 0.75 ? Icons.star_half : Icons.star_border);
+      final icon =
+          rating >= i - 0.25 ? Icons.star : (rating >= i - 0.75 ? Icons.star_half : Icons.star_border);
       icons.add(icon);
     }
     return Row(
@@ -329,7 +400,8 @@ class _PeekBookingCard extends StatelessWidget {
 
   String _fmtDateTime(BuildContext context, DateTime dt) {
     final local = dt.toLocal();
-    final date = '${local.year}-${local.month.toString().padLeft(2, '0')}-${local.day.toString().padLeft(2, '0')}';
+    final date =
+        '${local.year}-${local.month.toString().padLeft(2, '0')}-${local.day.toString().padLeft(2, '0')}';
     final time = TimeOfDay.fromDateTime(local);
     final tstr = MaterialLocalizations.of(context).formatTimeOfDay(time);
     return '$date · $tstr';

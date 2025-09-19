@@ -1,14 +1,12 @@
 // lib/features/settings/presentation/widgets/privacy_security.dart
 
 import 'package:flutter/material.dart';
-import 'package:local_auth/local_auth.dart';
 
 /// Privacy & Security settings card:
-/// - App Lock: biometric/device auth to unlock the app
-/// - Screen Security: prevent screenshots/casting (via platform integration)
+/// - App Lock: in-app confirmation to “unlock” without external packages
+/// - Screen Security: prevent screenshots/casting (hook up via platform integration)
 /// - Data Controls: export data, clear histories, sign out all devices
 /// - Danger Zone: delete account with confirmation
-/// - Uses Color.withValues (no withOpacity) and const where possible
 class PrivacySecurity extends StatefulWidget {
   const PrivacySecurity({
     super.key,
@@ -62,7 +60,6 @@ class PrivacySecurity extends StatefulWidget {
 }
 
 class _PrivacySecurityState extends State<PrivacySecurity> with WidgetsBindingObserver {
-  final _auth = LocalAuthentication();
   bool _busy = false;
 
   @override
@@ -77,24 +74,49 @@ class _PrivacySecurityState extends State<PrivacySecurity> with WidgetsBindingOb
     super.dispose();
   }
 
+  // Replaces local_auth with a simple confirmation sheet to simulate device auth.
   Future<bool> _authenticateBiometric() async {
-    // Use local_auth to request biometric/device authentication. [1][5]
-    try {
-      final canBiometric = await _auth.canCheckBiometrics;
-      final canAuth = canBiometric || await _auth.isDeviceSupported();
-      if (!canAuth) return false;
-      final ok = await _auth.authenticate(
-        localizedReason: 'Unlock to change privacy settings',
-        options: const AuthenticationOptions(biometricOnly: false, stickyAuth: true),
-      );
-      return ok;
-    } catch (_) {
-      return false;
-    } finally {
-      try {
-        await _auth.stopAuthentication();
-      } catch (_) {}
-    }
+    final res = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: false,
+      useSafeArea: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) {
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Confirm identity', style: TextStyle(fontWeight: FontWeight.w800)),
+              const SizedBox(height: 8),
+              const Text('Simulated device authentication'),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(ctx).maybePop(false),
+                      child: const Text('Cancel'),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: FilledButton.icon(
+                      onPressed: () => Navigator.of(ctx).maybePop(true),
+                      icon: const Icon(Icons.verified_user_outlined),
+                      label: const Text('Confirm'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    ); // Modal sheets are the standard API for focused confirmations in Flutter. [web:5748]
+    return res == true; // Return true on positive confirmation to mimic successful unlock. [web:5748]
   }
 
   void _openAppLockSheet() {
@@ -125,7 +147,7 @@ class _PrivacySecurityState extends State<PrivacySecurity> with WidgetsBindingOb
         },
         onToggleRequire: widget.onRequireOnLaunchChanged,
       ),
-    ); // Rounded modal bottom sheets provide focused flows per Material guidance. [10][7]
+    ); // The shaped showModalBottomSheet presents a focused configuration flow. [web:5748]
   }
 
   void _openDeleteSheet() {
@@ -139,7 +161,7 @@ class _PrivacySecurityState extends State<PrivacySecurity> with WidgetsBindingOb
       builder: (_) => _DeleteAccountSheet(
         onConfirm: widget.onDeleteAccount,
       ),
-    ); // showModalBottomSheet is the standard API for modal sheets. [10][13]
+    ); // Modal sheet is a clear UX for destructive confirmations. [web:5748]
   }
 
   @override
@@ -176,7 +198,7 @@ class _PrivacySecurityState extends State<PrivacySecurity> with WidgetsBindingOb
                     leading: const _LeadingIcon(icon: Icons.lock_outline),
                     title: Text(widget.appLockEnabled ? 'Enabled' : 'Disabled', style: const TextStyle(fontWeight: FontWeight.w800)),
                     subtitle: Text(
-                      'Use biometrics or device credentials to unlock the app',
+                      'Use a confirmation to simulate device authentication',
                       style: TextStyle(color: cs.onSurfaceVariant),
                     ),
                     trailing: FilledButton.icon(
@@ -219,13 +241,13 @@ class _PrivacySecurityState extends State<PrivacySecurity> with WidgetsBindingOb
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: Text(
-                      'On Android, this toggles FLAG_SECURE; iOS requires a different approach.',
+                      'On Android, toggle FLAG_SECURE in platform code; iOS requires a different approach.',
                       style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12),
                     ),
                   ),
                 ],
               ),
-            ), // FLAG_SECURE prevents screenshots/casting on Android; see plugin docs and Android guidance. [9][20][15]
+            ), // Platform integrations for screen security should be handled outside this widget. [web:5275]
 
             const SizedBox(height: 12),
 
@@ -328,12 +350,13 @@ class _ActionTile extends StatelessWidget {
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
       subtitle: Text(subtitle, style: TextStyle(color: cs.onSurfaceVariant)),
       trailing: const Icon(Icons.chevron_right),
-      onTap: onTap == null ? null : () async {
-        await onTap!.call();
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$title completed')));
-        }
-      },
+      onTap: onTap == null
+          ? null
+          : () async {
+              final messenger = ScaffoldMessenger.of(context);
+              await onTap!.call();
+              messenger.showSnackBar(SnackBar(content: Text('$title completed'))); // Capture a messenger before await to satisfy the lint. [web:5680][web:5873]
+            },
     );
   }
 }
@@ -377,7 +400,7 @@ class _AppLockSheetState extends State<_AppLockSheet> {
             ListTile(
               contentPadding: EdgeInsets.zero,
               title: const Text('Enable lock'),
-              subtitle: Text('Require biometrics or device credentials to unlock the app', style: TextStyle(color: cs.onSurfaceVariant)),
+              subtitle: Text('Require confirmation to unlock the app', style: TextStyle(color: cs.onSurfaceVariant)),
               trailing: Switch.adaptive(
                 value: widget.enabled,
                 onChanged: (v) => widget.onToggleEnabled(v),
@@ -397,14 +420,14 @@ class _AppLockSheetState extends State<_AppLockSheet> {
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                'Biometrics are provided by the device; availability varies by hardware and enrollment.',
+                'This demo uses an in-app confirmation instead of biometrics to keep code dependency-free.',
                 style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12),
               ),
             ),
           ],
         ),
       ),
-    ); // local_auth provides device and biometric authentication for app lock flows. [1][5][8]
+    ); // This sheet is presented with showModalBottomSheet for a focused settings flow. [web:5748]
   }
 }
 
@@ -493,6 +516,6 @@ class _DeleteAccountSheetState extends State<_DeleteAccountSheet> {
           ],
         ),
       ),
-    ); // Destructive confirmation in a modal bottom sheet is a clear, focused UX for irreversible actions. [10][7]
+    ); // This destructive flow uses a modal sheet for clarity and requires explicit confirmation. [web:5748]
   }
 }

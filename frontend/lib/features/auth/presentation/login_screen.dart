@@ -4,8 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../ui/components/glass_card.dart';
-import '../../../ui/components/gradient_button.dart';
+import '../../../ui/components/cards/glass_card.dart';
 import '../providers/auth_providers.dart';
 import '../../../core/storage/token_storage.dart';
 

@@ -4,7 +4,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../../../models/place.dart';
+import '/models/place.dart';
 import 'widgets/booking_search_bar.dart';
 import 'widgets/booking_location_filter.dart';
 import 'widgets/booking_map_view.dart';
@@ -46,8 +46,7 @@ class _BookingScreenState extends State<BookingScreen> {
   int _guests = 2;
   UnitSystem _unit = UnitSystem.metric;
 
-  // Suggestions
-  final List<String> _suggestions = <String>[];
+  // Suggestions debounce
   Timer? _suggestDebounce;
 
   // Data (wire these to Riverpod providers / APIs in real app)
@@ -83,7 +82,7 @@ class _BookingScreenState extends State<BookingScreen> {
   Future<void> _refresh() async {
     setState(() => _loading = true);
     try {
-      // TODO: Replace with provider-driven fetches (nearby, suggested, recent)
+      // Replace with provider-driven fetches (nearby, suggested, recent)
       await Future.delayed(const Duration(milliseconds: 350));
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -114,11 +113,11 @@ class _BookingScreenState extends State<BookingScreen> {
           ),
       recentAddresses: const ['Bandra West, Mumbai', 'Koramangala, Bengaluru', 'Connaught Place, Delhi'],
       onResolveCurrentLocation: () async {
-        // TODO: request geolocation permission and return device coords
+        //  request geolocation permission and return device coords
         return const GeoPoint(19.0896, 72.8656); // example: Mumbai
       },
       onPickOnMap: () async {
-        // TODO: open your map picker and return pinned location
+        // open your map picker and return pinned location
         return const GeoPoint(19.1136, 72.8697);
       },
       minKm: 0.5,
@@ -210,8 +209,10 @@ class _BookingScreenState extends State<BookingScreen> {
 
   // Booking action
   Future<void> _book(Place p) async {
-    // TODO: call BookingApi.getQuote / createReservation or open partner link
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Booking: ${p.name ?? 'Place'}')));
+    //call BookingApi.getQuote / createReservation or open partner link
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Booking: ${p.name}')),
+    );
   }
 
   // Load more recent bookings
@@ -219,7 +220,7 @@ class _BookingScreenState extends State<BookingScreen> {
     if (!_hasMoreRecent || _loading) return;
     setState(() => _loading = true);
     try {
-      // TODO: fetch next page from BookingApi
+      // fetch next page from BookingApi
       await Future.delayed(const Duration(milliseconds: 400));
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -229,7 +230,7 @@ class _BookingScreenState extends State<BookingScreen> {
   // Query change (SearchAnchor)
   void _onQueryChanged(String q) {
     setState(() => _query = q);
-    // TODO: trigger provider search + update _suggestions from backend
+    //trigger provider search + update _suggestions from backend
   }
 
   void _onSubmit(String q) async {
@@ -273,7 +274,7 @@ class _BookingScreenState extends State<BookingScreen> {
               originLng: widget.originLng,
               onOpenFilters: _pickLocation,
               onOpenPlace: (p) {
-                // TODO: navigate to details
+                //  navigate to details
               },
               onBook: _book,
               nextAvailableById: _nextAvailable,
@@ -293,11 +294,11 @@ class _BookingScreenState extends State<BookingScreen> {
               originLng: widget.originLng,
               unit: _unit,
               onOpenPlace: (p) {
-                // TODO: navigate
+                // navigate
               },
               onBook: _book,
               onSeeAll: () {
-                // TODO: push see-all list
+                // push see-all list
               },
               nextAvailableById: _nextAvailable,
               priceFromById: _priceFrom,
@@ -318,14 +319,14 @@ class _BookingScreenState extends State<BookingScreen> {
               onRefresh: _refresh,
               onLoadMore: _loadMoreRecent,
               onOpen: (row) {
-                // TODO: open reservation details
+                // open reservation details
               },
               onCancel: (row) async {
-                // TODO: BookingApi.cancelReservation(row.reservationId)
+                // BookingApi.cancelReservation(row.reservationId)
                 await Future.delayed(const Duration(milliseconds: 250));
               },
               onRebook: (row) async {
-                // TODO: prefill booking flow with row details
+                // prefill booking flow with row details
                 await Future.delayed(const Duration(milliseconds: 250));
               },
             ),

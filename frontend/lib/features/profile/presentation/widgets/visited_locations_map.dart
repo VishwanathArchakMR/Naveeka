@@ -21,7 +21,7 @@ class VisitedLocationsMap extends StatefulWidget {
     this.originLng,
   });
 
-  /// Places the user has visited; lat/lng should be present for mapping.
+  /// Places the user has visited; coordinates should be present for mapping.
   final List<Place> places;
 
   /// Section title.
@@ -54,15 +54,16 @@ class _VisitedLocationsMapState extends State<VisitedLocationsMap> {
   @override
   Widget build(BuildContext context) {
     final data = _filtered(widget.places, _year);
-    final markers = data
-        .where((p) => p.lat != null && p.lng != null)
-        .map((p) => NearbyMarker(
-              id: p.id.toString(),
-              lat: p.lat!,
-              lng: p.lng!,
-              selected: p.id.toString() == _selectedId,
-            ))
-        .toList(growable: false);
+    final markers = data.map((p) {
+      final lat = _latOf(p), lng = _lngOf(p);
+      if (lat == null || lng == null) return null;
+      return NearbyMarker(
+        id: _idOf(p),
+        lat: lat,
+        lng: lng,
+        selected: _idOf(p) == _selectedId,
+      );
+    }).whereType<NearbyMarker>().toList(growable: false);
 
     final center = _centerOf(data);
     final map = widget.mapBuilder != null && center != null
@@ -81,10 +82,10 @@ class _VisitedLocationsMapState extends State<VisitedLocationsMap> {
 
     final selected = _selectedId == null
         ? null
-        : data.firstWhere(
-            (p) => p.id.toString() == _selectedId,
-            orElse: () => data.isEmpty ? const Place() : data.first,
-          );
+        : data.cast<Place?>().firstWhere(
+              (p) => p != null && _idOf(p) == _selectedId,
+              orElse: () => null,
+            );
 
     final years = _yearsFrom(widget.places);
 
@@ -161,14 +162,16 @@ class _VisitedLocationsMapState extends State<VisitedLocationsMap> {
                           onSelected: (_) => setState(() => _year = null),
                         ),
                       ),
-                      ...years.map((y) => Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4),
-                            child: ChoiceChip(
-                              label: Text('$y'),
-                              selected: _year == y,
-                              onSelected: (_) => setState(() => _year = y),
-                            ),
-                          )),
+                      ...years.map(
+                        (y) => Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: ChoiceChip(
+                            label: Text('$y'),
+                            selected: _year == y,
+                            onSelected: (_) => setState(() => _year = y),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -208,27 +211,71 @@ class _VisitedLocationsMapState extends State<VisitedLocationsMap> {
   List<Place> _filtered(List<Place> items, int? year) {
     if (year == null) return items;
     return items.where((p) {
-      final dt = p.visitedAt; // Optional DateTime? on your Place model.
+      final dt = _visitedAtOf(p);
       return dt != null && dt.year == year;
     }).toList(growable: false);
   }
 
   (double, double)? _centerOf(List<Place> items) {
-    final pts = items.where((p) => p.lat != null && p.lng != null).toList();
-    if (pts.isEmpty) return null;
-    final lat = pts.map((e) => e.lat!).reduce((a, b) => a + b) / pts.length;
-    final lng = pts.map((e) => e.lng!).reduce((a, b) => a + b) / pts.length;
-    return (lat, lng);
+    final coords = <(double, double)>[];
+    for (final p in items) {
+      final lat = _latOf(p), lng = _lngOf(p);
+      if (lat != null && lng != null) coords.add((lat, lng));
+    }
+    if (coords.isEmpty) return null;
+    final latAvg = coords.map((e) => e.$1).reduce((a, b) => a + b) / coords.length;
+    final lngAvg = coords.map((e) => e.$2).reduce((a, b) => a + b) / coords.length;
+    return (latAvg, lngAvg);
   }
 
   List<int> _yearsFrom(List<Place> items) {
     final s = <int>{};
     for (final p in items) {
-      final dt = p.visitedAt;
+      final dt = _visitedAtOf(p);
       if (dt != null) s.add(dt.year);
     }
     final out = s.toList()..sort((a, b) => b.compareTo(a));
     return out;
+  }
+
+  // ---------- Place helpers via toJson keys ----------
+
+  Map<String, dynamic> _json(Place p) {
+    try {
+      final dyn = p as dynamic;
+      final j = dyn.toJson();
+      if (j is Map<String, dynamic>) return j;
+    } catch (_) {}
+    return const <String, dynamic>{};
+  }
+
+  String _idOf(Place p) {
+    final m = _json(p);
+    return (m['id'] ?? m['_id'] ?? m['placeId'] ?? '').toString();
+  }
+
+  double? _latOf(Place p) {
+    final m = _json(p);
+    final v = m['lat'] ?? m['latitude'] ?? m['locationLat'] ?? m['coordLat'];
+    if (v is num) return v.toDouble();
+    if (v is String) return double.tryParse(v);
+    return null;
+  }
+
+  double? _lngOf(Place p) {
+    final m = _json(p);
+    final v = m['lng'] ?? m['longitude'] ?? m['locationLng'] ?? m['coordLng'];
+    if (v is num) return v.toDouble();
+    if (v is String) return double.tryParse(v);
+    return null;
+  }
+
+  DateTime? _visitedAtOf(Place p) {
+    final m = _json(p);
+    final v = m['visitedAt'] ?? m['lastVisited'];
+    if (v is DateTime) return v;
+    if (v is String && v.isNotEmpty) return DateTime.tryParse(v);
+    return null;
   }
 
   Widget _placeholderMap(BuildContext context) {
@@ -264,7 +311,8 @@ class _PeekCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasCoords = place.lat != null && place.lng != null;
+    final lat = _latOf(place), lng = _lngOf(place);
+    final hasCoords = lat != null && lng != null;
     final hasOrigin = originLat != null && originLng != null;
 
     return Card(
@@ -280,7 +328,7 @@ class _PeekCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    (place.name ?? 'Place').trim(),
+                    _nameOf(place),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(fontWeight: FontWeight.w800),
@@ -309,7 +357,7 @@ class _PeekCard extends StatelessWidget {
                 if (hasOrigin && hasCoords) const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    _subtitle(),
+                    _subtitle(place),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(color: Colors.black54),
@@ -344,13 +392,48 @@ class _PeekCard extends StatelessWidget {
     );
   }
 
-  String _subtitle() {
-    final parts = <String>[
-      if ((place.address ?? '').trim().isNotEmpty) place.address!.trim(),
-      if ((place.city ?? '').trim().isNotEmpty) place.city!.trim(),
-      if ((place.region ?? '').trim().isNotEmpty) place.region!.trim(),
-      if ((place.country ?? '').trim().isNotEmpty) place.country!.trim(),
-    ];
+  Map<String, dynamic> _json(Place p) {
+    try {
+      final dyn = p as dynamic;
+      final j = dyn.toJson();
+      if (j is Map<String, dynamic>) return j;
+    } catch (_) {}
+    return const <String, dynamic>{};
+  }
+
+  String _nameOf(Place p) {
+    final m = _json(p);
+    final v = (m['name'] ?? m['title'])?.toString().trim();
+    return (v == null || v.isEmpty) ? 'Place' : v;
+  }
+
+  double? _latOf(Place p) {
+    final m = _json(p);
+    final v = m['lat'] ?? m['latitude'] ?? m['locationLat'] ?? m['coordLat'];
+    if (v is num) return v.toDouble();
+    if (v is String) return double.tryParse(v);
+    return null;
+  }
+
+  double? _lngOf(Place p) {
+    final m = _json(p);
+    final v = m['lng'] ?? m['longitude'] ?? m['locationLng'] ?? m['coordLng'];
+    if (v is num) return v.toDouble();
+    if (v is String) return double.tryParse(v);
+    return null;
+  }
+
+  String _subtitle(Place p) {
+    final m = _json(p);
+    final parts = <String>[];
+    void addKey(String k) {
+      final v = (m[k] ?? '').toString().trim();
+      if (v.isNotEmpty) parts.add(v);
+    }
+    addKey('address');
+    addKey('city');
+    addKey('region');
+    addKey('country');
     return parts.isEmpty ? '' : parts.join(', ');
   }
 }

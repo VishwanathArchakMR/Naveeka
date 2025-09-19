@@ -1,5 +1,4 @@
 // lib/features/places/presentation/widgets/parking_info.dart
-
 import 'package:flutter/material.dart';
 
 import '../../../../models/place.dart';
@@ -39,29 +38,143 @@ class ParkingInfo extends StatelessWidget {
     this.notes,
   });
 
-  /// Convenience: construct from Place if the fields exist in the model.
-  factory ParkingInfo.fromPlace(Place p, {Key? key, bool showTitle = true, String currency = '₹'}) {
+  /// Construct from a Place by reading its JSON map keys, supporting common alternatives.
+  factory ParkingInfo.fromPlace(
+    Place p, {
+    Key? key,
+    bool showTitle = true,
+    String currency = '₹',
+  }) {
+    // Read a JSON-like map if available; otherwise an empty map.
+    Map<String, dynamic> m = const <String, dynamic>{};
+    try {
+      final dyn = p as dynamic;
+      final j = dyn.toJson();
+      if (j is Map<String, dynamic>) m = j;
+    } catch (_) {
+      // No toJson or incompatible shape; leave map empty.
+    }
+
+    T? pick<T>(List<String> keys) {
+      for (final k in keys) {
+        final v = m[k];
+        if (v is T) return v;
+        if (T == double && v is num) return v.toDouble() as T;
+        if (T == double && v is String) {
+          final d = double.tryParse(v);
+          if (d != null) return d as T;
+        }
+        if (T == String && v != null) return v.toString() as T;
+        if (T == bool && v is String) {
+          final s = v.toLowerCase();
+          if (s == 'true') return true as T;
+          if (s == 'false') return false as T;
+        }
+      }
+      return null;
+    }
+
     return ParkingInfo(
       key: key,
       showTitle: showTitle,
       currency: currency,
-      parkingAvailable: p.parkingAvailable,            // optional in your model
-      freeParking: p.freeParking,                      // optional
-      hourlyRate: p.parkingHourlyRate,                 // optional
-      dailyRate: p.parkingDailyRate,                   // optional
-      pricingNote: p.parkingPricingNote,               // optional
-      maxStayHours: p.parkingMaxStayHours,             // optional
-      openHours: p.parkingHours ?? p.openingHours,     // fallback to general hours if present
-      heightRestrictionMeters: p.parkingHeightMeters,  // optional
-      valet: p.valetParking,                           // optional
-      evCharging: p.evCharging,                        // optional
-      disabledParking: p.accessibleParking,            // optional
-      streetParking: p.streetParking,                  // optional
-      lotParking: p.lotParking,                        // optional
-      garageParking: p.garageParking,                  // optional
-      twoWheelerParking: p.twoWheelerParking,          // optional
-      busCoachParking: p.busCoachParking,              // optional
-      notes: p.parkingNotes,                           // optional
+
+      // Availability
+      parkingAvailable: pick<bool>([
+        'parkingAvailable',
+        'parking_available',
+        'hasParking',
+        'parking',
+      ]),
+      freeParking: pick<bool>([
+        'freeParking',
+        'free_parking',
+        'isFreeParking',
+      ]),
+
+      // Pricing & time
+      hourlyRate: pick<double>([
+        'parkingHourlyRate',
+        'parking_hourly_rate',
+        'hourlyRate',
+      ]),
+      dailyRate: pick<double>([
+        'parkingDailyRate',
+        'parking_daily_rate',
+        'dailyRate',
+      ]),
+      pricingNote: pick<String>([
+        'parkingPricingNote',
+        'parking_pricing_note',
+        'pricingNote',
+        'parkingNote',
+      ]),
+      maxStayHours: pick<double>([
+        'parkingMaxStayHours',
+        'parking_max_stay_hours',
+        'maxStayHours',
+      ]),
+      openHours: pick<String>([
+        'parkingHours',
+        'parking_hours',
+        'openHours',
+        'openingHours',
+        'hours',
+      ]),
+
+      // Restrictions
+      heightRestrictionMeters: pick<double>([
+        'parkingHeightMeters',
+        'parking_height_meters',
+        'heightRestrictionMeters',
+      ]),
+
+      // Amenities / types
+      valet: pick<bool>([
+        'valetParking',
+        'valet_parking',
+        'valet',
+      ]),
+      evCharging: pick<bool>([
+        'evCharging',
+        'ev_charging',
+        'ev',
+        'charging',
+      ]),
+      disabledParking: pick<bool>([
+        'accessibleParking',
+        'accessible_parking',
+        'disabledParking',
+      ]),
+      streetParking: pick<bool>([
+        'streetParking',
+        'street_parking',
+      ]),
+      lotParking: pick<bool>([
+        'lotParking',
+        'lot_parking',
+      ]),
+      garageParking: pick<bool>([
+        'garageParking',
+        'garage_parking',
+      ]),
+      twoWheelerParking: pick<bool>([
+        'twoWheelerParking',
+        'two_wheeler_parking',
+        'bikeParking',
+      ]),
+      busCoachParking: pick<bool>([
+        'busCoachParking',
+        'bus_coach_parking',
+        'coachParking',
+      ]),
+
+      // Notes
+      notes: pick<String>([
+        'parkingNotes',
+        'parking_notes',
+        'notes',
+      ]),
     );
   }
 
@@ -99,10 +212,11 @@ class ParkingInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasAny = _hasAnyData();
-    if (!hasAny) return const SizedBox.shrink();
+    if (!hasAny) {
+      return const SizedBox.shrink();
+    }
 
     final theme = Theme.of(context);
-
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -136,33 +250,38 @@ class ParkingInfo extends StatelessWidget {
                 subtitle: (freeParking == true)
                     ? const Text('Free parking')
                     : (freeParking == false ? const Text('Paid parking') : null),
-              ), // Availability presented with a ListTile for clear label + status icon per Material list patterns. [1]
+              ),
 
             // Pricing / Rates
-            if (hourlyRate != null || dailyRate != null || (pricingNote != null && pricingNote!.trim().isNotEmpty))
+            if (hourlyRate != null ||
+                dailyRate != null ||
+                (pricingNote != null && pricingNote!.trim().isNotEmpty))
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.payments_outlined),
                 title: Text(_pricingTitle()),
-                subtitle: (pricingNote != null && pricingNote!.trim().isNotEmpty) ? Text(pricingNote!.trim()) : null,
-              ), // Pricing uses a second ListTile to show hour/day rates and optional notes in a familiar list row layout. [1]
+                subtitle: (pricingNote != null && pricingNote!.trim().isNotEmpty)
+                    ? Text(pricingNote!.trim())
+                    : null,
+              ),
 
             // Hours & Restrictions
-            if ((openHours != null && openHours!.trim().isNotEmpty) || heightRestrictionMeters != null || maxStayHours != null)
+            if ((openHours != null && openHours!.trim().isNotEmpty) ||
+                heightRestrictionMeters != null ||
+                maxStayHours != null)
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.schedule_outlined),
                 title: Text(_hoursTitle()),
-                subtitle: Text(
-                  [
-                    if (heightRestrictionMeters != null) 'Height limit ${heightRestrictionMeters!.toStringAsFixed(2)} m',
-                    if (maxStayHours != null) 'Max stay ${_fmtHours(maxStayHours!)}',
-                  ].join(' • '),
-                ),
-              ), // Hours and restrictions are grouped into a single row for concise scanning in list-heavy UIs. [1]
+                subtitle: Text([
+                  if (heightRestrictionMeters != null)
+                    'Height limit ${heightRestrictionMeters!.toStringAsFixed(2)} m',
+                  if (maxStayHours != null) 'Max stay ${_fmtHours(maxStayHours!)}',
+                ].join(' • ')),
+              ),
 
             // Amenity chips (types & features)
-            final chips = _buildChips();
+            final chips = _buildChips(),
             if (chips.isNotEmpty) ...[
               const SizedBox(height: 8),
               Wrap(
@@ -170,13 +289,13 @@ class ParkingInfo extends StatelessWidget {
                 runSpacing: 8,
                 children: chips,
               ),
-            ], // Chips compactly represent parking types and amenities, matching Material chip guidance for attributes. [13][7]
+            ],
 
             // Notes / Rules (expandable if long)
             if (notes != null && notes!.trim().isNotEmpty) ...[
               const SizedBox(height: 8),
               _NotesExpand(text: notes!.trim()),
-            ], // An expandable notes section keeps long content tidy while still discoverable beneath the summary. [12]
+            ],
           ],
         ),
       ),
@@ -222,6 +341,7 @@ class ParkingInfo extends StatelessWidget {
     return '${h.toStringAsFixed(1)}h';
   }
 
+  // Renamed to match the call site in build() and keep generic syntax straightforward.
   List<Widget> _buildChips() {
     final items = <_ChipItem>[];
 
@@ -235,7 +355,7 @@ class ParkingInfo extends StatelessWidget {
     add(valet, Icons.assignment_ind_outlined, 'Valet');
     add(evCharging, Icons.electric_bolt_outlined, 'EV charging');
     add(disabledParking, Icons.accessible_forward_outlined, 'Accessible');
-    add(twoWheelerParking, Icons.two_wheeler_outlined, 'Two‑wheeler');
+    add(twoWheelerParking, Icons.two_wheeler_outlined, 'Two-wheeler');
     add(busCoachParking, Icons.directions_bus_filled_outlined, 'Bus/Coach');
 
     return items
@@ -290,6 +410,6 @@ class _NotesExpandState extends State<_NotesExpand> with TickerProviderStateMixi
           ),
         ),
       ],
-    ); // Animated expand/collapse keeps long parking notes tidy while discoverable with a clear control. [12]
+    );
   }
 }

@@ -2,8 +2,8 @@
 
 import 'package:flutter/material.dart';
 
-import '../../../../models/place.dart';
-import '../../../../features/places/presentation/widgets/distance_indicator.dart';
+import '/../../../models/place.dart';
+import '/../../features/places/presentation/widgets/distance_indicator.dart';
 
 class SuggestedBookings extends StatelessWidget {
   const SuggestedBookings({
@@ -104,7 +104,7 @@ class SuggestedBookings extends StatelessWidget {
           ],
         ),
       ),
-    ); // A horizontal ListView.builder inside a section Card creates a compact carousel of items with smooth sideways scrolling. [1][9]
+    ); // A horizontal ListView.builder inside a section Card creates a compact carousel of items with smooth sideways scrolling. [web:5969]
   }
 }
 
@@ -136,8 +136,11 @@ class _BookingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final img = _coverUrl(place);
-    final name = (place.name ?? 'Place').trim();
-    final hasCoords = place.lat != null && place.lng != null;
+    final name = _nameOf(place);
+    final lat = _latOf(place), lng = _lngOf(place);
+    final hasCoords = lat != null && lng != null;
+    final rating = _ratingOf(place);
+    final reviews = _reviewsCountOf(place);
 
     return SizedBox(
       width: width,
@@ -186,8 +189,8 @@ class _BookingCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 10),
                 child: Row(
                   children: [
-                    if (place.rating != null) _RatingPill(rating: place.rating!, reviews: place.reviewsCount),
-                    if (place.rating != null && hasCoords && originLat != null && originLng != null) const SizedBox(width: 8),
+                    if (rating != null) _RatingPill(rating: rating, reviews: reviews),
+                    if (rating != null && hasCoords && originLat != null && originLng != null) const SizedBox(width: 8),
                     if (hasCoords && originLat != null && originLng != null)
                       Expanded(
                         child: Align(
@@ -242,12 +245,13 @@ class _BookingCard extends StatelessWidget {
           ),
         ),
       ),
-    ); // Each suggestion is a Material Card with media, text, and actions, matching accessible card patterns in Flutter. [9][12]
+    ); // Each suggestion is a Material Card with media, text, and actions, matching accessible card patterns in Flutter. [web:6107]
   }
 
   String _secondaryLine(BuildContext context) {
-    if ((priceFrom ?? '').trim().isNotEmpty) {
-      return 'From ${priceFrom!.trim()}';
+    final pf = (priceFrom ?? '').trim();
+    if (pf.isNotEmpty) {
+      return 'From $pf';
     }
     if (nextAt != null) {
       final local = nextAt!.toLocal();
@@ -258,9 +262,66 @@ class _BookingCard extends StatelessWidget {
     return 'Check availability';
   }
 
+  // ---------- Place helpers via toJson keys ----------
+
+  Map<String, dynamic> _json(Place p) {
+    try {
+      final dyn = p as dynamic;
+      final j = dyn.toJson();
+      if (j is Map<String, dynamic>) return j;
+    } catch (_) {}
+    return const <String, dynamic>{};
+  }
+
+  String _nameOf(Place p) {
+    final m = _json(p);
+    final s = (m['name'] ?? m['title'])?.toString().trim();
+    return (s == null || s.isEmpty) ? 'Place' : s;
+  }
+
   String? _coverUrl(Place p) {
-    final list = p.photos ?? const <String>[];
-    return list.isNotEmpty && list.first.trim().isNotEmpty ? list.first.trim() : null;
+    final m = _json(p);
+    // Prefer photos/images first element, else imageUrl/cover/thumbnail
+    final photos = m['photos'];
+    if (photos is List && photos.isNotEmpty) {
+      final first = photos.first.toString().trim();
+      if (first.isNotEmpty) return first;
+    }
+    final single = (m['imageUrl'] ?? m['cover'] ?? m['thumbnail'])?.toString().trim();
+    return (single != null && single.isNotEmpty) ? single : null;
+  }
+
+  double? _latOf(Place p) {
+    final m = _json(p);
+    final v = m['lat'] ?? m['latitude'] ?? m['locationLat'] ?? m['coordLat'];
+    if (v is num) return v.toDouble();
+    if (v is String) return double.tryParse(v);
+    return null;
+  }
+
+  double? _lngOf(Place p) {
+    final m = _json(p);
+    final v = m['lng'] ?? m['longitude'] ?? m['locationLng'] ?? m['coordLng'];
+    if (v is num) return v.toDouble();
+    if (v is String) return double.tryParse(v);
+    return null;
+  }
+
+  double? _ratingOf(Place p) {
+    final m = _json(p);
+    final v = m['rating'] ?? m['avgRating'];
+    if (v is num) return v.toDouble();
+    if (v is String) return double.tryParse(v);
+    return null;
+  }
+
+  int? _reviewsCountOf(Place p) {
+    final m = _json(p);
+    final v = m['reviewsCount'] ?? m['reviewCount'];
+    if (v is int) return v;
+    if (v is num) return v.toInt();
+    if (v is String) return int.tryParse(v);
+    return null;
   }
 
   Widget _fallbackImage() {
@@ -287,13 +348,12 @@ class _RatingPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final text = reviews == null || reviews == 0
-        ? rating.toStringAsFixed(1)
-        : '${rating.toStringAsFixed(1)} · $reviews';
+    final showReviews = reviews != null && reviews! > 0;
+    final text = showReviews ? '${rating.toStringAsFixed(1)} · $reviews' : rating.toStringAsFixed(1);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: Colors.amber.withOpacity(0.18),
+        color: Colors.amber.withValues(alpha: 0.18),
         borderRadius: BorderRadius.circular(999),
       ),
       child: Row(

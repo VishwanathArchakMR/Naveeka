@@ -36,20 +36,53 @@ class TransportInfo extends StatelessWidget {
     bool showTitle = true,
     String? countryCode,
   }) {
+    Map<String, dynamic> m = const <String, dynamic>{};
+    try {
+      final dyn = p as dynamic;
+      final j = dyn.toJson();
+      if (j is Map<String, dynamic>) m = j;
+    } catch (_) {
+      // ignore
+    }
+
+    T? pick<T>(List<String> keys) {
+      for (final k in keys) {
+        final v = m[k];
+        if (v is T) return v;
+        if (T == double && v is num) return v.toDouble() as T;
+        if (T == double && v is String) {
+          final d = double.tryParse(v);
+          if (d != null) return d as T;
+        }
+        if (T == String && v != null) return v.toString() as T;
+        if (T == bool && v is String) {
+          final s = v.toLowerCase();
+          if (s == 'true') return true as T;
+          if (s == 'false') return false as T;
+        }
+      }
+      return null;
+    }
+
     return TransportInfo(
       key: key,
       title: title,
       showTitle: showTitle,
-      lat: p.lat,
-      lng: p.lng,
-      destinationLabel: p.name,
-      nearestMetro: p.nearestMetro,
-      nearestBus: p.nearestBus,
-      taxiStand: p.taxiStand,
-      shuttleAvailable: p.shuttleAvailable,
-      bikeParking: p.bikeParking,
-      scooterParking: p.scooterParking,
-      transitNotes: p.transitNotes,
+      lat: pick<double>(['lat', 'latitude', 'coord_lat', 'location_lat']),
+      lng: pick<double>(['lng', 'lon', 'longitude', 'coord_lng', 'location_lng']),
+      destinationLabel: pick<String>(['name', 'title', 'label']),
+      nearestMetro: pick<String>(['nearestMetro', 'metro', 'nearest_metro']),
+      nearestBus: pick<String>(['nearestBus', 'bus', 'nearest_bus']),
+      taxiStand: pick<String>(['taxiStand', 'nearest_taxi', 'taxi']),
+      shuttleAvailable: pick<bool>(['shuttleAvailable', 'shuttle', 'hasShuttle']),
+      bikeParking: pick<bool>(['bikeParking', 'bike_parking']),
+      scooterParking: pick<bool>(['scooterParking', 'scooter_parking']),
+      transitNotes: pick<String>([
+        'transitNotes',
+        'transportNotes',
+        'gettingThereNotes',
+        'notes_transport'
+      ]),
       countryCode: countryCode,
     );
   }
@@ -77,8 +110,11 @@ class TransportInfo extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasCoords = lat != null && lng != null;
     final hasAnyTips = _hasAnyTips();
+    final chips = _chips();
 
-    if (!hasCoords && !hasAnyTips) return const SizedBox.shrink();
+    if (!hasCoords && !hasAnyTips) {
+      return const SizedBox.shrink();
+    }
 
     return Card(
       elevation: 0,
@@ -102,11 +138,12 @@ class TransportInfo extends StatelessWidget {
               ),
 
             // Quick actions row
-            if (hasCoords) _QuickActions(
-              lat: lat!,
-              lng: lng!,
-              label: destinationLabel,
-            ),
+            if (hasCoords)
+              _QuickActions(
+                lat: lat!,
+                lng: lng!,
+                label: destinationLabel,
+              ),
 
             if (hasCoords) const SizedBox(height: 8),
 
@@ -134,7 +171,6 @@ class TransportInfo extends StatelessWidget {
               ),
 
             // Amenity chips
-            final chips = _chips();
             if (chips.isNotEmpty) ...[
               const SizedBox(height: 8),
               Wrap(
@@ -207,25 +243,29 @@ class _QuickActions extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(child: OutlinedButton.icon(
+        Expanded(
+            child: OutlinedButton.icon(
           onPressed: _openTransit,
           icon: const Icon(Icons.train_outlined),
           label: const Text('Transit'),
         )),
         const SizedBox(width: 8),
-        Expanded(child: OutlinedButton.icon(
+        Expanded(
+            child: OutlinedButton.icon(
           onPressed: _openWalk,
           icon: const Icon(Icons.directions_walk_outlined),
           label: const Text('Walk'),
         )),
         const SizedBox(width: 8),
-        Expanded(child: OutlinedButton.icon(
+        Expanded(
+            child: OutlinedButton.icon(
           onPressed: _openCycle,
           icon: const Icon(Icons.directions_bike_outlined),
           label: const Text('Cycle'),
         )),
         const SizedBox(width: 8),
-        Expanded(child: FilledButton.icon(
+        Expanded(
+            child: FilledButton.icon(
           onPressed: _openUber,
           icon: const Icon(Icons.local_taxi_outlined),
           label: const Text('Ride'),
@@ -235,7 +275,7 @@ class _QuickActions extends StatelessWidget {
   }
 
   Future<void> _openTransit() async {
-    // Google Maps universal URL with travelmode=transit. [16]
+    // Google Maps universal URL with travelmode=transit.
     final uri = Uri.parse(
       'https://www.google.com/maps/dir/?api=1'
       '&destination=${Uri.encodeComponent('${lat.toStringAsFixed(6)},${lng.toStringAsFixed(6)}')}'
@@ -263,7 +303,7 @@ class _QuickActions extends StatelessWidget {
   }
 
   Future<void> _openUber() async {
-    // Use Uber universal deep link (m.uber.com) with pickup=my_location and destination lat/lng; app opens if installed, else web/app store. [1]
+    // Uber universal deep link (m.uber.com) with pickup=my_location and destination lat/lng.
     final q = {
       'action': 'setPickup',
       'pickup': 'my_location',

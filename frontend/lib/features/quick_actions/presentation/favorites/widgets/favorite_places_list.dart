@@ -3,9 +3,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 
-import '../../../../models/place.dart';
-import '../../../favorites/widgets/favorite_button.dart';
-import '../../../places/presentation/widgets/distance_indicator.dart';
+import '/../../../models/place.dart';
+// Use a clean, local import for the button in this favorites module.
+import 'favorite_button.dart';
+import '../../../../places/presentation/widgets/distance_indicator.dart';
 
 class FavoritePlacesList extends StatefulWidget {
   const FavoritePlacesList({
@@ -67,7 +68,7 @@ class _FavoritePlacesListState extends State<FavoritePlacesList> {
       _loadRequested = true;
       widget.onLoadMore!.call().whenComplete(() => _loadRequested = false);
     }
-  } // Infinite loading triggers as the user nears the end of the list, a common pattern with ListView builder APIs. [2]
+  } // List lazy-loading pattern near end of extent [web:132].
 
   @override
   Widget build(BuildContext context) {
@@ -127,7 +128,7 @@ class _FavoritePlacesListState extends State<FavoritePlacesList> {
                       )
                     : _empty(),
               ),
-            ), // RefreshIndicator adds pull-to-refresh semantics to the list and shows the adaptive spinner per platform. [12][18]
+            ), // RefreshIndicator wraps the list with pull-to-refresh behavior [web:132].
           ],
         ),
       ),
@@ -157,10 +158,12 @@ class _FavoritePlacesListState extends State<FavoritePlacesList> {
             padding: const EdgeInsets.all(24),
             child: Text(
               'No favorites yet',
-              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 1.0)),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 1.0),
+              ),
             ),
           ),
-        ); // Use withValues for color alpha to comply with the wide-gamut color migration and avoid withOpacity precision loss. [13][7]
+        ); // Wide-gamut color withValues for consistent alpha [web:132].
   }
 }
 
@@ -182,24 +185,29 @@ class _FavTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final hasCoords = place.lat != null && place.lng != null;
-    final subtitle = _subtitle();
+    final name = _nameOf(place);
+    final category = _categoryOf(place);
+    final photos = _photosOf(place);
+    final lat = _latOf(place);
+    final lng = _lngOf(place);
+    final hasCoords = lat != null && lng != null;
+    final subtitle = _subtitle(place);
 
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-      leading: _thumb(place.photos),
+      leading: _thumb(photos),
       title: Row(
         children: [
           Expanded(
             child: Text(
-              (place.name ?? 'Place').trim(),
+              name,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(fontWeight: FontWeight.w800),
             ),
           ),
           const SizedBox(width: 8),
-          if ((place.category ?? '').toString().trim().isNotEmpty)
+          if (category.isNotEmpty)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
@@ -207,7 +215,7 @@ class _FavTile extends StatelessWidget {
                 borderRadius: BorderRadius.circular(999),
               ),
               child: Text(
-                '${place.category}'.trim(),
+                category,
                 style: TextStyle(color: cs.primary, fontSize: 11, fontWeight: FontWeight.w700),
               ),
             ),
@@ -240,30 +248,112 @@ class _FavTile extends StatelessWidget {
         ],
       ),
       trailing: FavoriteButton(
-        isFavorite: place.isFavorite ?? (place.isWishlisted ?? false) == true,
-        onChanged: onToggleFavorite == null ? null : (next) => onToggleFavorite!(place, next),
+        // This FavoriteButton API requires `isFavorite` and `onChanged` -> Future<bool>.
+        isFavorite: _isFavorite(place),
+        onChanged: (next) async {
+          final handler = onToggleFavorite;
+          if (handler != null) {
+            // Return the result to satisfy Future<bool> and avoid “body might complete normally”.
+            return await handler(place, next);
+          }
+          // If no handler provided, report failure (no state change).
+          return false;
+        },
         size: 32,
         compact: true,
         tooltip: 'Favorite',
       ),
       onTap: onOpen == null ? null : () => onOpen!(place),
-    ); // ListView.separated with ListTile provides an accessible, high-performance list with consistent separators and simple item composition. [1][2]
+    ); // Non-null Future<bool> callback prevents incomplete-body errors [web:304][web:306][web:83].
   }
 
-  String _subtitle() {
-    final parts = <String>[];
-    if ((place.emotion ?? '').toString().trim().isNotEmpty) parts.add((place.emotion ?? '').toString().trim());
-    if (place.rating != null) {
-      final r = place.rating!.toStringAsFixed(1);
-      final rc = (place.reviewsCount ?? 0);
-      parts.add(rc > 0 ? '$r · $rc' : r);
+  // -------- JSON helpers for robust field access --------
+
+  Map<String, dynamic> _json(Place p) {
+    try {
+      final dyn = p as dynamic;
+      final j = dyn.toJson();
+      if (j is Map<String, dynamic>) return j;
+    } catch (_) {}
+    return const <String, dynamic>{};
+  }
+
+  String _nameOf(Place p) {
+    final j = _json(p);
+    return (j['name'] ?? j['title'] ?? j['label'] ?? 'Place').toString().trim();
+  }
+
+  String _categoryOf(Place p) {
+    final j = _json(p);
+    return (j['category'] ?? '').toString().trim();
+  }
+
+  List<String> _photosOf(Place p) {
+    final j = _json(p);
+    final v = j['photos'] ?? j['images'] ?? j['gallery'];
+    if (v is List) {
+      return v.map((e) => e?.toString() ?? '').where((s) => s.trim().isNotEmpty).cast<String>().toList();
     }
+    return const <String>[];
+  }
+
+  double? _latOf(Place p) {
+    final j = _json(p);
+    return _d(j['lat'] ?? j['latitude'] ?? j['coord_lat'] ?? j['location_lat']);
+  }
+
+  double? _lngOf(Place p) {
+    final j = _json(p);
+    return _d(j['lng'] ?? j['lon'] ?? j['longitude'] ?? j['coord_lng'] ?? j['location_lng']);
+  }
+
+  bool _isFavorite(Place p) {
+    final j = _json(p);
+    final f = j['isFavorite'];
+    final w = j['isWishlisted'] ?? j['wishlisted'];
+    final fv = (f is bool) ? f : (f is String ? f.toLowerCase() == 'true' : false);
+    final wv = (w is bool) ? w : (w is String ? w.toLowerCase() == 'true' : false);
+    return fv || wv;
+  }
+
+  String _subtitle(Place p) {
+    final j = _json(p);
+    final parts = <String>[];
+    final emo = (j['emotion'] ?? '').toString().trim();
+    if (emo.isNotEmpty) parts.add(emo);
+    final rating = _rating(j);
+    final rc = _reviewsCount(j);
+    if (rating != null) parts.add(rc > 0 ? '${rating.toStringAsFixed(1)} · $rc' : rating.toStringAsFixed(1));
     return parts.join(' · ');
   }
 
-  Widget _thumb(List<String>? photos) {
-    final url = (photos != null && photos.isNotEmpty && photos.first.trim().isNotEmpty) ? photos.first.trim() : null;
-    if (url == null) {
+  double? _rating(Map<String, dynamic> j) {
+    final v = j['rating'] ?? j['avgRating'] ?? j['averageRating'];
+    if (v is num) return v.toDouble();
+    if (v is String) return double.tryParse(v);
+    return null;
+  }
+
+  int _reviewsCount(Map<String, dynamic> j) {
+    final v = j['reviewsCount'] ?? j['reviewCount'] ?? j['reviews'];
+    if (v is int) return v;
+    if (v is String) return int.tryParse(v) ?? 0;
+    if (v is num) return v.toInt();
+    return 0;
+  }
+
+  double? _d(dynamic v) {
+    if (v is double) return v;
+    if (v is int) return v.toDouble();
+    if (v is String) return double.tryParse(v);
+    return null;
+  }
+
+  // -------- UI helpers --------
+
+  Widget _thumb(List<String> photos) {
+    final url = photos.isNotEmpty ? photos.first.trim() : '';
+    if (url.isEmpty) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(8),
         child: Container(

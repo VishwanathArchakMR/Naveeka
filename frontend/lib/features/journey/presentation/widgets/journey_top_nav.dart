@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 
 // Optional: plug real search screens or section roots
 import '../flights/flight_search_screen.dart';
-import '../../hotels/hotel_search_screen.dart';
-import '../../places/place_search_screen.dart';
-import '../../restaurants/restaurant_search_screen.dart';
-import '../../trains/train_search_screen.dart';
+import '../../presentation/hotels/hotel_search_screen.dart';
+import '../../presentation/places/place_search_screen.dart';
+import '../../presentation/restaurants/restaurant_search_screen.dart';
+import '../../presentation/trains/train_search_screen.dart';
 
 class JourneyTopTab {
   const JourneyTopTab({
@@ -45,7 +45,8 @@ class JourneyTopNavBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final ctrl = controller ?? DefaultTabController.maybeOf(context);
-    assert(ctrl != null, 'JourneyTopNavBar requires a TabController via controller or DefaultTabController');
+    assert(ctrl != null,
+        'JourneyTopNavBar requires a TabController via controller or DefaultTabController');
     return Material(
       color: Colors.transparent,
       child: TabBar(
@@ -77,7 +78,8 @@ class _TabLabel extends StatelessWidget {
               right: -8,
               top: -6,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.primary,
                   borderRadius: BorderRadius.circular(10),
@@ -102,7 +104,7 @@ class _TabLabel extends StatelessWidget {
 /// Convenience scaffold that wires DefaultTabController + AppBar + JourneyTopNavBar + TabBarView. [2][6]
 /// Ideal for quickly bootstrapping a top-tabbed journey shell or embedding under a SliverAppBar via NestedScrollView in larger screens. [10]
 class JourneyTopNavScaffold extends StatelessWidget {
-  const JourneyTopNavScaffold({
+  JourneyTopNavScaffold({
     super.key,
     this.title = 'Explore',
     List<JourneyTopTab>? tabs,
@@ -113,7 +115,7 @@ class JourneyTopNavScaffold extends StatelessWidget {
   final int initialIndex;
   final List<JourneyTopTab> _tabs;
 
-  static List<JourneyTopTab> get _defaultTabs => const [
+  static List<JourneyTopTab> get _defaultTabs => [
         JourneyTopTab(
           label: 'Flights',
           icon: Icons.flight_takeoff_outlined,
@@ -123,22 +125,22 @@ class JourneyTopNavScaffold extends StatelessWidget {
         JourneyTopTab(
           label: 'Hotels',
           icon: Icons.hotel_outlined,
-          builder: (_) => HotelSearchScreen(),
+          builder: (_) => const HotelSearchScreen(),
         ),
         JourneyTopTab(
           label: 'Places',
           icon: Icons.attractions_outlined,
-          builder: (_) => PlaceSearchScreen(),
+          builder: (_) => const PlaceSearchScreen(),
         ),
         JourneyTopTab(
           label: 'Food',
           icon: Icons.restaurant_menu_outlined,
-          builder: (_) => RestaurantSearchScreen(),
+          builder: (_) => const RestaurantSearchScreen(),
         ),
         JourneyTopTab(
           label: 'Trains',
           icon: Icons.train_outlined,
-          builder: (_) => TrainSearchScreen(),
+          builder: (_) => const TrainSearchScreen(),
         ),
       ];
 
