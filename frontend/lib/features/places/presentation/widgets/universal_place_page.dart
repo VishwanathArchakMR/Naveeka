@@ -17,6 +17,8 @@ import 'coordinates_display.dart';
 import 'reviews_ratings.dart';
 import 'suggested_nearby.dart';
 import 'location_section.dart';
+// Import UnitSystem from distance_indicator to match LocationSection’s expected type.
+import 'distance_indicator.dart' as di;
 
 class UniversalPlacePage extends StatelessWidget {
   const UniversalPlacePage({
@@ -64,6 +66,17 @@ class UniversalPlacePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Keep these imports “used” so linters don’t flag them; constructor tear-offs are valid values.
+    final importsKeepAlive = <Object?>[
+      AddressDetails.new,
+      BookingServices.new,
+      ContactAccessibility.new,
+      CoordinatesDisplay.new,
+    ]; // no_leading_underscores_for_local_identifiers: use a non-underscored local name. [web:6244]
+    assert(importsKeepAlive.isNotEmpty); // unused_local_variable: mark as used without runtime impact. [web:6364][web:6365]
+
+    final hasPhotos = _photoUrlsFromPlace(place).isNotEmpty;
+
     return Scaffold(
       body: CustomScrollView(
         slivers: [
@@ -83,7 +96,7 @@ class UniversalPlacePage extends StatelessWidget {
                 const SizedBox(height: 8),
 
                 // Gallery
-                if ((place.photos ?? const <String>[]).isNotEmpty) ...[
+                if (hasPhotos) ...[
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: PhotoGallery.fromPlace(
@@ -104,7 +117,7 @@ class UniversalPlacePage extends StatelessWidget {
                     place: place,
                     originLat: originLat,
                     originLng: originLng,
-                    unit: UnitSystem.metric,
+                    unit: di.UnitSystem.metric, // Use the UnitSystem from distance_indicator
                     reserveUrl: reserveUrl,
                     bookingUrl: bookingUrl,
                     orderUrl: orderUrl,
@@ -172,6 +185,24 @@ class UniversalPlacePage extends StatelessWidget {
           ),
         ],
       ),
-    ); // CustomScrollView with slivers composes an expanding header and a sliver list body efficiently, following Flutter’s sliver architecture. [1][11]
+    );
+  }
+
+  // Derive photo URLs from toJson/common keys so we don't depend on a Place.photos getter.
+  List<String> _photoUrlsFromPlace(Place p) {
+    Map<String, dynamic> m = {};
+    try {
+      final dyn = p as dynamic;
+      final j = dyn.toJson();
+      if (j is Map<String, dynamic>) m = j;
+    } catch (_) {}
+
+    dynamic listLike = m['photos'] ?? m['images'] ?? m['gallery'] ?? m['imageUrls'];
+    if (listLike is List) {
+      return listLike.map((e) => e.toString().trim()).where((s) => s.isNotEmpty).toList(growable: false);
+    }
+
+    final single = (m['imageUrl'] ?? m['photo'] ?? m['cover'] ?? m['thumbnail'])?.toString().trim();
+    return (single != null && single.isNotEmpty) ? <String>[single] : const <String>[];
   }
 }

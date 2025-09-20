@@ -151,12 +151,10 @@ abstract class TrailLocationApi {
 
 /// Minimal in-memory TTL cache for GET responses.
 class _MemCache {
-  _MemCache();
+  _MemCache({Duration? ttl}) : ttl = ttl ?? const Duration(minutes: 5);
 
-  // Default TTL initialized at declaration; no unused parameter.
-  final Duration ttl = const Duration(minutes: 5);
+  final Duration ttl;
 
-  // Store records as ({DateTime at, Object data}) to track insertion time.
   final Map<String, ({DateTime at, Object data})> _store = <String, ({DateTime at, Object data})>{};
 
   T? get<T>(String key) {
@@ -181,14 +179,14 @@ class TrailLocationApiDio implements TrailLocationApi {
     this._dio, {
     required this.baseUrl,
     this.apiKey,
-    _MemCache? cache,
-  }) : _cache = cache ?? _MemCache();
+    Duration? cacheTtl,
+  }) : _cache = _MemCache(ttl: cacheTtl);
 
   final Dio _dio;
   final String baseUrl;
   final String? apiKey;
 
-  // Private cache type is used only internally; not exposed in the public API.
+  // Private cache used internally; not exposed in public API.
   final _MemCache _cache;
 
   Map<String, String> get _headers => {
@@ -258,14 +256,12 @@ class TrailLocationApiDio implements TrailLocationApi {
         .map((e) => TrailSummary.fromJson(e as Map<String, dynamic>))
         .toList(growable: false);
 
-    // If server didn’t sort by distance, sort locally by Haversine.
     items.sort((a, b) {
       final da = _haversineKm(center, a.center);
       final db = _haversineKm(center, b.center);
       return da.compareTo(db);
     });
 
-    // Truncate to limit after sort to ensure deterministic returns.
     return items.take(limit).toList(growable: false);
   }
 

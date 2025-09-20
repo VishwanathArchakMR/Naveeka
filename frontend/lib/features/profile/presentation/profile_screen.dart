@@ -11,7 +11,7 @@ import 'widgets/profile_stats.dart';
 import 'widgets/travel_stats.dart';
 import 'widgets/visited_locations_map.dart';
 import 'widgets/my_contributions.dart';
-import 'widgets/activity_feed.dart';
+import 'widgets/activity_feed.dart'
 import 'widgets/my_journeys.dart';
 
 // Optional: reuse Reviews' ReviewItem if showing contributions that leverage shared model.
