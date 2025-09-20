@@ -63,7 +63,6 @@ class _TrailProfileState extends State<TrailProfile> with TickerProviderStateMix
   @override
   Widget build(BuildContext context) {
     final summary = widget.detail.summary;
-    final cs = Theme.of(context).colorScheme;
 
     return DefaultTabController(
       length: 4,
@@ -136,10 +135,10 @@ class _TrailProfileState extends State<TrailProfile> with TickerProviderStateMix
                       right: 16,
                       bottom: 16,
                       child: _TitleBlock(
-                        title: summary.label,
+                        title: summary.name.toString(),
                         distanceKm: widget.detail.lengthKm ?? summary.distanceKm,
-                        elevationGainM: widget.detail.elevationGainM ?? summary.distanceKm,
-                        difficulty: summary.label.isNotEmpty ? widget.detail.summary.label : null,
+                        elevationGainM: _elevGain(widget.detail),
+                        difficulty: (summary.difficulty ?? '').toUpperCase(),
                       ),
                     ),
                   ],
@@ -182,6 +181,17 @@ class _TrailProfileState extends State<TrailProfile> with TickerProviderStateMix
         ),
       ),
     );
+  }
+
+  // Helper to map possible API field names for elevation gain.
+  double? _elevGain(TrailDetail d) {
+    try {
+      // ignore: avoid_dynamic_calls
+      final dynamic any = d;
+      if (any.elevationGainM != null) return any.elevationGainM as double;
+      if (any.elevationGainMeters != null) return any.elevationGainMeters as double;
+    } catch (_) {}
+    return null;
   }
 }
 
@@ -239,9 +249,8 @@ class _TitleBlock extends StatelessWidget {
           children: [
             if (distanceKm != null)
               _Pill(icon: Icons.route, label: '${distanceKm!.toStringAsFixed(distanceKm! >= 10 ? 0 : 1)} km'),
-            if (elevationGainM != null)
-              _Pill(icon: Icons.trending_up, label: '${elevationGainM!.toStringAsFixed(0)} m'),
-            if ((difficulty ?? '').isNotEmpty) _Pill(icon: Icons.flag_outlined, label: (difficulty ?? '').toUpperCase()),
+            if (elevationGainM != null) _Pill(icon: Icons.trending_up, label: '${elevationGainM!.toStringAsFixed(0)} m'),
+            if ((difficulty ?? '').isNotEmpty) _Pill(icon: Icons.flag_outlined, label: difficulty!),
           ],
         ),
       ],
@@ -358,8 +367,7 @@ class _OverviewTab extends StatelessWidget {
 
         // Description
         if ((detail.description ?? '').trim().isNotEmpty) const _SectionHeader('About this trail'),
-        if ((detail.description ?? '').trim().isNotEmpty)
-          Text(detail.description!.trim()),
+        if ((detail.description ?? '').trim().isNotEmpty) Text(detail.description!.trim()),
         if ((detail.description ?? '').trim().isNotEmpty) const SizedBox(height: 12),
 
         // Start navigation
@@ -520,7 +528,13 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
-      child: Text(text, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontWeight: FontWeight.w700)),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
     );
   }
 }

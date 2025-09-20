@@ -44,7 +44,7 @@ class ContactAccessibility extends StatelessWidget {
   }) {
     final d = p as dynamic;
 
-    T? _try<T>(T? Function() f) {
+    T? tryGetValue<T>(T? Function() f) {
       try {
         return f();
       } catch (_) {
@@ -55,27 +55,27 @@ class ContactAccessibility extends StatelessWidget {
     return ContactAccessibility(
       key: key,
       showTitle: showTitle,
-      phone: _try<String?>(() => d.phone as String?),
-      email: _try<String?>(() => d.email as String?),
-      website: _try<String?>(() => d.website as String?),
-      openingHours: _try<String?>(() => d.openingHours as String?),
-      whatsapp: _try<String?>(() => d.whatsapp as String?),
-      instagram: _try<String?>(() => d.instagram as String?),
-      facebook: _try<String?>(() => d.facebook as String?),
-      twitter: _try<String?>(() => d.twitter as String?),
-      tiktok: _try<String?>(() => d.tiktok as String?),
-      wheelchairAccessible: _try<bool?>(() => d.wheelchairAccessible as bool?),
-      accessibleParking: _try<bool?>(() => d.accessibleParking as bool?),
-      accessibleRestroom: _try<bool?>(() => d.accessibleRestroom as bool?),
-      elevator: _try<bool?>(() => d.elevator as bool?),
-      brailleMenu: _try<bool?>(() => d.brailleMenu as bool?),
-      signLanguage: _try<bool?>(() => d.signLanguage as bool?),
-      serviceAnimalsAllowed: _try<bool?>(() => d.serviceAnimalsAllowed as bool?),
-      familyFriendly: _try<bool?>(() => d.familyFriendly as bool?),
-      smokeFree: _try<bool?>(() => d.smokeFree as bool?),
-      hearingLoop: _try<bool?>(() => d.hearingLoop as bool?),
-      highContrast: _try<bool?>(() => d.highContrast as bool?),
-      largePrint: _try<bool?>(() => d.largePrint as bool?),
+      phone: tryGetValue<String?>(() => d.phone as String?),
+      email: tryGetValue<String?>(() => d.email as String?),
+      website: tryGetValue<String?>(() => d.website as String?),
+      openingHours: tryGetValue<String?>(() => d.openingHours as String?),
+      whatsapp: tryGetValue<String?>(() => d.whatsapp as String?),
+      instagram: tryGetValue<String?>(() => d.instagram as String?),
+      facebook: tryGetValue<String?>(() => d.facebook as String?),
+      twitter: tryGetValue<String?>(() => d.twitter as String?),
+      tiktok: tryGetValue<String?>(() => d.tiktok as String?),
+      wheelchairAccessible: tryGetValue<bool?>(() => d.wheelchairAccessible as bool?),
+      accessibleParking: tryGetValue<bool?>(() => d.accessibleParking as bool?),
+      accessibleRestroom: tryGetValue<bool?>(() => d.accessibleRestroom as bool?),
+      elevator: tryGetValue<bool?>(() => d.elevator as bool?),
+      brailleMenu: tryGetValue<bool?>(() => d.brailleMenu as bool?),
+      signLanguage: tryGetValue<bool?>(() => d.signLanguage as bool?),
+      serviceAnimalsAllowed: tryGetValue<bool?>(() => d.serviceAnimalsAllowed as bool?),
+      familyFriendly: tryGetValue<bool?>(() => d.familyFriendly as bool?),
+      smokeFree: tryGetValue<bool?>(() => d.smokeFree as bool?),
+      hearingLoop: tryGetValue<bool?>(() => d.hearingLoop as bool?),
+      highContrast: tryGetValue<bool?>(() => d.highContrast as bool?),
+      largePrint: tryGetValue<bool?>(() => d.largePrint as bool?),
     );
   }
 

@@ -99,7 +99,7 @@ abstract class BookingRepository {
 /// Provide a concrete implementation higher in the tree with overrideWithValue.
 final bookingRepositoryProvider = Provider<BookingRepository>((ref) {
   throw UnimplementedError('Provide BookingRepository via override in main.dart');
-}); // A repository Provider centralizes data access and can be overridden in tests or app bootstrap. [web:508]
+}); // A repository Provider centralizes data access and can be overridden in tests or app bootstrap. 
 
 /// Stateless filter state for availability lookups (families prefer value types).
 @immutable
@@ -138,7 +138,7 @@ final availabilityProvider =
     partySize: key.partySize,
   );
   return slots;
-}); // family + autoDispose for parameterized async fetches matches Riverpod guidance. [web:508][web:511]
+}); // family + autoDispose for parameterized async fetches matches Riverpod guidance.
 
 /// Quote/Reserve controller: imperative async workflow with explicit states.
 @immutable
@@ -159,6 +159,7 @@ class BookingFlowState {
   const BookingFlowState.quoting() : this._(stage: BookingStage.quoting);
   const BookingFlowState.quoted(BookingQuote q) : this._(stage: BookingStage.quoted, quote: q);
   const BookingFlowState.reserving(BookingQuote q) : this._(stage: BookingStage.reserving, quote: q);
+  const BookingFlowState.reservingNoQuote() : this._(stage: BookingStage.reserving);
   const BookingFlowState.reserved(Reservation r) : this._(stage: BookingStage.reserved, reservation: r);
   const BookingFlowState.failure(Object e) : this._(stage: BookingStage.failure, error: e);
 }
@@ -170,7 +171,7 @@ class BookingController extends AsyncNotifier<BookingFlowState> {
   @override
   FutureOr<BookingFlowState> build() {
     return const BookingFlowState.idle();
-  } // AsyncNotifier exposes ref and async init per Riverpod 2+ patterns. [web:503][web:510]
+  } // AsyncNotifier exposes ref and async init per Riverpod 2+ patterns.
 
   Future<void> requestQuote({
     required String placeId,
@@ -183,7 +184,7 @@ class BookingController extends AsyncNotifier<BookingFlowState> {
     try {
       // stage: quoting
       const quoting = BookingFlowState.quoting();
-      state = AsyncValue.data(quoting);
+      state = const AsyncValue.data(quoting);
       final q = await repo.createQuote(
         placeId: placeId,
         slotId: slotId,
@@ -207,17 +208,7 @@ class BookingController extends AsyncNotifier<BookingFlowState> {
     state = const AsyncValue.loading();
     try {
       // stage: reserving (retain quote if available)
-      final reserving = q == null
-          ? BookingFlowState.reserving(
-              BookingQuote(
-                quoteId: '',
-                placeId: '',
-                slotId: '',
-                partySize: 0,
-                expiresAt: DateTime(1970),
-              ),
-            )
-          : BookingFlowState.reserving(q);
+      final reserving = q == null ? const BookingFlowState.reservingNoQuote() : BookingFlowState.reserving(q);
       state = AsyncValue.data(reserving);
       final r = await repo.confirmReservation(quoteId: quoteId, payment: payment);
       state = AsyncValue.data(BookingFlowState.reserved(r));
@@ -234,14 +225,14 @@ class BookingController extends AsyncNotifier<BookingFlowState> {
 
 /// Provider for booking flow controller (constructor tear-off).
 final bookingControllerProvider =
-    AsyncNotifierProvider<BookingController, BookingFlowState>(BookingController.new); // Tear-offs per Riverpod 2. [web:503]
+    AsyncNotifierProvider<BookingController, BookingFlowState>(BookingController.new); // Tear-offs per Riverpod 2.
 
 /// One-tap rebook controller (returns true on success).
 class RebookController extends AsyncNotifier<bool> {
   @override
   FutureOr<bool> build() {
     return false;
-  } // AsyncNotifier build sets initial state. [web:503]
+  } // AsyncNotifier build sets initial state.
 
   Future<bool> rebook({required String previousReservationId, int? partySizeOverride}) async {
     final repo = ref.read(bookingRepositoryProvider);
@@ -256,7 +247,7 @@ class RebookController extends AsyncNotifier<bool> {
 }
 
 /// Provider for one-tap rebooking (constructor tear-off).
-final rebookControllerProvider = AsyncNotifierProvider<RebookController, bool>(RebookController.new); // Tear-offs. [web:503]
+final rebookControllerProvider = AsyncNotifierProvider<RebookController, bool>(RebookController.new); // Tear-offs.
 
 /// Reader type alias so we can pass ref.read to a facade.
 typedef Reader = T Function<T>(ProviderListenable<T> provider);
@@ -305,14 +296,13 @@ class BookingActions {
 /// Expose actions via a simple Provider for convenient read/ref usage in widgets.
 final bookingActionsProvider = Provider<BookingActions>((ref) {
   return BookingActions(ref.read);
-}); // Pass ref.read to match the Reader signature and enable callable reads. [web:499]
+}); // Pass ref.read to match the Reader signature and enable callable reads. 
 
 /// Example glue helpers for screens/widgets (optional).
 extension BookingUiHelpers on WidgetRef {
   /// Attach to a RebookButton: onRebook: () => ref.read(bookingActionsProvider).rebook(...)
   Future<bool> rebookPrevious(String reservationId, {int? partySizeOverride}) {
-    return read(bookingActionsProvider)
-        .rebook(previousReservationId: reservationId, partySizeOverride: partySizeOverride);
+    return read(bookingActionsProvider).rebook(previousReservationId: reservationId, partySizeOverride: partySizeOverride);
   }
 
   /// Observe booking flow in UI with ref.watch(bookingControllerProvider).

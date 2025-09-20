@@ -67,12 +67,18 @@ class _RestaurantBookingScreenState extends State<RestaurantBookingScreen> {
       _slots = const [];
       _selectedSlotId = null;
     });
+
+    // Capture localized formatter before async gap
+    String formatTime(TimeOfDay t) => t.format(context);
+
     // Simulate API call; remove dependency on RestaurantsApi/PlacesApi
     await Future<void>.delayed(const Duration(milliseconds: 300));
+
+    // Build demo slots without using context after await
     final demo = <Map<String, dynamic>>[];
     for (var i = 0; i < 6; i++) {
       final t = TimeOfDay(hour: 18 + (i ~/ 2), minute: (i % 2) * 30);
-      final label = t.format(context);
+      final label = formatTime(t);
       demo.add({
         'id': 'SLOT-${t.hour.toString().padLeft(2, '0')}${t.minute.toString().padLeft(2, '0')}',
         'label': label,
@@ -80,6 +86,8 @@ class _RestaurantBookingScreenState extends State<RestaurantBookingScreen> {
         'available': i % 5 != 0,
       });
     }
+
+    if (!mounted) return;
     setState(() {
       _slots = demo;
       _selectedSlotId = demo.isNotEmpty ? (demo.first['id']?.toString()) : null;
@@ -96,6 +104,7 @@ class _RestaurantBookingScreenState extends State<RestaurantBookingScreen> {
       lastDate: now.add(const Duration(days: 365)),
     );
     if (picked != null) {
+      if (!mounted) return;
       setState(() {
         _date = DateTime(picked.year, picked.month, picked.day);
         _time = null;
@@ -111,6 +120,7 @@ class _RestaurantBookingScreenState extends State<RestaurantBookingScreen> {
       initialTime: _time ?? const TimeOfDay(hour: 19, minute: 30),
     );
     if (picked != null) {
+      if (!mounted) return;
       setState(() {
         _time = picked;
         _selectedSlotId = null;
@@ -133,6 +143,7 @@ class _RestaurantBookingScreenState extends State<RestaurantBookingScreen> {
       ),
     );
     if (result != null) {
+      if (!mounted) return;
       setState(() {
         _guests = result['guests'] as int;
         _seating = result['seating'] as String?;
@@ -157,6 +168,7 @@ class _RestaurantBookingScreenState extends State<RestaurantBookingScreen> {
       builder: (ctx) => _SlotSheet(slots: _slots, selectedId: _selectedSlotId),
     );
     if (picked != null) {
+      if (!mounted) return;
       setState(() {
         _selectedSlotId = picked;
         _time = null;

@@ -8,7 +8,7 @@ class FlightBookingScreen extends StatefulWidget {
     super.key,
     required this.flightId,
     required this.title, // e.g., "DEL → BLR"
-    required this.date,  // YYYY-MM-DD (journey date)
+    required this.date, // YYYY-MM-DD (journey date)
     this.currency = '₹',
   });
 
@@ -208,30 +208,6 @@ class _FlightBookingScreenState extends State<FlightBookingScreen> {
     });
 
     if (mounted) setState(() => _submitting = false);
-  }
-
-  Map<String, dynamic> _buildPricePayload({required bool includePassengers, required bool includeSeats}) {
-    final pax = <Map<String, dynamic>>[];
-
-    if (includePassengers) {
-      pax.addAll(_adultModels.map((m) => m.toJson('ADT')));
-      pax.addAll(_childModels.map((m) => m.toJson('CHD')));
-      pax.addAll(_infantModels.map((m) => m.toJson('INF')));
-    }
-
-    final seats = includeSeats
-        ? _selectedSeatsBySegment.map((k, v) => MapEntry(k, v.toList(growable: false)))
-        : const <String, List<String>>{};
-
-    return {
-      'passengers': pax,
-      'seats': seats,
-      'contact': {
-        'name': _contactNameCtrl.text.trim(),
-        'email': _contactEmailCtrl.text.trim(),
-        'phone': _contactPhoneCtrl.text.trim(),
-      },
-    };
   }
 
   void _snack(String msg) {
@@ -668,7 +644,7 @@ class _SeatGridSheetState extends State<_SeatGridSheet> {
         children: [
           Row(
             children: [
-            Expanded(child: Text(widget.title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16))),
+              Expanded(child: Text(widget.title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16))),
               IconButton(onPressed: () => Navigator.of(context).maybePop(_picked), icon: const Icon(Icons.close)),
             ],
           ),

@@ -9,7 +9,7 @@ import 'package:go_router/go_router.dart';
 import '../features/auth/presentation/login_screen.dart';
 import '../features/auth/presentation/register_screen.dart';
 
-// Screens - Profile (correct path)
+// Screens - Profile
 import '../features/profile/presentation/profile_screen.dart';
 
 // Screens - Main App
@@ -18,7 +18,9 @@ import '../ui/components/common/bottom_navigation.dart';
 
 // Screens - Home & Quick Actions
 import '../features/home/presentation/home_screen.dart';
-import '../features/quick_actions/presentation/booking/booking_screen.dart';
+
+// Update these imports to match actual files/classes if different.
+import '../features/quick_actions/presentation/booking/booking_screen.dart'; // class BookingPage or BookingScreen
 import '../features/quick_actions/presentation/history/history_screen.dart';
 import '../features/quick_actions/presentation/favorites/favorites_screen.dart';
 import '../features/quick_actions/presentation/following/following_screen.dart';
@@ -65,7 +67,6 @@ import '../features/auth/providers/auth_providers.dart';
 // Navee AI providers
 import '../features/navee_ai/providers/navee_ai_providers.dart';
 
-/// Global router provider consumed by MaterialApp.router (routerConfig) [1][2]
 final routerProvider = Provider<GoRouter>((ref) {
   final auth = ref.watch(authSimpleProvider);
 
@@ -74,14 +75,14 @@ final routerProvider = Provider<GoRouter>((ref) {
     debugLogDiagnostics: false,
     refreshListenable: GoRouterRefreshStream(ref.read(authStreamProvider)),
     routes: [
-      // ---------- SPLASH ----------
+      // SPLASH
       GoRoute(
         path: '/splash',
         name: 'splash',
         pageBuilder: (context, state) => _fade(const SplashScreen()),
       ),
 
-      // ---------- AUTH ----------
+      // AUTH
       GoRoute(
         path: '/login',
         name: 'login',
@@ -93,7 +94,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => _fade(const RegisterScreen()),
       ),
 
-      // ---------- MAIN APP SHELL (TABS) ----------
+      // MAIN SHELL
       ShellRoute(
         builder: (context, state, child) => BottomNavigationShell(child: child),
         routes: [
@@ -107,6 +108,7 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: 'booking',
                 name: 'booking',
+                // If BookingScreen exists, use it; otherwise switch to BookingPage wrapper.
                 pageBuilder: (context, state) => _slideUp(const BookingScreen()),
               ),
               GoRoute(
@@ -136,7 +138,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                       final id = state.pathParameters['id']!;
                       final title = state.uri.queryParameters['title'] ?? 'Trip Group';
                       return _slideUp(TripGroupScreen(groupId: id, groupTitle: title));
-                      
                     },
                   ),
                 ],
@@ -169,7 +170,6 @@ final routerProvider = Provider<GoRouter>((ref) {
             name: 'journey',
             pageBuilder: (context, state) => _noTransition(const JourneyScreen()),
             routes: [
-              // Flights
               GoRoute(
                 path: 'flights',
                 name: 'flight_search',
@@ -201,7 +201,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                   ),
                 ],
               ),
-              // Trains
               GoRoute(
                 path: 'trains',
                 name: 'train_search',
@@ -220,7 +219,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                   ),
                 ],
               ),
-              // Hotels
               GoRoute(
                 path: 'hotels',
                 name: 'hotel_search',
@@ -239,7 +237,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                   ),
                 ],
               ),
-              // Restaurants
               GoRoute(
                 path: 'restaurants',
                 name: 'restaurant_search',
@@ -256,7 +253,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                   ),
                 ],
               ),
-              // Activities
               GoRoute(
                 path: 'activities',
                 name: 'activity_search',
@@ -269,7 +265,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                   ),
                 ],
               ),
-              // My Bookings
               GoRoute(
                 path: 'my-bookings',
                 name: 'my_bookings',
@@ -289,7 +284,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         ],
       ),
 
-      // ---------- UNIVERSAL PLACE DETAIL (Deep Link Support) ----------
+      // UNIVERSAL PLACE DETAIL
       GoRoute(
         path: '/place/:id',
         name: 'place_detail',
@@ -299,7 +294,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
 
-      // ---------- SETTINGS & PROFILE ----------
+      // SETTINGS & PROFILE
       GoRoute(
         path: '/settings',
         name: 'settings',
@@ -315,7 +310,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
 
-      // ---------- CHECKOUT ----------
+      // CHECKOUT
       GoRoute(
         path: '/checkout',
         name: 'checkout',
@@ -326,7 +321,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
     ],
 
-    // ---------- GLOBAL REDIRECT ----------
     redirect: (context, state) {
       final isLoading = auth.isLoading;
       final isLoggedIn = auth.isLoggedIn;
@@ -334,25 +328,15 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isSplash = state.matchedLocation == '/splash';
       final isAuth = state.matchedLocation == '/login' || state.matchedLocation == '/register';
 
-      // 1) Allow splash
       if (isSplash) return null;
-
-      // 2) While loading, keep splash
       if (isLoading) return '/splash';
-
-      // 3) If not logged in, restrict to auth routes
       if (!isLoggedIn) return isAuth ? null : '/login';
-
-      // 4) If logged in and on auth routes, go home
       if (isLoggedIn && isAuth) return '/home';
-
-      // 5) Default: no redirect
       return null;
     },
   );
 });
 
-/// Helper for GoRouter refresh using a Stream [2]
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream<dynamic> stream) {
     _sub = stream.asBroadcastStream().listen((_) => notifyListeners());
@@ -365,8 +349,6 @@ class GoRouterRefreshStream extends ChangeNotifier {
     super.dispose();
   }
 }
-
-// ---------- Transitions ----------
 
 CustomTransitionPage _noTransition(Widget child) {
   return CustomTransitionPage(
@@ -392,7 +374,7 @@ CustomTransitionPage _slideUp(Widget child) {
     child: child,
     transitionsBuilder: (context, animation, secondary, widget) {
       final tween = Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero)
-          .chain( CurveTween(curve: Curves.easeOutCubic));
+          .chain(CurveTween(curve: Curves.easeOutCubic));
       return SlideTransition(position: animation.drive(tween), child: widget);
     },
   );
@@ -404,7 +386,7 @@ CustomTransitionPage _slideRight(Widget child) {
     child: child,
     transitionsBuilder: (context, animation, secondary, widget) {
       final tween = Tween<Offset>(begin: const Offset(0.05, 0), end: Offset.zero)
-          .chain( CurveTween(curve: Curves.easeOutCubic));
+          .chain(CurveTween(curve: Curves.easeOutCubic));
       return SlideTransition(position: animation.drive(tween), child: widget);
     },
   );

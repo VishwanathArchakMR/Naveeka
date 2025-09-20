@@ -8,10 +8,11 @@ import 'widgets/recent_chats.dart';
 import 'widgets/chat_preview.dart';
 import 'widgets/suggested_places_messages.dart';
 
-import '../../../places/presentation/widgets/distance_indicator.dart'; // for UnitSystem
+// App-level models and enums
+import '../../../../models/unit_system.dart'; // UnitSystem (app-level)
 import '/../../models/place.dart';
 
-// Public enum to avoid exposing a private type in public API. [no code refs]
+// Public enum to avoid exposing a private type in public API.
 enum MsgTab { inbox, discover }
 
 class MessagesScreen extends StatefulWidget {
@@ -82,7 +83,6 @@ class _MessagesScreenState extends State<MessagesScreen> {
   void _onSearchChanged(String q) {
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 220), () async {
-      // Completed: call MessagesApi.searchConversations(q) and update _chats (simulated). [no code refs]
       setState(() => _loading = true);
       try {
         await Future.delayed(const Duration(milliseconds: 120));
@@ -104,7 +104,6 @@ class _MessagesScreenState extends State<MessagesScreen> {
   Future<void> _refreshAll() async {
     setState(() => _loading = true);
     try {
-      // Concurrent loads without unnecessary casts. [no code refs]
       final chatsFuture = _fetchRecentChats(page: 1);
       final suggestionsFuture = _fetchSuggestedPlaces(page: 1);
       final chats = await chatsFuture;
@@ -147,7 +146,6 @@ class _MessagesScreenState extends State<MessagesScreen> {
     if (!_hasMoreSuggestions || _loading) return;
     setState(() => _loading = true);
     try {
-      // Keep existing suggestions to avoid model constructor mismatches. [no code refs]
       await Future.delayed(const Duration(milliseconds: 300));
       if (!mounted) return;
       setState(() {
@@ -162,7 +160,6 @@ class _MessagesScreenState extends State<MessagesScreen> {
 
   // Navigation
   void _openChat(ChatPreviewData data) {
-    // Push to MessageThread route with conversation id. [no code refs]
     try {
       Navigator.pushNamed(
         context,
@@ -177,7 +174,6 @@ class _MessagesScreenState extends State<MessagesScreen> {
   }
 
   void _newChat() {
-    // Navigate to new chat flow or contact picker. [no code refs]
     try {
       Navigator.pushNamed(context, '/new_chat');
     } catch (_) {
@@ -295,7 +291,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
             onRefresh: _refreshAll,
             onLoadMore: _loadMoreSuggestions,
             onOpenPlace: (Place p) {
-              // Open place details (typed to Place to avoid Object getter errors). [no code refs]
+              // Open place details (typed to Place to avoid Object getter errors).
               try {
                 Navigator.pushNamed(
                   context,
@@ -304,17 +300,17 @@ class _MessagesScreenState extends State<MessagesScreen> {
                 );
               } catch (_) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Opening place: ${p.name?.toString() ?? 'Place'}')),
+                  SnackBar(content: Text('Opening place: ${p.name.toString()}')),
                 );
               }
             },
             onSharePlace: (Place p) async {
-              // MessagesApi.sendPlace(p) (simulated). [no code refs]
+              // MessagesApi.sendPlace(p) (simulated).
               try {
                 await Future.delayed(const Duration(milliseconds: 150));
                 if (!mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Shared: ${p.name?.toString() ?? 'Place'}')),
+                  SnackBar(content: Text('Shared: ${p.name.toString()}')),
                 );
               } catch (_) {
                 if (!mounted) return;
@@ -324,7 +320,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
               }
             },
             onBook: (Place p) async {
-              // Open booking flow (simulated navigation). [no code refs]
+              // Open booking flow (simulated navigation).
               try {
                 await Future.delayed(const Duration(milliseconds: 150));
                 if (!mounted) return;
@@ -336,7 +332,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                   );
                 } catch (_) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Booking: ${p.name?.toString() ?? 'Place'}')),
+                    SnackBar(content: Text('Booking: ${p.name.toString()}')),
                   );
                 }
               } catch (_) {
@@ -348,7 +344,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
             },
             originLat: null,
             originLng: null,
-            unit: UnitSystem.metric,
+            unit: UnitSystem.metric, // app-level enum
             sectionTitle: 'Suggested places',
           ),
         );
@@ -359,7 +355,6 @@ class _MessagesScreenState extends State<MessagesScreen> {
 
   Future<List<ChatPreviewData>> _fetchRecentChats({int page = 1}) async {
     await Future.delayed(const Duration(milliseconds: 300));
-    // Align with common fields: id, title, lastMessageAt, unreadCount (no unsupported params). [no code refs]
     return List.generate(20, (i) {
       final idx = (page - 1) * 20 + i + 1;
       return ChatPreviewData(
@@ -373,14 +368,12 @@ class _MessagesScreenState extends State<MessagesScreen> {
 
   Future<List<Place>> _fetchSuggestedPlaces({int page = 1}) async {
     await Future.delayed(const Duration(milliseconds: 280));
-    // Do not construct Place here to avoid model type/constructor mismatches; keep incoming list. [no code refs]
     return _suggestions;
   }
 
   List<ChatPreviewData> _mockSearchChats(String query) {
     final ql = query.trim().toLowerCase();
     if (ql.isEmpty) return _chats;
-    // Filter by title only to avoid unknown getters (e.g., subtitle/lastMessage). [no code refs]
     return _chats.where((chat) {
       final t = chat.title.toString().toLowerCase();
       return t.contains(ql);

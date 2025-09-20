@@ -97,7 +97,7 @@ class AppNavigationObserver extends NavigatorObserver {
     final args = route.settings.arguments;
     if (args is Map) {
       // best-effort String map
-      return args.map((k, v) => MapEntry(k.toString(), v?.toString()));
+      return args.map((k, v) => MapEntry(k.toString(), v.toString()));
     }
     return null;
     }

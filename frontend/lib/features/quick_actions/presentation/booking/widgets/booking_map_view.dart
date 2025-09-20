@@ -302,8 +302,8 @@ class _PeekBookingCard extends StatelessWidget {
                       alignment: Alignment.centerLeft,
                       child: DistanceIndicator.fromPlace(
                         place,
-                        originLat: olat!, // non-null after guard
-                        originLng: olng!, // non-null after guard
+                        originLat: olat, // non-null after guard
+                        originLng: olng, // non-null after guard
                         unit: UnitSystem.metric,
                         compact: true,
                         labelSuffix: 'away',

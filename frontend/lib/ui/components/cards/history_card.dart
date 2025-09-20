@@ -228,7 +228,6 @@ class HistoryCard extends StatelessWidget {
   }
 
   Widget _buildActions(BuildContext context) {
-    final t = Theme.of(context);
     final v = dense ? VisualDensity.compact : VisualDensity.standard;
 
     final buttons = <Widget>[];
@@ -313,8 +312,7 @@ class _MetaRow extends StatelessWidget {
     final items = meta.entries.where((e) => e.key.trim().isNotEmpty && e.value.trim().isNotEmpty).toList();
     if (items.isEmpty) return const SizedBox.shrink();
 
-    final t = Theme.of(context);
-    final cs = t.colorScheme;
+    final cs = Theme.of(context).colorScheme;
 
     return Wrap(
       spacing: 10,
@@ -326,7 +324,7 @@ class _MetaRow extends StatelessWidget {
           children: <Widget>[
             Text(
               '${e.key}:',
-              style: t.textTheme.labelSmall?.copyWith(
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
                 color: cs.onSurfaceVariant,
                 fontWeight: FontWeight.w600,
               ),
@@ -334,7 +332,7 @@ class _MetaRow extends StatelessWidget {
             const SizedBox(width: 4),
             Text(
               e.value,
-              style: t.textTheme.labelSmall?.copyWith(color: cs.onSurface),
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(color: cs.onSurface),
             ),
           ],
         );

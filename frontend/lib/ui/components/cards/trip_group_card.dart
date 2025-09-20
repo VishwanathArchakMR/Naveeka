@@ -603,3 +603,49 @@ class _ActionsRow extends StatelessWidget {
     return Row(mainAxisAlignment: MainAxisAlignment.end, children: actions);
   }
 }
+
+/// Private compact chip used in the header for status/visibility.
+/// Uses a rounded container with icon + label to emulate a small pill chip. 
+class _Chip extends StatelessWidget {
+  const _Chip({
+    required this.label,
+    required this.icon,
+    required this.bg,
+    required this.fg,
+    required this.dense,
+  });
+
+  final String label;
+  final IconData icon;
+  final Color bg;
+  final Color fg;
+  final bool dense;
+
+  @override
+  Widget build(BuildContext context) {
+    final padH = dense ? 8.0 : 10.0;
+    final padV = dense ? 3.0 : 4.0;
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: padH, vertical: padV),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Icon(icon, size: dense ? 14 : 16, color: fg),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: fg,
+                  fontWeight: FontWeight.w700,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+}

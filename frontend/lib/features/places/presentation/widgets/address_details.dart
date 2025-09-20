@@ -27,45 +27,60 @@ class AddressDetails extends StatelessWidget {
     Key? key,
     bool showTitle = true,
   }) {
-    String? _str(dynamic v) => (v == null) ? null : v.toString();
-    double? _num(dynamic v) {
+    // Use null-aware operator per lint
+    String? asString(Object? v) => v?.toString();
+    double? asDouble(Object? v) {
       if (v is double) return v;
       if (v is int) return v.toDouble();
       if (v is String) return double.tryParse(v);
       return null;
     }
 
-    // Helper to read by property or map key
-    T? _get<T>(List<String> names) {
+    // Helper to read by common sources: Map keys or toJson()/toMap() outputs
+    T? readValue<T>(List<String> names) {
       for (final n in names) {
-        try {
-          // Try property access
-          final v = (p as dynamic).$n; // Will throw if not supported
-          if (v is T) return v;
-          if (T == String && v != null) return _str(v) as T?;
-          if (T == double && v != null) return _num(v) as T?;
-        } catch (_) {}
-        // Try map access
+        dynamic v;
+
+        // Direct Map access
         if (p is Map) {
-          final v = p[n];
-          if (v is T) return v;
-          if (T == String && v != null) return _str(v) as T?;
-          if (T == double && v != null) return _num(v) as T?;
+          v = p[n];
         }
+
+        // Try toJson() if available
+        if (v == null) {
+          try {
+            final tj = (p as dynamic).toJson();
+            if (tj is Map) v = tj[n];
+          } catch (_) {}
+        }
+
+        // Try toMap() if available
+        if (v == null) {
+          try {
+            final tm = (p as dynamic).toMap();
+            if (tm is Map) v = tm[n];
+          } catch (_) {}
+        }
+
+        if (v == null) continue;
+
+        if (v is T) return v;
+        if (T == String) return asString(v) as T?;
+        if (T == double) return asDouble(v) as T?;
       }
       return null;
     }
 
-    final name = _get<String>(['name', 'title', 'label']);
-    final address = _get<String>(['address', 'addressLine', 'street', 'line1']);
-    final city = _get<String>(['city', 'town', 'locality']);
-    final region = _get<String>(['region', 'state', 'province', 'county']);
-    final postal = _get<String>(['postalCode', 'zip', 'postcode']);
-    final country = _get<String>(['country', 'countryName', 'country_code']);
-    final lat = _get<double>(['lat', 'latitude']);
-    final lng = _get<double>(['lng', 'lon', 'long', 'longitude']);
-    final phone = _get<String>(['phone', 'tel', 'telephone', 'mobile']);
-    final website = _get<String>(['website', 'url', 'site', 'link']);
+    final name = readValue<String>(['name', 'title', 'label']);
+    final address = readValue<String>(['address', 'addressLine', 'street', 'line1']);
+    final city = readValue<String>(['city', 'town', 'locality']);
+    final region = readValue<String>(['region', 'state', 'province', 'county']);
+    final postal = readValue<String>(['postalCode', 'zip', 'postcode']);
+    final country = readValue<String>(['country', 'countryName', 'country_code']);
+    final lat = readValue<double>(['lat', 'latitude']);
+    final lng = readValue<double>(['lng', 'lon', 'long', 'longitude']);
+    final phone = readValue<String>(['phone', 'tel', 'telephone', 'mobile']);
+    final website = readValue<String>(['website', 'url', 'site', 'link']);
 
     return AddressDetails(
       key: key,
@@ -186,7 +201,7 @@ class AddressDetails extends StatelessWidget {
   Future<void> _copy(BuildContext context, String text) async {
     final messenger = ScaffoldMessenger.of(context);
     await Clipboard.setData(ClipboardData(text: text));
-    messenger.showSnackBar(const SnackBar(content: Text('Copied'))); // Use captured messenger to avoid context after await [web:5680][web:5873]
+    messenger.showSnackBar(const SnackBar(content: Text('Copied')));
   }
 
   Future<void> _openMaps(BuildContext context) async {
@@ -195,7 +210,7 @@ class AddressDetails extends StatelessWidget {
     if (uri == null) return;
     final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!ok) {
-      messenger.showSnackBar(const SnackBar(content: Text('Could not open maps'))); // Avoids BuildContext across async gap by capturing messenger [web:5680][web:5873]
+      messenger.showSnackBar(const SnackBar(content: Text('Could not open maps')));
     }
   }
 
@@ -216,7 +231,7 @@ class AddressDetails extends StatelessWidget {
     final uri = Uri(scheme: 'tel', path: p);
     final ok = await launchUrl(uri);
     if (!ok) {
-      messenger.showSnackBar(const SnackBar(content: Text('Could not start call'))); // Capture before await to fix the lint [web:5680][web:5873]
+      messenger.showSnackBar(const SnackBar(content: Text('Could not start call')));
     }
   }
 
@@ -227,7 +242,7 @@ class AddressDetails extends StatelessWidget {
     final Uri uri = _ensureHttp(raw);
     final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!ok) {
-      messenger.showSnackBar(const SnackBar(content: Text('Could not open website'))); // External browser via LaunchMode.externalApplication [web:5878][web:5669]
+      messenger.showSnackBar(const SnackBar(content: Text('Could not open website')));
     }
   }
 

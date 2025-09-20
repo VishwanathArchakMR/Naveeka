@@ -57,7 +57,7 @@ class _TrainSearchScreenState extends State<TrainSearchScreen> {
       title: 'From',
       searchStations: _searchStations,
       popularStations: const <Map<String, dynamic>>[],
-    ); // Presented as a shaped modal bottom sheet returning the selected station via Navigator.pop for a clean handoff. [1]
+    );
     if (res != null) setState(() => _from = res);
   }
 
@@ -67,14 +67,31 @@ class _TrainSearchScreenState extends State<TrainSearchScreen> {
       title: 'To',
       searchStations: _searchStations,
       popularStations: const <Map<String, dynamic>>[],
-    ); // Reuses the same bottom‑sheet selector to keep UX consistent and modular across both endpoints. [1]
+    );
     if (res != null) setState(() => _to = res);
   }
 
+  // Simple in-memory station search; replace with backend wiring when available.
+  // Returns normalized maps: {code,name,city,state?,country?,lat?,lng?}
   Future<List<Map<String, dynamic>>> _searchStations(String q) async {
-    // TODO: wire to backend; return [{code,name,city,state?,country?,lat?,lng?}]
-    return <Map<String, dynamic>>[];
-  } // The selector expects an async search function that returns normalized station maps for display. [3]
+    final catalog = <Map<String, dynamic>>[
+      {'code': 'NDLS', 'name': 'New Delhi', 'city': 'Delhi', 'state': 'Delhi', 'country': 'IN', 'lat': 28.643, 'lng': 77.219},
+      {'code': 'BCT', 'name': 'Mumbai Central', 'city': 'Mumbai', 'state': 'Maharashtra', 'country': 'IN', 'lat': 18.969, 'lng': 72.819},
+      {'code': 'CSMT', 'name': 'Chhatrapati Shivaji Maharaj Terminus', 'city': 'Mumbai', 'state': 'Maharashtra', 'country': 'IN', 'lat': 18.940, 'lng': 72.835},
+      {'code': 'HWH', 'name': 'Howrah Jn', 'city': 'Kolkata', 'state': 'West Bengal', 'country': 'IN', 'lat': 22.585, 'lng': 88.342},
+      {'code': 'SBC', 'name': 'KSR Bengaluru', 'city': 'Bengaluru', 'state': 'Karnataka', 'country': 'IN', 'lat': 12.978, 'lng': 77.571},
+      {'code': 'MAS', 'name': 'Chennai Central', 'city': 'Chennai', 'state': 'Tamil Nadu', 'country': 'IN', 'lat': 13.082, 'lng': 80.275},
+      {'code': 'PNBE', 'name': 'Patna Jn', 'city': 'Patna', 'state': 'Bihar', 'country': 'IN', 'lat': 25.594, 'lng': 85.137},
+      {'code': 'BPL', 'name': 'Bhopal Jn', 'city': 'Bhopal', 'state': 'Madhya Pradesh', 'country': 'IN', 'lat': 23.260, 'lng': 77.402},
+      {'code': 'JP', 'name': 'Jaipur', 'city': 'Jaipur', 'state': 'Rajasthan', 'country': 'IN', 'lat': 26.919, 'lng': 75.787},
+      {'code': 'LKO', 'name': 'Lucknow NR', 'city': 'Lucknow', 'state': 'Uttar Pradesh', 'country': 'IN', 'lat': 26.852, 'lng': 80.946},
+    ];
+    final s = q.trim().toLowerCase();
+    if (s.isEmpty) return catalog.take(10).toList(growable: false);
+    bool has(dynamic v) => v != null && v.toString().toLowerCase().contains(s);
+    final res = catalog.where((m) => has(m['code']) || has(m['name']) || has(m['city'])).take(20).toList(growable: false);
+    return res;
+  }
 
   Future<void> _pickDate() async {
     final now = DateTime.now();
@@ -83,7 +100,7 @@ class _TrainSearchScreenState extends State<TrainSearchScreen> {
       initialDate: _date.isBefore(now) ? now : _date,
       firstDate: now,
       lastDate: now.add(const Duration(days: 120)),
-    ); // showDatePicker presents a Material date dialog and resolves a Future<DateTime?> suitable for travel date selection flows. [2]
+    );
     if (picked != null) {
       setState(() => _date = DateTime(picked.year, picked.month, picked.day));
     }
@@ -102,7 +119,7 @@ class _TrainSearchScreenState extends State<TrainSearchScreen> {
         items: const ['1A', '2A', '3A', '3E', 'SL', 'CC', '2S'],
         selected: _classCode,
       ),
-    ); // showModalBottomSheet is the standard API for shaped modal pickers that return a value via Navigator.pop. [1]
+    );
     if (res != null) setState(() => _classCode = res);
   }
 
@@ -119,7 +136,7 @@ class _TrainSearchScreenState extends State<TrainSearchScreen> {
         items: const ['GN', 'TQ', 'LD', 'PT', 'SS', 'HO'],
         selected: _quota,
       ),
-    ); // Using the same modal bottom‑sheet pattern maintains a consistent, focused control surface for quota selection. [1]
+    );
     if (res != null) setState(() => _quota = res);
   }
 
@@ -129,7 +146,7 @@ class _TrainSearchScreenState extends State<TrainSearchScreen> {
       _from = _to;
       _to = tmp;
     });
-  } // Swapping in place minimizes reentry and aligns with common travel app ergonomics for reversing routes. [3]
+  }
 
   void _search() {
     if (_from == null || _to == null) {
@@ -154,7 +171,7 @@ class _TrainSearchScreenState extends State<TrainSearchScreen> {
         initialQuota: _quota,
         title: 'Trains',
       ),
-    )); // The handoff pushes the typed parameters (codes, ISO date, class/quota) to a paginated results screen for continuity. [3]
+    ));
   }
 
   @override
@@ -198,19 +215,18 @@ class _TrainSearchScreenState extends State<TrainSearchScreen> {
                   ),
                 ),
               ],
-            ), // ListTile provides compact, accessible rows for picking endpoints in a form-like screen per Material guidance. [3]
+            ),
 
             const SizedBox(height: 8),
 
             // Date
-            ListTile
-            (
+            ListTile(
               onTap: _pickDate,
               leading: const Icon(Icons.event),
               title: Text(dateLabel, maxLines: 1, overflow: TextOverflow.ellipsis),
               subtitle: const Text('Journey date'),
               trailing: const Icon(Icons.edit_calendar_outlined),
-            ), // Tapping opens showDatePicker to edit the travel date within a constrained future window. [2]
+            ),
 
             const SizedBox(height: 8),
 
@@ -236,7 +252,7 @@ class _TrainSearchScreenState extends State<TrainSearchScreen> {
                   ),
                 ),
               ],
-            ), // Modal bottom sheets are used for class and quota selection to keep the screen focused and uncluttered. [1]
+            ),
 
             const SizedBox(height: 20),
 
@@ -248,7 +264,7 @@ class _TrainSearchScreenState extends State<TrainSearchScreen> {
                 icon: const Icon(Icons.search),
                 label: const Text('Search trains'),
               ),
-            ), // The CTA validates essentials and navigates to TrainResultsScreen with normalized parameters for a seamless flow. [3]
+            ),
           ],
         ),
       ),
@@ -256,7 +272,7 @@ class _TrainSearchScreenState extends State<TrainSearchScreen> {
   }
 }
 
-class _SimpleListSheet extends StatelessWidget {
+class _SimpleListSheet extends StatefulWidget {
   const _SimpleListSheet({required this.title, required this.items, this.selected});
 
   final String title;
@@ -264,30 +280,49 @@ class _SimpleListSheet extends StatelessWidget {
   final String? selected;
 
   @override
+  State<_SimpleListSheet> createState() => _SimpleListSheetState();
+}
+
+class _SimpleListSheetState extends State<_SimpleListSheet> {
+  String? _selectedValue;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedValue = widget.selected;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: MainAxisSize.min, // Fixed: lowercase 'min'
         children: [
           Row(
             children: [
-              Expanded(child: Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16))),
+              Expanded(child: Text(widget.title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16))),
               IconButton(onPressed: () => Navigator.of(context).maybePop(), icon: const Icon(Icons.close)),
             ],
           ),
           ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: items.length,
+            itemCount: widget.items.length,
             separatorBuilder: (_, __) => const Divider(height: 1),
             itemBuilder: (context, i) {
-              final v = items[i];
-              return RadioListTile<String>(
-                value: v,
-                groupValue: selected,
-                onChanged: (_) => Navigator.of(context).maybePop(v),
+              final v = widget.items[i];
+              final isSelected = _selectedValue == v;
+              return ListTile(
+                leading: Icon(
+                  isSelected ? Icons.check_circle : Icons.circle_outlined,
+                  color: isSelected ? Theme.of(context).colorScheme.primary : null,
+                ),
                 title: Text(v),
+                onTap: () {
+                  setState(() => _selectedValue = v);
+                  Navigator.of(context).maybePop(v);
+                },
               );
             },
           ),

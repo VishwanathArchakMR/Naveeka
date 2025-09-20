@@ -351,10 +351,14 @@ _RoutePalette _paletteForKind(ColorScheme cs, RouteKind kind) {
 /// Small blending helper since Color.alphaBlend uses src-over; we want a mix.
 extension on Color {
   Color blend(Color other, double t) {
-    final r = (red + (other.red - red) * t).round();
-    final g = (green + (other.green - green) * t).round();
-    final b = (blue + (other.blue - blue) * t).round();
-    final a = (alpha + (other.alpha - alpha) * t).round();
+    // Convert normalized channels (0..1) to 0..255 ints after interpolation.
+    int lerp8bit(double a, double b) => ((a + (b - a) * t) * 255.0).round().clamp(0, 255);
+
+    final r = lerp8bit(this.r, other.r) & 0xff;
+    final g = lerp8bit(this.g, other.g) & 0xff;
+    final b = lerp8bit(this.b, other.b) & 0xff;
+    final a = lerp8bit(this.a, other.a) & 0xff;
+
     return Color.fromARGB(a, r, g, b);
   }
 }

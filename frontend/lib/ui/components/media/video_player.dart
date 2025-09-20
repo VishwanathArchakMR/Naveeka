@@ -149,19 +149,12 @@ class _AppVideoPlayerState extends State<AppVideoPlayer> {
   void _seekTo(Duration pos) {
     if (!_controller.value.isInitialized) return;
     final total = _controller.value.duration;
-    final clamped = pos < Duration.zero
-        ? Duration.zero
-        : (pos > total ? total : pos);
+    final clamped = pos < Duration.zero ? Duration.zero : (pos > total ? total : pos);
     _controller.seekTo(clamped);
     _kickAutoHide();
   }
 
-  String _fmtTime(Duration d) {
-    final h = d.inHours;
-    final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
-    return h > 0 ? '$h:$m:$s' : '$m:$s';
-  }
+  // Removed unused _fmtTime helper.
 
   void _kickAutoHide() {
     _hideTimer?.cancel();
@@ -174,8 +167,6 @@ class _AppVideoPlayerState extends State<AppVideoPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
     return FutureBuilder<void>(
       future: _initialize,
       builder: (context, snap) {
@@ -265,7 +256,8 @@ class _FullscreenScaffold extends StatelessWidget {
           children: <Widget>[
             Center(
               child: AspectRatio(
-                aspectRatio: ctrl.value.isInitialized ? (ctrl.value.aspectRatio == 0 ? 16 / 9 : ctrl.value.aspectRatio) : 16 / 9,
+                aspectRatio:
+                    ctrl.value.isInitialized ? (ctrl.value.aspectRatio == 0 ? 16 / 9 : ctrl.value.aspectRatio) : 16 / 9,
                 child: VideoPlayer(ctrl),
               ),
             ),

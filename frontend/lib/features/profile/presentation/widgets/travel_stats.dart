@@ -95,7 +95,7 @@ class _TravelStatsState extends State<TravelStats> {
                   onSelectionChanged: (s) => setState(() => _unit = s.first),
                 ),
               ],
-            ), // SegmentedButton offers a Material 3 control for choosing between a small set of options like km/mi. [10][18]
+            ),
 
             const SizedBox(height: 8),
 
@@ -114,7 +114,7 @@ class _TravelStatsState extends State<TravelStats> {
                   children: tiles.map((t) => _StatPill(tile: t)).toList(growable: false),
                 );
               },
-            ), // GridView.count lays out fixed-column grids responsively with spacing and aspect ratio control. [12][15]
+            ),
 
             if (chips.isNotEmpty) ...[
               const SizedBox(height: 10),
@@ -125,7 +125,7 @@ class _TravelStatsState extends State<TravelStats> {
                 runSpacing: 8,
                 children: chips,
               ),
-            ], // Chips concisely display categorical stats like continents visited in a compact, scannable format. [21]
+            ],
 
             if (widget.transportMix.isNotEmpty) ...[
               const SizedBox(height: 12),
@@ -157,7 +157,7 @@ class _TravelStatsState extends State<TravelStats> {
                   );
                 }).toList(growable: false),
               ),
-            ], // LinearProgressIndicator communicates proportions for each transport category with determinate values between 0 and 1. [1][2],
+            ],
           ],
         ),
       ),
@@ -199,7 +199,7 @@ class _StatPill extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.06),
+                color: Colors.black.withValues(alpha: 0.06),
                 borderRadius: BorderRadius.circular(999),
               ),
               child: Text(tile.value, style: const TextStyle(fontWeight: FontWeight.w800)),

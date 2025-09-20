@@ -190,8 +190,7 @@ class OfflineDownloads extends StatelessWidget {
                     Expanded(
                       child: Text('No downloads yet', style: TextStyle(color: cs.onSurfaceVariant)),
                     ),
-                    if (onAddNew != null)
-                      TextButton.icon(onPressed: onAddNew, icon: const Icon(Icons.add), label: const Text('Add')),
+                    if (onAddNew != null) TextButton.icon(onPressed: onAddNew, icon: const Icon(Icons.add), label: const Text('Add')),
                   ],
                 ),
               )
@@ -223,14 +222,14 @@ class OfflineDownloads extends StatelessWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (_) => Material(
+      builder: (sheetContext) => Material(
         color: cs.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
         child: Padding(
-          padding: EdgeInsets.fromLTRB(16, 12, 16, 12 + MediaQuery.of(context).viewInsets.bottom),
+          padding: EdgeInsets.fromLTRB(16, 12, 16, 12 + MediaQuery.of(sheetContext).viewInsets.bottom),
           child: _QualitySheet(onPick: (q) async {
             if (onPickQuality != null) await onPickQuality!(q);
-            if (context.mounted) Navigator.maybePop(context);
+            if (sheetContext.mounted) Navigator.maybePop(sheetContext);
           }),
         ),
       ),
@@ -438,23 +437,34 @@ class _QualitySheetState extends State<_QualitySheet> {
           ],
         ),
         const SizedBox(height: 6),
-        RadioListTile<DownloadQuality>(
-          value: DownloadQuality.standard,
-          groupValue: _q,
-          onChanged: (v) => setState(() => _q = v ?? DownloadQuality.standard),
-          title: const Text('Standard'),
-          subtitle: Text('Smaller size, faster downloads', style: TextStyle(color: cs.onSurfaceVariant)),
-          contentPadding: EdgeInsets.zero,
-        ),
-        RadioListTile<DownloadQuality>(
-          value: DownloadQuality.high,
-          groupValue: _q,
-          onChanged: (v) => setState(() => _q = v ?? DownloadQuality.high),
-          title: const Text('High'),
-          subtitle: Text('More detail, larger size', style: TextStyle(color: cs.onSurfaceVariant)),
-          contentPadding: EdgeInsets.zero,
+
+        // Modern single-choice control
+        SegmentedButton<DownloadQuality>(
+          segments: const <ButtonSegment<DownloadQuality>>[
+            ButtonSegment(value: DownloadQuality.standard, label: Text('Standard'), icon: Icon(Icons.speed)),
+            ButtonSegment(value: DownloadQuality.high, label: Text('High'), icon: Icon(Icons.high_quality)),
+          ],
+          selected: <DownloadQuality>{_q},
+          onSelectionChanged: (set) {
+            if (set.isNotEmpty) {
+              setState(() => _q = set.first);
+            }
+          },
         ),
         const SizedBox(height: 8),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Standard • Smaller size, faster downloads', style: TextStyle(color: cs.onSurfaceVariant)),
+              const SizedBox(height: 4),
+              Text('High • More detail, larger size', style: TextStyle(color: cs.onSurfaceVariant)),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 12),
         SizedBox(
           width: double.infinity,
           child: FilledButton.icon(

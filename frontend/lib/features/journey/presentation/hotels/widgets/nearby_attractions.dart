@@ -182,7 +182,11 @@ class NearbyAttractions extends StatelessWidget {
         ],
       ));
     }
-    chips.add(_Chip(text: openNow ? 'Open now' : 'Closed', color: openNow ? Colors.green.withValues(alpha: 0.15) : Colors.red.withValues(alpha: 0.12), fg: openNow ? Colors.green.shade700 : Colors.red.shade700));
+    chips.add(_Chip(
+      text: openNow ? 'Open now' : 'Closed',
+      color: openNow ? Colors.green.withValues(alpha: 0.15) : Colors.red.withValues(alpha: 0.12),
+      fg: openNow ? Colors.green.shade700 : Colors.red.shade700,
+    ));
 
     return Wrap(
       spacing: 8,
@@ -228,8 +232,7 @@ class NearbyAttractions extends StatelessWidget {
     final dLat = _degToRad(lat2 - lat1);
     final dLon = _degToRad(lon2 - lon1);
     final a = math.sin(dLat / 2) * math.sin(dLat / 2) +
-        math.cos(_degToRad(lat1)) * math.cos(_degToRad(lat2)) *
-            math.sin(dLon / 2) * math.sin(dLon / 2);
+        math.cos(_degToRad(lat1)) * math.cos(_degToRad(lat2)) * math.sin(dLon / 2) * math.sin(dLon / 2);
     final c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
     return r * c;
   } // Implements the Haversine great-circle distance for accurate near-earth distances [9][6]
@@ -254,11 +257,17 @@ class _TypeIcon extends StatelessWidget {
     IconData icon = Icons.place_outlined;
     if (t.contains('museum')) {
       icon = Icons.museum_outlined;
-    } else if (t.contains('park')) icon = Icons.park_outlined;
-    else if (t.contains('temple') || t.contains('church') || t.contains('mosque')) icon = Icons.account_balance_outlined;
-    else if (t.contains('mall') || t.contains('market')) icon = Icons.store_mall_directory_outlined;
-    else if (t.contains('monument') || t.contains('fort')) icon = Icons.castle_outlined;
-    else if (t.contains('zoo') || t.contains('aquarium')) icon = Icons.pets_outlined;
+    } else if (t.contains('park')) {
+      icon = Icons.park_outlined;
+    } else if (t.contains('temple') || t.contains('church') || t.contains('mosque')) {
+      icon = Icons.account_balance_outlined;
+    } else if (t.contains('mall') || t.contains('market')) {
+      icon = Icons.store_mall_directory_outlined;
+    } else if (t.contains('monument') || t.contains('fort')) {
+      icon = Icons.castle_outlined;
+    } else if (t.contains('zoo') || t.contains('aquarium')) {
+      icon = Icons.pets_outlined;
+    }
     return CircleAvatar(
       backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
       child: Icon(icon, color: Colors.black87),

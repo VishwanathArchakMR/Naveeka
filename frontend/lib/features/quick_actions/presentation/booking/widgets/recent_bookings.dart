@@ -3,7 +3,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../quick_actions/data/booking_api.dart';
-import '../../../../features/places/presentation/widgets/directions_button.dart';
+// Fixed relative import path to the DirectionsButton widget.
+import '../../../../places/presentation/widgets/directions_button.dart';
 
 /// Lightweight view model for recent booking rows (decoupled from API DTOs).
 class BookingRow {
@@ -94,7 +95,7 @@ class _RecentBookingsState extends State<RecentBookings> {
       _loadRequested = true;
       widget.onLoadMore!().whenComplete(() => _loadRequested = false);
     }
-  } // Infinite loading triggers near list end to fetch additional reservations for a seamless feed. [11]
+  } // Infinite loading triggers near list end to fetch additional reservations for a seamless feed.
 
   @override
   Widget build(BuildContext context) {
@@ -166,7 +167,7 @@ class _RecentBookingsState extends State<RecentBookings> {
                       )
                     : _empty(),
               ),
-            ), // RefreshIndicator wraps the list to enable the standard pull-to-refresh gesture for reloading bookings. [11]
+            ), // RefreshIndicator wraps the list to enable the standard pull-to-refresh gesture for reloading bookings.
           ],
         ),
       ),
@@ -180,7 +181,7 @@ class _RecentBookingsState extends State<RecentBookings> {
       color: Colors.red.shade400,
       child: const Icon(Icons.cancel_outlined, color: Colors.white),
     );
-  } // Dismissible uses a leave-behind background to clearly signal the cancel action during a swipe gesture. [10][13]
+  } // Dismissible uses a leave-behind background to clearly signal the cancel action during a swipe gesture.
 
   Future<bool> _confirmCancel(BuildContext context, BookingRow row) async {
     final ok = await showDialog<bool>(
@@ -253,7 +254,7 @@ class _BookingTile extends StatelessWidget {
       isThreeLine: false,
       trailing: _Actions(row: row, onOpen: onOpen, onRebook: onRebook),
       onTap: onOpen == null ? null : () => onOpen!(row),
-    ); // ListTile offers an accessible row layout with leading media, primary/secondary text, and trailing actions for bookings. [11]
+    ); // ListTile offers an accessible row layout with leading media, primary/secondary text, and trailing actions for bookings.
   }
 
   Widget _thumb(String? url) {
@@ -300,23 +301,23 @@ class _StatusChip extends StatelessWidget {
     IconData ic;
     switch (s) {
       case 'confirmed':
-        c = Colors.green.withOpacity(0.12);
+        c = Colors.green.withValues(alpha: 0.12); // migrated from withOpacity
         fg = Colors.green;
         ic = Icons.verified_outlined;
         break;
       case 'pending':
-        c = Colors.amber.withOpacity(0.12);
+        c = Colors.amber.withValues(alpha: 0.12); // migrated from withOpacity
         fg = Colors.amber.shade800;
         ic = Icons.schedule_outlined;
         break;
       case 'completed':
-        c = Colors.blue.withOpacity(0.12);
+        c = Colors.blue.withValues(alpha: 0.12); // migrated from withOpacity
         fg = Colors.blue;
         ic = Icons.check_circle_outline;
         break;
       case 'cancelled':
       default:
-        c = Colors.red.withOpacity(0.12);
+        c = Colors.red.withValues(alpha: 0.12); // migrated from withOpacity
         fg = Colors.red;
         ic = Icons.cancel_outlined;
         break;
@@ -332,12 +333,12 @@ class _StatusChip extends StatelessWidget {
           Text(_label(status), style: TextStyle(color: fg, fontWeight: FontWeight.w700)),
         ],
       ),
-    ); // A compact chip-like pill conveys booking status with color and icon, following Material Chip patterns for small, informative elements. [15][12]
+    ); // A compact chip-like pill conveys booking status with color and icon.
   }
 
   String _label(String s) {
     final t = s.toLowerCase();
-    return t.toUpperCase() + t.substring(1);
+    return t.isEmpty ? t : '${t[0].toUpperCase()}${t.substring(1)}';
   }
 }
 
@@ -360,15 +361,12 @@ class _Actions extends StatelessWidget {
           onPressed: onOpen == null ? null : () => onOpen!(row),
         ),
         if (hasCoords)
-          IconButton(
-            tooltip: 'Directions',
-            icon: const Icon(Icons.directions_outlined),
-            onPressed: () => DirectionsButton(
-              lat: row.lat!,
-              lng: row.lng!,
-              label: 'Directions',
-              expanded: false,
-            ).onPressed?.call(),
+          // Use the DirectionsButton widget directly instead of calling a non-existent getter.
+          DirectionsButton(
+            lat: row.lat!,
+            lng: row.lng!,
+            label: 'Directions',
+            expanded: false,
           ),
         IconButton(
           tooltip: 'Rebook',
@@ -376,7 +374,7 @@ class _Actions extends StatelessWidget {
           onPressed: onRebook == null ? null : () => onRebook!(row),
         ),
       ],
-    ); // Trailing icon buttons expose quick actions without crowding the main tile content, keeping interactions fast and accessible. [11]
+    ); // Trailing icon buttons expose quick actions without crowding the main tile content.
   }
 }
 

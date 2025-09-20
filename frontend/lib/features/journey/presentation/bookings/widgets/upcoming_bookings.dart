@@ -1,5 +1,4 @@
 // lib/features/journey/presentation/bookings/widgets/upcoming_bookings.dart
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -116,7 +115,7 @@ class _UpcomingBookingsState extends State<UpcomingBookings> {
     final now = DateTime.now();
     final todayStart = DateTime(now.year, now.month, now.day);
     final weekEnd = todayStart.add(Duration(days: 7 - todayStart.weekday)); // end of this week
-    final monthEnd = DateTime(now.year, now.month + 1, 1).subtract(const Duration(days: 1));
+    final monthEnd = DateTime(now.year, now.month + 1, 1).subtract(const Duration(days: 1)); // last day of current month
 
     bool inToday(DateTime d) {
       final ds = DateTime(d.year, d.month, d.day);
@@ -130,9 +129,9 @@ class _UpcomingBookingsState extends State<UpcomingBookings> {
 
     bool inMonth(DateTime d) {
       final ds = DateTime(d.year, d.month, d.day);
-      return (ds.isAfter(todayStart) || ds.isAtSameMomentAs(todayStart)) &&
-          ds.month == now.month &&
-          ds.year == now.year;
+      // Use monthEnd to properly bound the month filter
+      return (ds.isAfter(todayStart) || ds.isAtSameMomentAs(todayStart)) && 
+             (ds.isBefore(monthEnd.add(const Duration(days: 1))) || ds.isAtSameMomentAs(monthEnd));
     }
 
     return list.where((b) {

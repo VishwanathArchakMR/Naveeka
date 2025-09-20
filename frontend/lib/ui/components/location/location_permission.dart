@@ -5,13 +5,13 @@ import 'package:flutter/material.dart';
 /// High-level, UI-focused permission status for location.
 /// Map plugin results (permission_handler/geolocator) into this model externally.
 enum LocationPermissionUiStatus {
-  notDetermined,   // first-run, hasn't asked yet
-  denied,          // denied but can ask again
-  deniedForever,   // "Don't ask again" / iOS permanently denied
-  restricted,      // parental or device restrictions (iOS)
-  servicesOff,     // device location services disabled
-  whileInUse,      // foreground only
-  always,          // background allowed
+  notDetermined, // first-run, hasn't asked yet
+  denied, // denied but can ask again
+  deniedForever, // "Don't ask again" / iOS permanently denied
+  restricted, // parental or device restrictions (iOS)
+  servicesOff, // device location services disabled
+  whileInUse, // foreground only
+  always, // background allowed
 }
 
 /// Compact or full-size presentation.
@@ -26,7 +26,7 @@ class LocationPermissionView extends StatelessWidget {
   const LocationPermissionView({
     super.key,
     required this.status,
-    this.preciseEnabled,       // iOS 14+ precise toggle or Android 12+ approx
+    this.preciseEnabled, // iOS 14+ precise toggle or Android 12+ approx
     this.backgroundNeeded = false,
     this.variant = LocationPermissionVariant.card,
     this.compact = false,
@@ -178,7 +178,6 @@ class LocationPermissionView extends StatelessWidget {
   }
 
   (IconData, String, String) _copy(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     final bool? precise = preciseEnabled;
 
     switch (status) {
@@ -256,10 +255,7 @@ class LocationPermissionView extends StatelessWidget {
   }
 
   List<Widget> _actions(BuildContext context) {
-    final t = Theme.of(context);
-    final cs = t.colorScheme;
-
-    final vDensity = compact ? VisualDensity.compact : VisualDensity.standard;
+    final v = compact ? VisualDensity.compact : VisualDensity.standard;
     final List<Widget> buttons = <Widget>[];
 
     switch (status) {
@@ -269,6 +265,7 @@ class LocationPermissionView extends StatelessWidget {
             onPressed: onOpenLocationServices,
             icon: const Icon(Icons.settings_rounded, size: 18),
             label: const Text('Location settings'),
+            style: FilledButton.styleFrom(visualDensity: v),
           ));
         }
         break;
@@ -277,12 +274,14 @@ class LocationPermissionView extends StatelessWidget {
         if (onRequestWhileInUse != null) {
           buttons.add(FilledButton.tonal(
             onPressed: onRequestWhileInUse,
+            style: FilledButton.styleFrom(visualDensity: v),
             child: const Text('Allow while using app'),
           ));
         }
         if (backgroundNeeded && onRequestAlways != null) {
           buttons.add(OutlinedButton(
             onPressed: onRequestAlways,
+            style: OutlinedButton.styleFrom(visualDensity: v),
             child: const Text('Allow always'),
           ));
         }
@@ -292,12 +291,14 @@ class LocationPermissionView extends StatelessWidget {
         if (onRequestWhileInUse != null) {
           buttons.add(FilledButton.tonal(
             onPressed: onRequestWhileInUse,
+            style: FilledButton.styleFrom(visualDensity: v),
             child: const Text('Allow while using app'),
           ));
         }
         if (onOpenAppSettings != null) {
           buttons.add(OutlinedButton(
             onPressed: onOpenAppSettings,
+            style: OutlinedButton.styleFrom(visualDensity: v),
             child: const Text('App settings'),
           ));
         }
@@ -309,6 +310,7 @@ class LocationPermissionView extends StatelessWidget {
             onPressed: onOpenAppSettings,
             icon: const Icon(Icons.app_settings_alt_rounded, size: 18),
             label: const Text('Open settings'),
+            style: FilledButton.styleFrom(visualDensity: v),
           ));
         }
         break;
@@ -317,6 +319,7 @@ class LocationPermissionView extends StatelessWidget {
         if (onOpenAppSettings != null) {
           buttons.add(OutlinedButton(
             onPressed: onOpenAppSettings,
+            style: OutlinedButton.styleFrom(visualDensity: v),
             child: const Text('App settings'),
           ));
         }
@@ -326,12 +329,14 @@ class LocationPermissionView extends StatelessWidget {
         if (backgroundNeeded && onRequestAlways != null) {
           buttons.add(FilledButton.tonal(
             onPressed: onRequestAlways,
+            style: FilledButton.styleFrom(visualDensity: v),
             child: const Text('Allow always'),
           ));
         }
         if (preciseEnabled == false && onOpenAppSettings != null) {
           buttons.add(OutlinedButton(
             onPressed: onOpenAppSettings,
+            style: OutlinedButton.styleFrom(visualDensity: v),
             child: const Text('Enable precise'),
           ));
         }
@@ -341,18 +346,14 @@ class LocationPermissionView extends StatelessWidget {
         if (preciseEnabled == false && onOpenAppSettings != null) {
           buttons.add(OutlinedButton(
             onPressed: onOpenAppSettings,
+            style: OutlinedButton.styleFrom(visualDensity: v),
             child: const Text('Enable precise'),
           ));
         }
         break;
     }
 
-    // Apply compact density consistently.
-    return buttons
-        .map((w) {
-          if (w is ButtonStyleButton) return w;
-          return w;
-        })
-        .toList(growable: false);
+    // Already applied visualDensity via styleFrom above.
+    return buttons;
   }
 }

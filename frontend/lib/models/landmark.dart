@@ -454,7 +454,7 @@ class Landmark {
       other.updatedAt == updatedAt; // Value equality supports reliable state updates. [10]
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
         id,
         name,
         type,
@@ -473,11 +473,15 @@ class Landmark {
         ticketFrom,
         _mapHash(openingHours),
         accessibility,
-        Object.hash(Object.hashAll(photos), Object.hashAll(tags), _mapHash(metadata)),
+        Object.hash(
+          Object.hashAll(photos),
+          Object.hashAll(tags),
+          _mapHash(metadata),
+        ),
         createdAt,
         updatedAt,
-      );
+      ]); // Use hashAll to avoid the 20-argument limit of Object.hash. [web:6593][web:6600]
 
   static int _mapHash(Map<String, dynamic>? m) =>
-      m == null ? 0 : Object.hashAllUnordered(m.entries.map((e) => Object.hash(e.key, e.value)));
+      m == null ? 0 : Object.hashAllUnordered(m.entries.map((e) => Object.hash(e.key, e.value))); // hashAllUnordered is suitable for maps. [web:6606]
 }

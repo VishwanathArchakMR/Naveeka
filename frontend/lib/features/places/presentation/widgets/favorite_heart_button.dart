@@ -48,7 +48,7 @@ class FavoriteHeartButton extends StatefulWidget {
       final dyn = place as dynamic;
       final m = dyn.toJson();
       if (m is Map) {
-        j = Map<String, dynamic>.from(m as Map);
+        j = Map<String, dynamic>.from(m);
       }
     } catch (_) {
       // ignore
@@ -83,8 +83,7 @@ class FavoriteHeartButton extends StatefulWidget {
     );
 
     // Derive count from common fields.
-    final derivedCount = count ??
-        parseInt(j['favoritesCount'] ?? j['likes'] ?? j['saves'] ?? j['hearts']);
+    final derivedCount = count ?? parseInt(j['favoritesCount'] ?? j['likes'] ?? j['saves'] ?? j['hearts']);
 
     return FavoriteHeartButton(
       key: key,

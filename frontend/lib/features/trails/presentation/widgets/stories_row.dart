@@ -42,8 +42,6 @@ class StoriesRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
     return SizedBox(
       height: showTitles ? (itemExtent + 34) : itemExtent,
       child: ListView.separated(

@@ -131,7 +131,6 @@ class _NeumorphicButtonState extends State<NeumorphicButton> with SingleTickerPr
   }
 
   Widget _buildContent(ThemeData theme) {
-    final cs = theme.colorScheme;
     final Color fg = _onSurfaceForSoft(theme);
 
     if (widget.loading) {
@@ -187,4 +186,3 @@ class _NeumorphicButtonState extends State<NeumorphicButton> with SingleTickerPr
     return hsl.withLightness((hsl.lightness - amount).clamp(0.0, 1.0)).toColor();
   }
 }
-

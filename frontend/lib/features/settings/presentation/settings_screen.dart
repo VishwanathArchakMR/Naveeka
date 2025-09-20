@@ -38,7 +38,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _notifBadges = true;
   bool _notifPreviews = true;
 
-  final bool _locationServiceEnabled = false; // display only; managed by Geolocator externally
+  // Removed unused _locationServiceEnabled field
+
   bool _appLockEnabled = false;
   bool _appLockRequireOnLaunch = false;
   bool _screenSecure = false;

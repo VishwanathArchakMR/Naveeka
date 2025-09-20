@@ -115,8 +115,7 @@ class TripMember {
       mapEquals(other.metadata, metadata);
 
   @override
-  int get hashCode =>
-      Object.hash(userId, role, displayName, avatarUrl, joinedAt, invitedAt, _mapHash(metadata));
+  int get hashCode => Object.hash(userId, role, displayName, avatarUrl, joinedAt, invitedAt, _mapHash(metadata));
 }
 
 /// Invitation to collaborate on a trip. [6]
@@ -263,17 +262,17 @@ class ItineraryItem {
   const ItineraryItem({
     required this.id,
     required this.type,
-    this.date,              // local date "yyyy-MM-dd" for grouping
-    this.startTime,         // local "HH:mm"
-    this.endTime,           // local "HH:mm"
+    this.date, // local date "yyyy-MM-dd" for grouping
+    this.startTime, // local "HH:mm"
+    this.endTime, // local "HH:mm"
     this.title,
     this.subtitle,
     this.notes,
-    this.location,          // optional geotag
-    this.placeId,           // link to a Place/Landmark/Restaurant/etc.
-    this.bookingId,         // link to a Booking (flight/hotel/etc.)
-    this.refId,             // generic upstream reference (PNR, ticket ID, etc.)
-    this.cost,              // Money for this item (est. or actual)
+    this.location, // optional geotag
+    this.placeId, // link to a Place/Landmark/Restaurant/etc.
+    this.bookingId, // link to a Booking (flight/hotel/etc.)
+    this.refId, // generic upstream reference (PNR, ticket ID, etc.)
+    this.cost, // Money for this item (est. or actual)
     this.tags = const <String>[],
     this.metadata,
   });
@@ -431,22 +430,22 @@ class TripGroup {
     this.status = TripStatus.planning,
     this.visibility = TripVisibility.private,
 
-    this.startDate,          // yyyy-MM-dd local
-    this.endDate,            // yyyy-MM-dd local
-    this.timezone,           // IANA tz for the trip anchor
+    this.startDate, // yyyy-MM-dd local
+    this.endDate, // yyyy-MM-dd local
+    this.timezone, // IANA tz for the trip anchor
 
     this.coverImageUrl,
     this.description,
-    this.destinations = const <String>[],     // city/country labels
-    this.destinationCoords,                   // map center or default view
+    this.destinations = const <String>[], // city/country labels
+    this.destinationCoords, // map center or default view
     this.tags = const <String>[],
 
     this.members = const <TripMember>[],
     this.invites = const <TripInvite>[],
     this.itinerary = const <ItineraryItem>[],
-    this.budget,                               // planned budget
-    this.actualCost,                           // running total
-    this.currency,                             // redundant if Money carries it
+    this.budget, // planned budget
+    this.actualCost, // running total
+    this.currency, // redundant if Money carries it
 
     this.createdAt,
     this.updatedAt,
@@ -576,9 +575,8 @@ class TripGroup {
       coverImageUrl: (json['coverImageUrl'] as String?)?.toString(),
       description: (json['description'] as String?)?.toString(),
       destinations: ((json['destinations'] as List?) ?? const <dynamic>[]).map((e) => e.toString()).toList(growable: false),
-      destinationCoords: json['destinationCoords'] != null
-          ? Coordinates.fromJson((json['destinationCoords'] as Map).cast<String, dynamic>())
-          : null,
+      destinationCoords:
+          json['destinationCoords'] != null ? Coordinates.fromJson((json['destinationCoords'] as Map).cast<String, dynamic>()) : null,
       tags: ((json['tags'] as List?) ?? const <dynamic>[]).map((e) => e.toString()).toList(growable: false),
       members: rawMembers.whereType<Map<String, dynamic>>().map(TripMember.fromJson).toList(growable: false),
       invites: rawInvites.whereType<Map<String, dynamic>>().map(TripInvite.fromJson).toList(growable: false),
@@ -644,7 +642,7 @@ class TripGroup {
       mapEquals(other.metadata, metadata);
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
         id,
         name,
         ownerId,
@@ -666,7 +664,7 @@ class TripGroup {
         createdAt,
         updatedAt,
         _mapHash(metadata),
-      );
+      ]);
 }
 
 int _mapHash(Map<String, dynamic>? m) =>

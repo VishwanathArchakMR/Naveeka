@@ -47,12 +47,11 @@ class ConfirmationCard extends StatelessWidget {
     final n = (booking is Map ? booking['total'] : null);
     if (n is num) return n.toDouble();
     return null;
-    }
+  }
 
   String? get _date {
     final booking = order['booking'];
-    return (booking is Map ? booking['date']?.toString() : null) ??
-        order['createdAt']?.toString();
+    return (booking is Map ? booking['date']?.toString() : null) ?? order['createdAt']?.toString();
   }
 
   @override
@@ -144,9 +143,9 @@ class ConfirmationCard extends StatelessWidget {
   }
 
   Future<void> _copyRef(BuildContext context, String ref) async {
+    final messenger = ScaffoldMessenger.maybeOf(context); // capture before await
     await Clipboard.setData(ClipboardData(text: ref)); // Clipboard API
-    // Show feedback with ScaffoldMessenger (modern snackbar flow)
-    ScaffoldMessenger.of(context).showSnackBar(
+    messenger?.showSnackBar(
       const SnackBar(content: Text('Reference copied to clipboard')),
     );
   }
@@ -165,9 +164,7 @@ class _SummaryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final valueStyle = bold
-        ? const TextStyle(fontWeight: FontWeight.bold)
-        : const TextStyle(fontWeight: FontWeight.w500);
+    final valueStyle = bold ? const TextStyle(fontWeight: FontWeight.bold) : const TextStyle(fontWeight: FontWeight.w500);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),

@@ -48,7 +48,8 @@ class _CabSearchScreenState extends State<CabSearchScreen> {
   }
 
   void _snack(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg))); // ScaffoldMessenger is the modern, reliable way to show SnackBars across routes [3][4]
+    if (!mounted) return; // Guard context usage
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   void _swapEnds() {
@@ -61,7 +62,7 @@ class _CabSearchScreenState extends State<CabSearchScreen> {
       _dropLatCtrl.text = pla;
       _dropLngCtrl.text = pln;
     });
-  } // Simple swap action improves UX for reversed routes without retyping [5]
+  } // Simple swap action improves UX for reversed routes without retyping
 
   double? _d(String s) => double.tryParse(s.trim());
 
@@ -72,13 +73,19 @@ class _CabSearchScreenState extends State<CabSearchScreen> {
       initialDate: _scheduledAt.isBefore(now) ? now : _scheduledAt,
       firstDate: now,
       lastDate: now.add(const Duration(days: 30)),
-    ); // Use showDatePicker for selecting a scheduled pickup date in a Material-compliant dialog [6]
+    ); // Use showDatePicker for selecting a scheduled pickup date in a Material-compliant dialog
     if (date == null) return;
+
+    // Guard context usage before showing time picker (this fixes line 78)
+    if (!mounted) return;
+
     final time = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.fromDateTime(_scheduledAt),
-    ); // Use showTimePicker to capture the pickup time for “Later” flow [2]
+    ); // Use showTimePicker to capture the pickup time for "Later" flow
     if (time == null) return;
+
+    if (!mounted) return; // Guard setState after awaits
     setState(() => _scheduledAt = DateTime(date.year, date.month, date.day, time.hour, time.minute));
   }
 
@@ -87,7 +94,7 @@ class _CabSearchScreenState extends State<CabSearchScreen> {
     final lat1 = _d(_pickupLatCtrl.text), lng1 = _d(_pickupLngCtrl.text);
     final lat2 = _d(_dropLatCtrl.text), lng2 = _d(_dropLngCtrl.text);
     if (lat1 == null || lng1 == null || lat2 == null || lng2 == null) {
-      _snack('Please enter valid pickup and drop coordinates'); // Guard against navigating with invalid inputs [5][7]
+      _snack('Please enter valid pickup and drop coordinates'); // Guard against navigating with invalid inputs
       return;
     }
     Navigator.of(context).push(MaterialPageRoute<void>(
@@ -105,7 +112,7 @@ class _CabSearchScreenState extends State<CabSearchScreen> {
           'lng': lng2,
         },
       ),
-    )); // Push into CabOptionsScreen with structured defaults to fetch estimates and proceed to booking [1]
+    )); // Push into CabOptionsScreen with structured defaults to fetch estimates and proceed to booking
   }
 
   @override
@@ -127,7 +134,7 @@ class _CabSearchScreenState extends State<CabSearchScreen> {
                 labelText: 'Address (optional)',
                 prefixIcon: Icon(Icons.place_outlined),
               ),
-            ), // Free-form address helps riders optionally label coordinates for clarity in confirmation and driver instructions [5]
+            ), // Free-form address helps riders optionally label coordinates for clarity in confirmation and driver instructions
             const SizedBox(height: 8),
             Row(
               children: [
@@ -153,7 +160,7 @@ class _CabSearchScreenState extends State<CabSearchScreen> {
                   ),
                 ),
               ],
-            ), // Numeric lat/lng fields ensure precise geocoding-free estimates for providers [5]
+            ), // Numeric lat/lng fields ensure precise geocoding-free estimates for providers
 
             const SizedBox(height: 16),
             // Drop
@@ -174,7 +181,7 @@ class _CabSearchScreenState extends State<CabSearchScreen> {
                 labelText: 'Address (optional)',
                 prefixIcon: Icon(Icons.flag_outlined),
               ),
-            ), // Optional address aids human-readable summaries and receipts [5]
+            ), // Optional address aids human-readable summaries and receipts
             const SizedBox(height: 8),
             Row(
               children: [
@@ -200,7 +207,7 @@ class _CabSearchScreenState extends State<CabSearchScreen> {
                   ),
                 ),
               ],
-            ), // Collect destination coordinates for accurate prices and ETAs across providers [5]
+            ), // Collect destination coordinates for accurate prices and ETAs across providers
 
             const SizedBox(height: 16),
             // When
@@ -215,7 +222,7 @@ class _CabSearchScreenState extends State<CabSearchScreen> {
                   ],
                   selected: {_mode},
                   onSelectionChanged: (s) => setState(() => _mode = s.first),
-                ), // SegmentedButton is ideal for selecting among a small set like “Now” vs “Later” [1]
+                ), // SegmentedButton is ideal for selecting among a small set like "Now" vs "Later"
                 const Spacer(),
                 if (_mode == _WhenMode.later)
                   TextButton.icon(
@@ -224,7 +231,7 @@ class _CabSearchScreenState extends State<CabSearchScreen> {
                     label: Text(whenLabel),
                   ),
               ],
-            ), // Date/time picker path only appears when scheduling a later pickup for clarity and simplicity [2][6]
+            ), // Date/time picker path only appears when scheduling a later pickup for clarity and simplicity
 
             const SizedBox(height: 24),
             SizedBox(
@@ -234,7 +241,7 @@ class _CabSearchScreenState extends State<CabSearchScreen> {
                 icon: const Icon(Icons.search),
                 label: const Text('See options'),
               ),
-            ), // CTA validates essential inputs and routes to the options screen where estimates are fetched and refined [5][7]
+            ), // CTA validates essential inputs and routes to the options screen where estimates are fetched and refined
           ],
         ),
       ),

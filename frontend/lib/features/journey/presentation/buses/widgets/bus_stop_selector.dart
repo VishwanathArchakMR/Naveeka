@@ -212,54 +212,58 @@ class _StopsList extends StatelessWidget {
         ),
       );
     }
-    return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
-      itemCount: filtered.length,
-      separatorBuilder: (_, __) => const Divider(height: 1),
-      itemBuilder: (context, i) {
-        final s = filtered[i];
-        final id = (s['id'] ?? '').toString();
-        final name = (s['name'] ?? '').toString();
-        final address = (s['address'] ?? s['area'] ?? '').toString();
-        final timeStr = _formatTime(s['time']);
 
-        return RadioListTile<String>(
-          value: id,
-          groupValue: selectedId,
-          onChanged: onChanged,
-          title: Row(
-            children: [
-              if (timeStr != null) ...[
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  margin: const EdgeInsets.only(right: 8),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.secondaryContainer,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    timeStr,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSecondaryContainer,
-                      fontWeight: FontWeight.w600,
+    // NEW: Wrap the list with RadioGroup to manage selection and callbacks centrally.
+    return RadioGroup<String>(
+      groupValue: selectedId,
+      onChanged: onChanged,
+      child: ListView.separated(
+        padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+        itemCount: filtered.length,
+        separatorBuilder: (_, __) => const Divider(height: 1),
+        itemBuilder: (context, i) {
+          final s = filtered[i];
+          final id = (s['id'] ?? '').toString();
+          final name = (s['name'] ?? '').toString();
+          final address = (s['address'] ?? s['area'] ?? '').toString();
+          final timeStr = _formatTime(s['time']);
+
+          return RadioListTile<String>(
+            // Deprecated: groupValue/onChanged removed per RadioGroup API.
+            value: id,
+            title: Row(
+              children: [
+                if (timeStr != null) ...[
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    margin: const EdgeInsets.only(right: 8),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.secondaryContainer,
+                      borderRadius: BorderRadius.circular(6),
                     ),
+                    child: Text(
+                      timeStr,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSecondaryContainer,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+                Expanded(
+                  child: Text(
+                    name.isEmpty ? 'Stop' : name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
                 ),
               ],
-              Expanded(
-                child: Text(
-                  name.isEmpty ? 'Stop' : name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-              ),
-            ],
-          ),
-          subtitle: address.isEmpty ? null : Text(address, maxLines: 2, overflow: TextOverflow.ellipsis),
-          // RadioListTile provides an accessible single-choice row with title/subtitle + trailing radio [1]
-        );
-      },
+            ),
+            subtitle: address.isEmpty ? null : Text(address, maxLines: 2, overflow: TextOverflow.ellipsis),
+          );
+        },
+      ),
     );
   }
 

@@ -161,8 +161,8 @@ class BookingLocationFilterSheet extends StatefulWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (_) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      builder: (sheetContext) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(sheetContext).viewInsets.bottom),
         child: BookingLocationFilterSheet(
           initial: initial,
           recentAddresses: recentAddresses,
@@ -282,10 +282,7 @@ class _BookingLocationFilterSheetState extends State<BookingLocationFilterSheet>
                         : () async {
                             setState(() => _resolving = true);
                             try {
-                              final pt = await widget.onResolveCurrentLocation!.call();
-                              if (pt != null) {
-                                // Nothing else to do here; lat/lng will be applied on Apply.
-                              }
+                              await widget.onResolveCurrentLocation!.call();
                             } finally {
                               if (mounted) setState(() => _resolving = false);
                             }
@@ -308,8 +305,8 @@ class _BookingLocationFilterSheetState extends State<BookingLocationFilterSheet>
                         ? null
                         : () async {
                             final pt = await widget.onPickOnMap!.call();
+                            if (!context.mounted) return; // guard the same BuildContext used below
                             if (pt != null) {
-                              // Nothing else to do here; lat/lng will be applied on Apply via local state handoff.
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(content: Text('Location pinned')),
                               );
@@ -380,12 +377,11 @@ class _BookingLocationFilterSheetState extends State<BookingLocationFilterSheet>
                       final pt = await widget.onResolveCurrentLocation!.call();
                       sel = sel.copyWith(lat: pt?.lat, lng: pt?.lng);
                     } else if (_mode == LocationMode.mapPin && widget.onPickOnMap != null) {
-                      // If map was not launched during this session, allow choosing now.
                       final pt = await widget.onPickOnMap!.call();
                       sel = sel.copyWith(lat: pt?.lat, lng: pt?.lng);
                     }
 
-                    if (!context.mounted) return;
+                    if (!context.mounted) return; // guard same BuildContext used below
                     Navigator.of(context).maybePop(sel);
                   },
                 ),

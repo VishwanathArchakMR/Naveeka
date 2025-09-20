@@ -240,9 +240,8 @@ class SettingsController extends AsyncNotifier<AppSettings> {
   } // Partial update for Wi‑Fi only and auto‑update toggles. [12]
 }
 
-final settingsControllerProvider = AsyncNotifierProvider<SettingsController, AppSettings>(
-  SettingsController.new,
-); // Exposes AsyncValue<AppSettings> for screens to watch and react to. [1][2]
+final settingsControllerProvider =
+    AsyncNotifierProvider<SettingsController, AppSettings>(SettingsController.new); // Exposes AsyncValue<AppSettings> for screens to watch and react to. [1][2]
 
 /// Selectors (lightweight derived providers for specific fields)
 
@@ -272,6 +271,8 @@ final offlinePrefsProvider = Provider<OfflinePrefs>((ref) {
 }); // OfflineDownloads can watch Wi‑Fi only and auto‑update toggles directly. [1]
 
 /// Facade to simplify calling controller methods from UI callbacks
+
+typedef Reader = T Function<T>(ProviderListenable<T> provider);
 
 class SettingsActions {
   SettingsActions(this._read);
@@ -321,7 +322,8 @@ class SettingsActions {
       _read(settingsControllerProvider.notifier).patchOfflinePrefs(wifiOnly: wifiOnly, autoUpdate: autoUpdate);
 }
 
-final settingsActionsProvider = Provider<SettingsActions>((ref) => SettingsActions(ref.read)); // Minimal imperative surface for UI event handlers without exposing controller details. [1]
+final settingsActionsProvider =
+    Provider<SettingsActions>((ref) => SettingsActions(ref.read)); // Minimal imperative surface for UI event handlers without exposing controller details. [1]
 
 /// Notes:
 /// - Persist settings in a repository backed by shared_preferences for general keys and flutter_secure_storage for sensitive flags like app lock, following Flutter’s guidance for key‑value storage and secure data. [12][10]

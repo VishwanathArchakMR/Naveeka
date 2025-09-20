@@ -232,7 +232,7 @@ class _NearbyCard extends StatelessWidget {
                   children: [
                     if (hasCoords)
                       OutlinedButton.icon(
-                        onPressed: () => _openDirections(lat!, lng!),
+                        onPressed: () => _openDirections(lat, lng),
                         icon: const Icon(Icons.directions_outlined, size: 18),
                         label: const Text('Go'),
                       ),

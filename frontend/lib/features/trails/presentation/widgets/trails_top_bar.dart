@@ -67,7 +67,8 @@ class _TrailsTopBarState extends State<TrailsTopBar> {
   @override
   void initState() {
     super.initState();
-    _searchCtrl = SearchController(text: widget.initialQuery);
+    _searchCtrl = SearchController();
+    _searchCtrl.value = _searchCtrl.value.copyWith(text: widget.initialQuery);
     _selectedView = {widget.viewMode};
     _selectedDiffs = {...widget.selectedDifficulties};
   }
@@ -80,6 +81,10 @@ class _TrailsTopBarState extends State<TrailsTopBar> {
     }
     if (oldWidget.selectedDifficulties != widget.selectedDifficulties) {
       _selectedDiffs = {...widget.selectedDifficulties};
+    }
+    if (oldWidget.initialQuery != widget.initialQuery &&
+        widget.initialQuery != _searchCtrl.text) {
+      _searchCtrl.value = _searchCtrl.value.copyWith(text: widget.initialQuery);
     }
   }
 

@@ -117,7 +117,10 @@ class _TripMapViewState extends State<TripMapView> {
           )
         : _placeholderMap(context);
 
-    final selected = _selectedId == null ? null : filtered.firstWhere((e) => e.id == _selectedId, orElse: () => filtered.isEmpty ? null : filtered.first);
+    // Compute selected safely: only call firstWhere when filtered is non-empty; otherwise keep null
+    final TripMapStop? selected = (_selectedId != null && filtered.isNotEmpty)
+        ? filtered.firstWhere((e) => e.id == _selectedId, orElse: () => filtered.first)
+        : null;
 
     return Card(
       elevation: 0,

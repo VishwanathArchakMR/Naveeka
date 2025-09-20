@@ -135,9 +135,7 @@ class _JourneyCard extends StatelessWidget {
                       data.imageUrl,
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => _imgFallback(context),
-                      loadingBuilder: (ctx, child, progress) => progress == null
-                          ? child
-                          : _imgLoading(context),
+                      loadingBuilder: (ctx, child, progress) => progress == null ? child : _imgLoading(context),
                     ),
                   ),
                   Positioned(
@@ -193,8 +191,7 @@ class _JourneyCard extends StatelessWidget {
                     children: [
                       if (data.flights) _mini(context, Icons.flight_takeoff_outlined, 'Flights'),
                       if (data.hotels) _mini(context, Icons.hotel_outlined, 'Hotels'),
-                      if (data.activitiesCount > 0)
-                        _mini(context, Icons.attractions_outlined, '${data.activitiesCount} activities'),
+                      if (data.activitiesCount > 0) _mini(context, Icons.attractions_outlined, '${data.activitiesCount} activities'),
                     ],
                   ),
 
@@ -226,7 +223,7 @@ class _JourneyCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.4),
+        color: Colors.black.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(999),
       ),
       child: Row(

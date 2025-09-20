@@ -35,7 +35,8 @@ class UserLocation {
       latitude: position.latitude,
       longitude: position.longitude,
       accuracy: position.accuracy,
-      timestamp: position.timestamp ?? DateTime.now(),
+      // Position.timestamp is non-nullable; no fallback needed.
+      timestamp: position.timestamp,
       address: address,
     );
   }
@@ -58,12 +59,12 @@ class UserLocation {
     );
   }
 
-  /// Distance to lat/lng in meters using Geolocator’s Haversine under the hood. [3]
+  /// Distance to lat/lng in meters using Geolocator’s Haversine under the hood.
   double distanceMetersTo(double lat, double lng) {
     return Geolocator.distanceBetween(latitude, longitude, lat, lng);
   }
 
-  /// Convenience: distance in km. [3]
+  /// Convenience: distance in km.
   double distanceKmTo(double lat, double lng) => distanceMetersTo(lat, lng) / 1000.0;
 
   @override
@@ -92,7 +93,7 @@ class LocationService {
   static const String _cacheKeyLocation = 'cached_location';
   static const String _cacheKeyTs = 'location';
 
-  /// Initialize service: load cached, ensure permission, get a fresh fix when possible. [13][3]
+  /// Initialize service: load cached, ensure permission, get a fresh fix when possible.
   Future<void> init() async {
     if (_isInitialized) return;
 
@@ -110,7 +111,7 @@ class LocationService {
     }
   }
 
-  /// Check services + permission and request if needed. [13][10]
+  /// Check services + permission and request if needed.
   Future<bool> _checkAndRequestPermissions() async {
     try {
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
@@ -144,7 +145,7 @@ class LocationService {
     }
   }
 
-  /// Get current position once with timeout and last-known fallback. [3][1]
+  /// Get current position once with timeout and last-known fallback.
   Future<UserLocation?> _getCurrentLocationOnce() async {
     try {
       Position position = await Geolocator.getCurrentPosition(
@@ -161,7 +162,7 @@ class LocationService {
       await _cacheLocation(loc);
       return loc;
     } on TimeoutException {
-      // Try last-known when current fix times out. [3][1]
+      // Try last-known when current fix times out.
       try {
         final last = await Geolocator.getLastKnownPosition();
         if (last != null) {
@@ -180,7 +181,7 @@ class LocationService {
     }
   }
 
-  /// Start continuous tracking with position stream and address enrichment. [3]
+  /// Start continuous tracking with position stream and address enrichment.
   Future<void> startTracking() async {
     if (_isTracking) return;
     final hasPermission = await _checkAndRequestPermissions();
@@ -193,7 +194,7 @@ class LocationService {
           _currentLocation = loc;
           _locationCtrl.add(loc);
           unawaited(_cacheLocation(loc));
-          // Reverse-geocode in the background to avoid blocking stream. [9]
+          // Reverse-geocode in the background to avoid blocking stream.
           unawaited(_reverseGeocodeAndUpdate(loc));
         },
         onError: (error) => debugPrint('Location stream error: $error'),
@@ -211,7 +212,7 @@ class LocationService {
     _isTracking = false;
   }
 
-  /// Public API: get latest location (fresh or cached). [3]
+  /// Public API: get latest location (fresh or cached).
   Future<UserLocation?> getCurrentLocation({bool forceRefresh = false}) async {
     if (!_isInitialized) {
       await init();
@@ -222,7 +223,7 @@ class LocationService {
     return _currentLocation;
   }
 
-  /// Reverse-geocodes and updates the cached location with address. [9][12]
+  /// Reverse-geocodes and updates the cached location with address.
   Future<void> _reverseGeocodeAndUpdate(UserLocation loc) async {
     try {
       final placemarks = await placemarkFromCoordinates(loc.latitude, loc.longitude);
@@ -241,14 +242,14 @@ class LocationService {
       _locationCtrl.add(updated);
       await _cacheLocation(updated);
     } catch (e) {
-      // Reverse geocoding can fail due to network; keep silent fallback. [19]
+      // Reverse geocoding can fail due to network; keep silent fallback.
       if (kDebugMode) {
         debugPrint('Reverse geocode failed: $e');
       }
     }
   }
 
-  /// Simple, human-readable address line for UI badges. [9]
+  /// Simple, human-readable address line for UI badges.
   String _formatAddress(Placemark p) {
     final parts = <String>[];
     if (p.subLocality?.isNotEmpty == true) parts.add(p.subLocality!);
@@ -258,7 +259,7 @@ class LocationService {
     return parts.join(', ');
   }
 
-  /// Cache location JSON and timestamp using LocalStorage helpers. [21]
+  /// Cache location JSON and timestamp using LocalStorage helpers.
   Future<void> _cacheLocation(UserLocation location) async {
     try {
       await LocalStorage.instance.setJson(_cacheKeyLocation, location.toJson());
@@ -268,7 +269,7 @@ class LocationService {
     }
   }
 
-  /// Load cached location if fresh (< 1 hour). [21]
+  /// Load cached location if fresh (< 1 hour).
   Future<void> _loadCachedLocation() async {
     try {
       final ts = await LocalStorage.instance.getCacheTimestamp(_cacheKeyTs);
@@ -287,7 +288,7 @@ class LocationService {
 
   /// Utilities
 
-  /// Distance between two points in meters. [3]
+  /// Distance between two points in meters.
   static double distanceMeters(
     double lat1,
     double lng1,
@@ -296,7 +297,7 @@ class LocationService {
   ) =>
       Geolocator.distanceBetween(lat1, lng1, lat2, lng2);
 
-  /// Distance in kilometers. [3]
+  /// Distance in kilometers.
   static double distanceKm(
     double lat1,
     double lng1,
@@ -343,10 +344,10 @@ class LocationService {
     }
   }
 
-  /// Open app settings for permissions page. [3]
+  /// Open app settings for permissions page.
   Future<void> openAppSettings() => Geolocator.openAppSettings();
 
-  /// Open OS location settings (enable GPS). [3]
+  /// Open OS location settings (enable GPS).
   Future<void> openLocationSettings() => Geolocator.openLocationSettings();
 
   // Getters
@@ -361,4 +362,3 @@ class LocationService {
     _locationCtrl.close();
   }
 }
-

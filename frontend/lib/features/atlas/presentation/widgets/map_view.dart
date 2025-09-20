@@ -123,7 +123,12 @@ class _AtlasMapViewState extends State<AtlasMapView> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           transform: Matrix4.identity()
-            ..scale(isSelected ? 1.2 : 1.0),
+            ..scaleByDouble(
+              isSelected ? 1.2 : 1.0, // sx
+              isSelected ? 1.2 : 1.0, // sy
+              isSelected ? 1.2 : 1.0, // sz
+              1.0,                    // sw (homogeneous w)
+            ),
           child: SizedBox(
             width: 40,
             height: 50,

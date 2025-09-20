@@ -185,7 +185,9 @@ class _TripItineraryState extends State<TripItinerary> {
                 ),
             ],
           ),
-          subtitle: subtitle == null ? null : Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: cs.onSurfaceVariant)),
+          subtitle: subtitle == null
+              ? null
+              : Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: cs.onSurfaceVariant)),
           trailing: widget.onAddActivity == null
               ? null
               : IconButton(
@@ -276,9 +278,8 @@ class _DayBodyState extends State<_DayBody> {
             onOpen: widget.onOpenActivity,
             onMap: widget.onMapActivity,
             onBook: widget.onBookActivity,
-            onEditNotes: widget.onEditNotes == null
-                ? null
-                : (next) => widget.onEditNotes!(widget.state.day.date, act, next),
+            onEditNotes:
+                widget.onEditNotes == null ? null : (next) => widget.onEditNotes!(widget.state.day.date, act, next),
           );
         },
         onReorder: (oldIndex, newIndex) async {
@@ -315,7 +316,7 @@ class _ActivityTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final time = '${_fmt(activity.start)} – ${_fmt(activity.end)}';
+    final time = '${_fmt(context, activity.start)} – ${_fmt(context, activity.end)}';
 
     return ListTile(
       key: key,
@@ -423,8 +424,8 @@ class _ActivityTile extends StatelessWidget {
     );
   }
 
-  String _fmt(TimeOfDay t) {
-    return MaterialLocalizations.of(key!.currentContext!).formatTimeOfDay(t);
+  String _fmt(BuildContext context, TimeOfDay t) {
+    return MaterialLocalizations.of(context).formatTimeOfDay(t);
   }
 
   Widget _fallback() {

@@ -140,9 +140,8 @@ class _UniversalSearchBarState extends ConsumerState<UniversalSearchBar> {
     // Modern neutral container and wide‑gamut safe alpha (no withOpacity). [2][3]
     final Color bg = cs.surfaceContainerHighest.withValues(alpha: 1.0);
 
-    final barPadding = widget.compact
-        ? const EdgeInsets.symmetric(horizontal: 12, vertical: 8)
-        : const EdgeInsets.symmetric(horizontal: 16, vertical: 10);
+    final barPadding =
+        widget.compact ? const EdgeInsets.symmetric(horizontal: 12, vertical: 8) : const EdgeInsets.symmetric(horizontal: 16, vertical: 10);
 
     final radius = BorderRadius.circular(widget.compact ? 20 : 24);
 
@@ -159,12 +158,10 @@ class _UniversalSearchBarState extends ConsumerState<UniversalSearchBar> {
       barBackgroundColor: barBg,
       barShape: barShape,
       barPadding: WidgetStatePropertyAll<EdgeInsetsGeometry>(barPadding),
-      barLeading: <Widget>[
-        Padding(
-          padding: EdgeInsets.only(left: widget.compact ? 4 : 6),
-          child: Icon(Icons.search_rounded, color: cs.onSurfaceVariant, size: widget.compact ? 20 : 22),
-        ),
-      ],
+      barLeading: Padding(
+        padding: EdgeInsets.only(left: widget.compact ? 4 : 6),
+        child: Icon(Icons.search_rounded, color: cs.onSurfaceVariant, size: widget.compact ? 20 : 22),
+      ),
       barHintText: widget.placeholder,
       barTextStyle: WidgetStatePropertyAll<TextStyle>(
         (widget.compact ? Theme.of(context).textTheme.bodyMedium : Theme.of(context).textTheme.bodyLarge)!.copyWith(
@@ -214,9 +211,8 @@ class _UniversalSearchBarState extends ConsumerState<UniversalSearchBar> {
   Iterable<Widget> _buildSuggestions(BuildContext context, SearchController controller) {
     final cs = Theme.of(context).colorScheme;
     final query = controller.text.trim();
-    final List<String> suggestions = query.isEmpty
-        ? _zeroQuerySuggestions
-        : _predictiveSuggestions.where((s) => s.toLowerCase().contains(query.toLowerCase())).toList();
+    final List<String> suggestions =
+        query.isEmpty ? _zeroQuerySuggestions : _predictiveSuggestions.where((s) => s.toLowerCase().contains(query.toLowerCase())).toList();
 
     if (suggestions.isEmpty) {
       return <Widget>[
@@ -344,5 +340,3 @@ class JourneySearchBar extends ConsumerWidget {
     );
   }
 }
-
-

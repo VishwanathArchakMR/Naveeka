@@ -1,10 +1,6 @@
 // lib/features/trails/presentation/widgets/suggested_travelers.dart
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-// Uses the follow graph providers defined earlier to read follow state and toggle.
-import '../../../quick_actions/providers/following_providers.dart';
 
 class SuggestedTravelerItem {
   const SuggestedTravelerItem({
@@ -24,7 +20,7 @@ class SuggestedTravelerItem {
   final int mutualFriends;
 }
 
-class SuggestedTravelers extends ConsumerWidget {
+class SuggestedTravelers extends StatelessWidget {
   const SuggestedTravelers({
     super.key,
     required this.items,
@@ -33,6 +29,8 @@ class SuggestedTravelers extends ConsumerWidget {
     this.padding = const EdgeInsets.fromLTRB(12, 12, 12, 8),
     this.itemExtent = 220,
     this.spacing = 12,
+    this.isFollowingOf, // bool Function(String userId)
+    this.onToggleFollow, // Future<bool> Function(String userId, bool next)
   });
 
   final List<SuggestedTravelerItem> items;
@@ -42,10 +40,12 @@ class SuggestedTravelers extends ConsumerWidget {
   final double itemExtent;
   final double spacing;
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final cs = Theme.of(context).colorScheme;
+  // Injectable follow state/toggle (no hard dependency on a specific provider name)
+  final bool Function(String userId)? isFollowingOf;
+  final Future<bool> Function(String userId, bool next)? onToggleFollow;
 
+  @override
+  Widget build(BuildContext context) {
     if (items.isEmpty) {
       return const SizedBox.shrink();
     }
@@ -70,14 +70,14 @@ class SuggestedTravelers extends ConsumerWidget {
             separatorBuilder: (_, __) => SizedBox(width: spacing),
             itemBuilder: (context, i) {
               final it = items[i];
-              final isFollowing = ref.watch(isFollowingProvider(it.userId));
-              final actions = ref.read(followingActionsProvider);
+              final isFollowing = isFollowingOf?.call(it.userId) ?? false;
+              final toggle = onToggleFollow ?? ((_, __) async => true);
 
               return _TravelerCard(
                 width: itemExtent,
                 item: it,
                 isFollowing: isFollowing,
-                onFollowToggle: () => actions.setFollowing(it.userId, !isFollowing),
+                onFollowToggle: () => toggle(it.userId, !isFollowing),
                 onView: onViewProfile == null ? null : () => onViewProfile!(it.userId),
               );
             },
@@ -126,9 +126,7 @@ class _TravelerCard extends StatelessWidget {
                   radius: 24,
                   backgroundColor: cs.surfaceContainerHigh.withValues(alpha: 1.0),
                   backgroundImage: hasAvatar ? NetworkImage(item.avatarUrl!) : null,
-                  child: hasAvatar
-                      ? null
-                      : Icon(Icons.person_outline, color: cs.onSurfaceVariant, size: 24),
+                  child: hasAvatar ? null : Icon(Icons.person_outline, color: cs.onSurfaceVariant, size: 24),
                 ),
 
                 const SizedBox(width: 10),

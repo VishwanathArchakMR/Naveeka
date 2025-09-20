@@ -7,29 +7,15 @@ import 'package:flutter/material.dart';
 import 'widgets/group_chat.dart';
 import 'widgets/trip_map_view.dart';
 import 'widgets/trip_itinerary.dart';
-import 'widgets/invite_friends.dart';
-import 'widgets/location_picker.dart';
+// Removed unused invite_friends and location_picker imports
 
-// If your app defines its own message/place models, import them instead.
-class MessageItem {
-  const MessageItem({
-    required this.id,
-    required this.senderId,
-    required this.sentAt,
-    this.text,
-    this.isMine = false,
-    this.attachmentUrls = const <String>[],
-    this.location,
-  });
+// App-level models (unify types used by shared widgets)
+import '../../../../models/message_item.dart' as app;
+import '../../../../models/geo_point.dart';
+import '../../../../models/share_location_request.dart';
 
-  final String id;
-  final String senderId;
-  final DateTime sentAt;
-  final String? text;
-  final bool isMine;
-  final List<String> attachmentUrls;
-  final GeoPoint? location;
-}
+// Two different NearbyMapBuilder typedefs exist; alias them explicitly.
+import 'widgets/location_picker.dart' as pick show NearbyMapBuilder;
 
 class TripGroupScreen extends StatefulWidget {
   const TripGroupScreen({
@@ -42,7 +28,7 @@ class TripGroupScreen extends StatefulWidget {
 
     // Participants & chat
     this.participants = const <GroupParticipant>[],
-    this.messages = const <MessageItem>[],
+    this.messages = const <app.MessageItem>[],
     this.loadingMessages = false,
     this.hasMoreMessages = false,
 
@@ -80,7 +66,7 @@ class TripGroupScreen extends StatefulWidget {
 
   // Participants & chat
   final List<GroupParticipant> participants;
-  final List<MessageItem> messages;
+  final List<app.MessageItem> messages;
   final bool loadingMessages;
   final bool hasMoreMessages;
 
@@ -90,7 +76,8 @@ class TripGroupScreen extends StatefulWidget {
   final int? initialDayFilter;
 
   // Map/search helpers
-  final NearbyMapBuilder? mapBuilder;
+  // Use the builder type from the location picker (consumed by TripMapView)
+  final pick.NearbyMapBuilder? mapBuilder;
   final Future<GeoPoint?> Function()? onResolveCurrent;
 
   // Page-level refresh
@@ -275,7 +262,7 @@ class _ChatTab extends StatelessWidget {
   });
 
   final List<GroupParticipant> participants;
-  final List<MessageItem> messages;
+  final List<app.MessageItem> messages;
   final bool loading;
   final bool hasMore;
 
@@ -330,7 +317,7 @@ class _MapTab extends StatelessWidget {
   });
 
   final List<TripMapStop> stops;
-  final NearbyMapBuilder? mapBuilder;
+  final pick.NearbyMapBuilder? mapBuilder; // use the picker typedef
   final int? initialDayFilter;
 
   final void Function(TripMapStop stop)? onOpenStop;

@@ -15,9 +15,9 @@ import 'widgets/favorite_places_grid.dart';
 import 'widgets/favorites_map_view.dart';
 import 'widgets/favorites_by_location.dart' as favs;
 
-// Use the UnitSystem from booking so it matches FavoritesMapView/FavoritesByLocation.
-import '/../../features/quick_actions/presentation/booking/widgets/booking_location_filter.dart'
-    show UnitSystem;
+// Import BOTH unit enums and alias them to resolve type differences.
+import '/../../features/places/presentation/widgets/distance_indicator.dart' as di show UnitSystem;
+import '/../../features/quick_actions/presentation/booking/widgets/booking_location_filter.dart' as bk show UnitSystem;
 
 enum FavViewMode { list, grid, map, byLocation }
 
@@ -31,7 +31,7 @@ class FavoritesScreen extends StatefulWidget {
     this.mapBuilder,
     this.originLat,
     this.originLng,
-    this.initialUnit = UnitSystem.metric,
+    this.initialUnit = bk.UnitSystem.metric, // booking unit as input
   });
 
   // Initial state
@@ -44,7 +44,7 @@ class FavoritesScreen extends StatefulWidget {
   final pmap.NearbyMapBuilder? mapBuilder;
   final double? originLat;
   final double? originLng;
-  final UnitSystem initialUnit;
+  final bk.UnitSystem initialUnit; // booking UnitSystem
 
   @override
   State<FavoritesScreen> createState() => _FavoritesScreenState();
@@ -52,7 +52,13 @@ class FavoritesScreen extends StatefulWidget {
 
 class _FavoritesScreenState extends State<FavoritesScreen> {
   FavViewMode _mode = FavViewMode.list;
-  UnitSystem _unit = UnitSystem.metric;
+
+  // Keep booking UnitSystem internally (matches FavoritesMapView)
+  bk.UnitSystem _unitBk = bk.UnitSystem.metric;
+
+  // Adapter to places UnitSystem (used by FavoritesByLocation)
+  di.UnitSystem get _unitDi =>
+      _unitBk == bk.UnitSystem.imperial ? di.UnitSystem.imperial : di.UnitSystem.metric;
 
   // Data state — wire these to your Riverpod providers or controllers
   bool _loading = false;
@@ -66,7 +72,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   void initState() {
     super.initState();
     _mode = widget.initialView;
-    _unit = widget.initialUnit;
+    _unitBk = widget.initialUnit;
     _selected = {...widget.selectedTags};
     _refresh();
   }
@@ -283,12 +289,10 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: FavoritesMapView(
             places: _favorites,
-            // If FavoritesMapView also uses its own typedef, it should still accept this builder
-            // since function shapes match; otherwise adapt similarly as done for ByLocation.
             mapBuilder: widget.mapBuilder,
             originLat: widget.originLat,
             originLng: widget.originLng,
-            unit: _unit,
+            unit: _unitBk, // booking UnitSystem expected by FavoritesMapView
             onOpenFilters: () {
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Open filters')));
             },
@@ -307,7 +311,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             mapBuilder: _adaptBuilder(widget.mapBuilder), // bridge typedefs
             originLat: widget.originLat,
             originLng: widget.originLng,
-            initialUnit: _unit,
+            initialUnit: _unitDi, // places UnitSystem expected by FavoritesByLocation
             onOpenPlace: _onOpenPlace,
             onToggleFavorite: _toggleFavorite,
             sectionTitle: 'Favorites by location',

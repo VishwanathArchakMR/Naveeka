@@ -81,7 +81,8 @@ class _CabOptionsScreenState extends State<CabOptionsScreen> {
   }
 
   void _snack(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg))); // Use ScaffoldMessenger for reliable SnackBars [3]
+    if (!mounted) return; // Guard context usage
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   double? _d(String s) => double.tryParse(s.trim());
@@ -94,16 +95,20 @@ class _CabOptionsScreenState extends State<CabOptionsScreen> {
       initialDate: _scheduledAt.isBefore(now) ? now : _scheduledAt,
       firstDate: now,
       lastDate: now.add(const Duration(days: 30)),
-    ); // Material date picker for scheduling “Later” rides [4]
+    ); // Material date picker for scheduling "Later" rides
     if (date == null) return;
+
+    // Guard context usage before showing time picker (this fixes line 102)
+    if (!mounted) return;
 
     // Time
     final time = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.fromDateTime(_scheduledAt),
-    ); // Material time picker to finalize scheduled pickup time [2]
+    ); // Material time picker to finalize scheduled pickup time
     if (time == null) return;
 
+    if (!mounted) return; // Guard setState after awaits
     setState(() {
       _scheduledAt = DateTime(date.year, date.month, date.day, time.hour, time.minute);
     });
@@ -116,7 +121,7 @@ class _CabOptionsScreenState extends State<CabOptionsScreen> {
     final lng2 = _d(_dropLngCtrl.text);
 
     if (lat1 == null || lng1 == null || lat2 == null || lng2 == null) {
-      _snack('Please enter valid pickup and drop coordinates'); // Validation simplifies estimate errors [5]
+      _snack('Please enter valid pickup and drop coordinates'); // Validation simplifies estimate errors
       return;
     }
 
@@ -141,6 +146,8 @@ class _CabOptionsScreenState extends State<CabOptionsScreen> {
       providers: providerFilter,
     );
 
+    if (!mounted) return; // Guard after await
+
     res.fold(
       onSuccess: (list) {
         final items = list.map(_normalize).toList(growable: false);
@@ -151,6 +158,7 @@ class _CabOptionsScreenState extends State<CabOptionsScreen> {
           if (p.isNotEmpty) _providers.add(p);
           if (v.isNotEmpty) _vehicles.add(v);
         }
+        if (!mounted) return; // Guard setState
         setState(() {
           _all = items;
           _visible = _apply(items);
@@ -158,8 +166,9 @@ class _CabOptionsScreenState extends State<CabOptionsScreen> {
         });
       },
       onError: (e) {
+        if (!mounted) return; // Guard setState/snack
         setState(() => _loading = false);
-        _snack(e.safeMessage ?? 'Failed to load cab options');
+        _snack(e.safeMessage);
       },
     );
   }
@@ -356,7 +365,7 @@ class _CabOptionsScreenState extends State<CabOptionsScreen> {
                   ],
                   selected: {_mode},
                   onSelectionChanged: (s) => setState(() => _mode = s.first),
-                ), // SegmentedButton is ideal for a small fixed set of choices [1]
+                ), // SegmentedButton is ideal for a small fixed set of choices
                 const Spacer(),
                 if (_mode == _WhenMode.later)
                   TextButton.icon(

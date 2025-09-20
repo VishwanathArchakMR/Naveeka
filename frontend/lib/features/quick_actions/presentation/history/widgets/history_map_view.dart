@@ -145,12 +145,18 @@ class _HistoryMapViewState extends State<HistoryMapView> {
           )
         : _placeholderMap(context);
 
-    final selected = _selectedId == null
-        ? null
-        : items.firstWhere(
-            (e) => e.id == _selectedId,
-            orElse: () => items.isEmpty ? null : items.first,
-          );
+    // Resolve selected point safely without returning null from orElse.
+    HistoryPoint? selected;
+    if (_selectedId != null) {
+      if (items.isNotEmpty) {
+        selected = items.firstWhere(
+          (e) => e.id == _selectedId,
+          orElse: () => items.first,
+        );
+      } else {
+        selected = null;
+      }
+    }
 
     return Card(
       elevation: 0,
@@ -213,7 +219,7 @@ class _HistoryMapViewState extends State<HistoryMapView> {
     );
   }
 
-  (double, double)? _centerOf(List<HistoryPoint> pts, { (double?, double?)? fallback }) {
+  (double, double)? _centerOf(List<HistoryPoint> pts, {(double?, double?)? fallback}) {
     if (pts.isNotEmpty) {
       final valid = pts.where((e) => e.lat.isFinite && e.lng.isFinite).toList();
       if (valid.isNotEmpty) {

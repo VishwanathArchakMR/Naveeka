@@ -98,6 +98,9 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
+dependencies:
+  http_parser: ^4.0.2
+
   # If using localization (ARB files), uncomment:
   # generate: true
 

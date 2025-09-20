@@ -11,11 +11,11 @@ import 'widgets/profile_stats.dart';
 import 'widgets/travel_stats.dart';
 import 'widgets/visited_locations_map.dart';
 import 'widgets/my_contributions.dart';
-import 'widgets/activity_feed.dart'
+import 'widgets/activity_feed.dart';
 import 'widgets/my_journeys.dart';
 
-// Optional: reuse Reviews' ReviewItem if showing contributions that leverage shared model.
-// import '../../places/presentation/widgets/reviews_ratings.dart';
+// Reuse Reviews' ReviewItem for contributions mapping
+import '../../places/presentation/widgets/reviews_ratings.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({
@@ -208,7 +208,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ],
                 ),
               ),
-            ), // SliverAppBar plus FlexibleSpaceBar creates a rich, collapsing header suited for profile pages with banners and actions. [3][4]
+            ),
 
             // Body sections
             SliverList(
@@ -254,7 +254,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       onTapPhotos: () => _scrollTo('contributions'),
                       onTapJourneys: () => _scrollTo('journeys'),
                     ),
-                  ), // The stats grid uses GridView for responsive tiles and tooltips for discoverability in dense UIs. [5][6]
+                  ),
 
                   const SizedBox(height: 12),
 
@@ -270,7 +270,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       continentCounts: widget.continentCounts,
                       transportMix: widget.transportMix,
                     ),
-                  ), // TravelStats uses a SegmentedButton for km/mi and LinearProgressIndicator for transport mix proportions. [7][8]
+                  ),
 
                   const SizedBox(height: 12),
 
@@ -284,7 +284,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       onOpenPlace: widget.onOpenPlace,
                       onRefresh: widget.onRefresh,
                     ),
-                  ), // A mapped visualization of visited places, with year chips and a “peek” card on marker select; integrates with the shared map contract. [9]
+                  ),
 
                   const SizedBox(height: 12),
 
@@ -303,7 +303,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       onWriteReview: widget.onWriteReview,
                       onUploadPhoto: widget.onUploadPhoto,
                     ),
-                  ), // The contributions section uses TabBar/TabBarView internally with per-tab refresh/load-more hooks. [1]
+                  ),
 
                   const SizedBox(height: 12),
 
@@ -324,7 +324,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       },
                       sectionTitle: 'Activity',
                     ),
-                  ), // RefreshIndicator and ListView.separated provide a clean, pull-to-refresh, paginated feed with swipe-to-dismiss actions. [2][10]
+                  ),
 
                   const SizedBox(height: 12),
 
@@ -351,7 +351,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       },
                       onCreateJourney: widget.onCreateJourney,
                     ),
-                  ), // ReorderableListView enables drag-to-reorder while Expansion-based content reveals per-journey timelines inline. [11][12]
+                  ),
 
                   const SizedBox(height: 24),
                 ],
@@ -360,7 +360,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       ),
-    ); // CustomScrollView with slivers composes a collapsing header and scrollable sections efficiently; RefreshIndicator adds pull-to-refresh on the whole page. [1][2]
+    );
   }
 
   // Basic completeness heuristic; replace with real business logic if needed.
@@ -420,15 +420,25 @@ class _ContribAdapter extends StatelessWidget {
       onOpenPlace: onOpenPlace,
       onToggleWishlist: null,
       reviews: reviews
-          .map((e) => ReviewItem(id: e.id, author: '', rating: 0, text: e.subtitle, date: DateTime.now(), source: null))
+          .map((e) => ReviewItem(
+                id: e.id,
+                author: '',
+                rating: 0,
+                text: e.subtitle,
+                date: DateTime.now(),
+                source: null,
+              ))
           .toList(growable: false),
       reviewsLoading: false,
       reviewsHasMore: false,
       onReviewsRefresh: null,
       onReviewsLoadMore: null,
       onOpenReviewTarget: (item) {
-        // This ReviewItem is a lightweight placeholder mapped from ContributionReview.
-        final match = reviews.firstWhere((r) => r.subtitle == item.subtitle, orElse: () => ContributionReview(id: item.id, title: item.title, subtitle: item.subtitle));
+        // Match by id; fallback uses text for subtitle.
+        final match = reviews.firstWhere(
+          (r) => r.id == item.id,
+          orElse: () => ContributionReview(id: item.id, title: '', subtitle: item.text ),
+        );
         onOpenReviewTarget?.call(match);
       },
       photoUrls: photoUrls,

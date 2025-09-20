@@ -119,10 +119,10 @@ class _FavoriteTagsState extends State<FavoriteTags> {
                   onSelected: (on) => _toggle(t, on),
                   backgroundColor: bg,
                   selectedColor: cs.primary.withValues(alpha: 0.18),
-                  showCheckmark: false,
+                  showCheckmark: true, // Shows the built-in checkmark when selected
+                  checkmarkColor: cs.primary, // Color of the checkmark
                   side: BorderSide(color: selected ? cs.primary : cs.outlineVariant),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
-                  onSelectedIcon: selected ? const Icon(Icons.check, size: 16) : null,
                   onDeleted: widget.onDeleteTag == null
                       ? null
                       : () async {

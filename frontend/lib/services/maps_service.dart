@@ -85,27 +85,29 @@ class WebMercator {
   /// Project lon/lat to normalized Web Mercator [0..1] x [0..1].
   static math.Point<double> projectNormalized(Coordinates c) {
     final lon = c.longitude;
-    final lat = c.latitude.clamp(minLat, maxLat);
+    final lat = c.latitude.clamp(minLat, maxLat).toDouble();
     final x = (lon + 180.0) / 360.0;
     final sinLat = math.sin(_degToRad(lat));
     final y = 0.5 - math.log((1 + sinLat) / (1 - sinLat)) / (4 * math.pi);
     return math.Point<double>(x, y);
-  } // Follows Slippy/Web Mercator derivation. [1][4]
+  } // Follows Slippy/Web Mercator derivation. [web:6610]
 
   /// Unproject normalized [0..1] x [0..1] back to lon/lat.
   static Coordinates unprojectNormalized(math.Point<double> p) {
     final lon = p.x * 360.0 - 180.0;
     final n = math.pi - 2.0 * math.pi * p.y;
-    final lat = _radToDeg(math.atan((math.exp(n) - math.exp(-n)) / 2)).clamp(minLat, maxLat);
+    final lat = _radToDeg(math.atan((math.exp(n) - math.exp(-n)) / 2))
+        .clamp(minLat, maxLat)
+        .toDouble();
     return Coordinates(latitude: lat, longitude: lon);
-  } // Inverse Web Mercator. [1][4]
+  } // Inverse Web Mercator. [web:6610]
 
   /// Convert lon/lat to pixel coordinates at a zoom level.
   static math.Point<double> lonLatToPixel(Coordinates c, double zoom) {
     final n = math.pow(2.0, zoom) as double;
     final p = projectNormalized(c);
     return math.Point<double>(p.x * n * tileSize, p.y * n * tileSize);
-  } // XYZ scheme with 256px tiles. [1][2]
+  } // XYZ scheme with 256px tiles. [web:6616]
 
   /// Convert pixel coordinates at a zoom level back to lon/lat.
   static Coordinates pixelToLonLat(math.Point<double> px, double zoom) {
@@ -113,7 +115,7 @@ class WebMercator {
     final nx = px.x / (tileSize * n);
     final ny = px.y / (tileSize * n);
     return unprojectNormalized(math.Point<double>(nx, ny));
-  } // Standard inverse pixel->lon/lat. [1][2]
+  } // Standard inverse pixel->lon/lat. [web:6616]
 
   /// Convert lon/lat to Slippy tile x,y at integer zoom (floor).
   static math.Point<int> lonLatToTile(Coordinates c, int zoom) {
@@ -122,7 +124,7 @@ class WebMercator {
     final x = (p.x * n).floor();
     final y = (p.y * n).floor();
     return math.Point<int>(x, y);
-  } // Slippy tile naming. [1]
+  } // Slippy tile naming. [web:6616]
 
   /// Tile bounds in lon/lat for x,y,z.
   static MapBounds tileBounds(int x, int y, int zoom) {
@@ -130,7 +132,7 @@ class WebMercator {
     final sw = unprojectNormalized(math.Point<double>(x / n, (y + 1) / n));
     final ne = unprojectNormalized(math.Point<double>((x + 1) / n, y / n));
     return MapBounds(southWest: sw, northEast: ne);
-  } // Tile bounding box in WGS84. [1]
+  } // Tile bounding box in WGS84. [web:6616]
 }
 
 /// Result of a viewport fit operation: center and zoom.
@@ -156,26 +158,26 @@ class MapsService {
     int maxZoom = 21,
   }) {
     // Clamp latitudes to Web Mercator supported range.
-    final swLat = bounds.southWest.latitude.clamp(WebMercator.minLat, WebMercator.maxLat);
-    final neLat = bounds.northEast.latitude.clamp(WebMercator.minLat, WebMercator.maxLat);
+    final swLat = bounds.southWest.latitude.clamp(WebMercator.minLat, WebMercator.maxLat).toDouble();
+    final neLat = bounds.northEast.latitude.clamp(WebMercator.minLat, WebMercator.maxLat).toDouble();
     final swLng = bounds.southWest.longitude;
     final neLng = bounds.northEast.longitude;
 
     // Map dimensions after padding.
-    final usableW = (widthPx - padding.horizontal).clamp(1, widthPx);
-    final usableH = (heightPx - padding.vertical).clamp(1, heightPx);
+    final usableW = (widthPx - padding.horizontal).clamp(1.0, widthPx).toDouble();
+    final usableH = (heightPx - padding.vertical).clamp(1.0, heightPx).toDouble();
 
     // Helper functions per common solutions (latRad and zoom calc).
     double latRad(double lat) {
       final s = math.sin(lat * math.pi / 180.0);
       final radX2 = math.log((1 + s) / (1 - s)) / 2.0;
       return math.max(math.min(radX2, math.pi), -math.pi) / 2.0;
-    } // See SO derivation for bounds->zoom. [6][9]
+    } // See SO derivation for bounds->zoom. [web:6616]
 
     double zoom(double mapPx, double worldPx, double fraction) {
       final v = math.log(mapPx / worldPx / fraction) / math.ln2;
       return v.floorToDouble();
-    } // Fraction-based zoom computation. [6]
+    } // Fraction-based zoom computation. [web:6616]
 
     final worldPx = WebMercator.tileSize.toDouble();
 
@@ -184,8 +186,8 @@ class MapsService {
     if (lngDiff < 0) lngDiff += 360.0; // anti-meridian wrap
     final lngFraction = (lngDiff) / 360.0;
 
-    final latZoom = zoom(usableH, worldPx, latFraction.abs().clamp(1e-12, 1.0));
-    final lngZoom = zoom(usableW, worldPx, lngFraction.abs().clamp(1e-12, 1.0));
+    final latZoom = zoom(usableH, worldPx, latFraction.abs().clamp(1e-12, 1.0).toDouble());
+    final lngZoom = zoom(usableW, worldPx, lngFraction.abs().clamp(1e-12, 1.0).toDouble());
     final z = math.min(math.min(latZoom, lngZoom), maxZoom.toDouble());
 
     // Center as geometric midpoint considering wrap.
@@ -198,7 +200,7 @@ class MapsService {
     }
 
     return ViewportFit(center: Coordinates(latitude: centerLat, longitude: centerLng), zoom: z);
-  } // Produces a reasonable fit for typical map UIs. [6][15]
+  } // Produces a reasonable fit for typical map UIs. [web:6616]
 
   /// Compute bounds from a list of coordinates (returns minimal rectangle in lon/lat).
   MapBounds? boundsFor(List<Coordinates> coords) {
@@ -215,7 +217,7 @@ class MapsService {
       southWest: Coordinates(latitude: minLat, longitude: minLng),
       northEast: Coordinates(latitude: maxLat, longitude: maxLng),
     );
-  } // Basic bbox for features/markers. [7]
+  } // Basic bbox for features/markers. [web:6616]
 
   /// Assemble a GeoJSON FeatureCollection from prebuilt Feature objects.
   Map<String, dynamic> featureCollection(List<Map<String, dynamic>> features,
@@ -228,7 +230,7 @@ class MapsService {
       fc['bbox'] = bbox;
     }
     return fc;
-  } // RFC 7946 FeatureCollection shape. [7][13]
+  } // RFC 7946 FeatureCollection shape. [web:6616]
 
   /// Build a Slippy tile URL from a template, e.g. https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png
   /// Selects subdomain by hashing x+y for simple balancing when {s} is provided.
@@ -254,7 +256,7 @@ class MapsService {
       url = hasQ ? '$url&$qp' : '$url?$qp';
     }
     return url;
-  } // Slippy tilenames and URL templates. [1][2]
+  } // Slippy tilenames and URL templates. [web:6616]
 
   /// A lightweight grid-based clusterer suitable for basic marker clustering without heavy deps.
   /// Clusters points into grid cells at a given zoom with a gridSizePx.
@@ -293,7 +295,7 @@ class MapsService {
       }
     });
     return out;
-  } // Grid clustering using Web Mercator pixels at zoom. [1][15]
+  } // Grid clustering using Web Mercator pixels at zoom. [web:6616]
 
   /// Build a GeoJSON Feature for a cluster (Point with properties).
   Map<String, dynamic> clusterFeature(Cluster c) {
@@ -308,13 +310,13 @@ class MapsService {
         'point_count': c.count,
       },
     };
-  } // Feature encoding as RFC 7946 Point with properties. [7]
+  } // Feature encoding as RFC 7946 Point with properties. [web:6616]
 
   /// Create a FeatureCollection for clusters.
   Map<String, dynamic> clusterFeatureCollection(List<Cluster> clusters) {
     final feats = clusters.map(clusterFeature).toList(growable: false);
     return featureCollection(feats);
-  } // Proper FeatureCollection container. [7]
+  } // Proper FeatureCollection container. [web:6616]
 }
 
 /// Internal key for grid buckets.

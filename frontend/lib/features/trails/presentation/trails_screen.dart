@@ -8,11 +8,13 @@ import '../presentation/widgets/trails_top_bar.dart';
 import '../presentation/widgets/feed_card.dart';
 import '../presentation/widgets/trail_map_view.dart';
 
-import '../../trails/data/trails_api.dart' show TrailsApi, CursorPage;
-import '../../trails/data/trail_location_api.dart' show TrailSummary, GeoPoint;
+// Alias the APIs and models to avoid type collisions.
+import '../../trails/data/trails_api.dart' as api show TrailsApi;
+import '../../trails/data/trail_location_api.dart' as loc show TrailSummary, GeoPoint;
+import '../../../models/geo_point.dart' as model show GeoPoint;
 
 /// DI injection point for the Trails domain API (override in app bootstrap).
-final trailsApiProvider = Provider<TrailsApi>((ref) {
+final trailsApiProvider = Provider<api.TrailsApi>((ref) {
   throw UnimplementedError('Provide TrailsApi via override at app bootstrap');
 });
 
@@ -30,14 +32,15 @@ class TrailsFilters {
   final String query;
   final Set<String> difficulties;
   final TrailsViewMode viewMode;
-  final GeoPoint? center;
+  // API expects app-wide geo model here.
+  final model.GeoPoint? center;
   final double? radiusKm;
 
   TrailsFilters copyWith({
     String? query,
     Set<String>? difficulties,
     TrailsViewMode? viewMode,
-    GeoPoint? center,
+    model.GeoPoint? center,
     double? radiusKm,
   }) {
     return TrailsFilters(
@@ -79,13 +82,13 @@ class PagedState<T> {
 }
 
 /// Controller that fetches and paginates Trails via TrailsApi using current filters.
-class TrailsListController extends AsyncNotifier<PagedState<TrailSummary>> {
+class TrailsListController extends AsyncNotifier<PagedState<loc.TrailSummary>> {
   @override
-  FutureOr<PagedState<TrailSummary>> build() async {
+  FutureOr<PagedState<loc.TrailSummary>> build() async {
     return PagedState.empty();
   }
 
-  TrailsApi get _api => ref.read(trailsApiProvider);
+  api.TrailsApi get _api => ref.read(trailsApiProvider);
 
   TrailsFilters get _filters => ref.read(trailsFiltersProvider);
 
@@ -102,18 +105,20 @@ class TrailsListController extends AsyncNotifier<PagedState<TrailSummary>> {
       limit: 20,
       cursor: null,
     );
-    state = AsyncData(PagedState<TrailSummary>(
-        items: page.items, cursor: page.nextCursor, loading: false));
+    // Coerce API items to location-domain summaries to avoid cross-library list type mismatch.
+    final List<loc.TrailSummary> items =
+        (page.items as List).cast<loc.TrailSummary>().toList(growable: false);
+    state = AsyncData(PagedState<loc.TrailSummary>(
+        items: items, cursor: page.nextCursor, loading: false));
   }
 
   Future<void> loadMore() async {
-    final current = state.valueOrNull ?? PagedState.empty<TrailSummary>();
+    final current = state.valueOrNull ?? PagedState.empty<loc.TrailSummary>();
     if (current.loading || current.cursor == null) return;
     state = AsyncData(current.copy(loading: true));
     final f = _filters;
-    CursorPage<TrailSummary> page;
     try {
-      page = await _api.list(
+      final page = await _api.list(
         query: f.query.isEmpty ? null : f.query,
         center: f.center,
         radiusKm: f.radiusKm,
@@ -123,8 +128,10 @@ class TrailsListController extends AsyncNotifier<PagedState<TrailSummary>> {
         limit: 20,
         cursor: current.cursor,
       );
+      final List<loc.TrailSummary> next =
+          (page.items as List).cast<loc.TrailSummary>().toList(growable: false);
       state = AsyncData(current.copy(
-          items: [...current.items, ...page.items],
+          items: [...current.items, ...next],
           cursor: page.nextCursor,
           loading: false));
     } catch (e, st) {
@@ -135,7 +142,7 @@ class TrailsListController extends AsyncNotifier<PagedState<TrailSummary>> {
 }
 
 final trailsListControllerProvider =
-    AsyncNotifierProvider<TrailsListController, PagedState<TrailSummary>>(
+    AsyncNotifierProvider<TrailsListController, PagedState<loc.TrailSummary>>(
   TrailsListController.new,
 );
 
@@ -150,7 +157,7 @@ class TrailsScreen extends ConsumerStatefulWidget {
 
   final String title;
   final List<String> suggestions;
-  final void Function(BuildContext context, TrailSummary trail)? onOpenTrail;
+  final void Function(BuildContext context, loc.TrailSummary trail)? onOpenTrail;
 
   @override
   ConsumerState<TrailsScreen> createState() => _TrailsScreenState();
@@ -198,7 +205,7 @@ class _TrailsScreenState extends ConsumerState<TrailsScreen> {
     final cs = Theme.of(context).colorScheme;
     final filters = ref.watch(trailsFiltersProvider);
     final state = ref.watch(trailsListControllerProvider);
-    final items = state.valueOrNull?.items ?? const <TrailSummary>[];
+    final items = state.valueOrNull?.items ?? const <loc.TrailSummary>[];
     final loading = state.isLoading && items.isEmpty;
     final error = state.hasError ? 'Failed to load trails' : null;
 
@@ -245,7 +252,7 @@ class _TrailsScreenState extends ConsumerState<TrailsScreen> {
   Widget _buildBody(
     BuildContext context,
     TrailsViewMode mode,
-    List<TrailSummary> items,
+    List<loc.TrailSummary> items,
     bool loading,
     String? error,
   ) {
@@ -268,12 +275,13 @@ class _TrailsScreenState extends ConsumerState<TrailsScreen> {
 
     if (mode == TrailsViewMode.map) {
       // Map view: render markers from centers; geometry is fetched on detail screen
-      final markers = items.map((t) => t.center).toList(growable: false);
+      final List<loc.GeoPoint> markers =
+          items.map((t) => t.center).toList(growable: false);
       return Stack(
         children: [
           TrailMapView(
-            geometry: const <GeoPoint>[],
-            trailheads: const <GeoPoint>[],
+            geometry: const <loc.GeoPoint>[],
+            trailheads: const <loc.GeoPoint>[],
             markers: markers,
             padding: const EdgeInsets.all(24),
           ),
@@ -342,7 +350,7 @@ class _TrailsScreenState extends ConsumerState<TrailsScreen> {
     );
   }
 
-  void _openTrail(BuildContext context, TrailSummary trail) {
+  void _openTrail(BuildContext context, loc.TrailSummary trail) {
     if (widget.onOpenTrail != null) {
       widget.onOpenTrail!(context, trail);
       return;
@@ -357,8 +365,8 @@ class _TrailsScreenState extends ConsumerState<TrailsScreen> {
 class _MapOverlayList extends StatelessWidget {
   const _MapOverlayList({required this.items, required this.onOpen});
 
-  final List<TrailSummary> items;
-  final void Function(TrailSummary trail) onOpen;
+  final List<loc.TrailSummary> items;
+  final void Function(loc.TrailSummary trail) onOpen;
 
   @override
   Widget build(BuildContext context) {
@@ -433,7 +441,7 @@ class _MapOverlayList extends StatelessWidget {
     );
   }
 
-  String _subtitle(TrailSummary t) {
+  String _subtitle(loc.TrailSummary t) {
     final parts = <String>[];
     if (t.rating != null) parts.add('${t.rating!.toStringAsFixed(1)}★');
     if (t.distanceKm != null) {

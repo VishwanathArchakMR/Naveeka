@@ -208,7 +208,7 @@ class _TileContent extends StatelessWidget {
       decoration: BoxDecoration(
         color: bg,
         gradient: LinearGradient(
-          colors: [bg, bg.withOpacity(0.92)],
+          colors: [bg, bg.withValues(alpha: 0.92)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -221,7 +221,7 @@ class _TileContent extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.18),
+              color: Colors.white.withValues(alpha: 0.18),
               borderRadius: BorderRadius.circular(12),
             ),
             alignment: Alignment.center,
@@ -238,7 +238,7 @@ class _TileContent extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.08),
+                      color: Colors.black.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(

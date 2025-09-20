@@ -21,9 +21,9 @@ class NeumorphicCard extends StatefulWidget {
     this.onSecondary,
     this.padding = const EdgeInsets.all(16),
     this.borderRadius = 16,
-    this.surfaceColor,     // override base surface (defaults from theme)
+    this.surfaceColor, // override base surface (defaults from theme)
     this.lightShadowColor, // override light shadow
-    this.darkShadowColor,  // override dark shadow
+    this.darkShadowColor, // override dark shadow
     this.heroTag,
     this.dense = false,
   });
@@ -71,8 +71,8 @@ class _NeumorphicCardState extends State<NeumorphicCard> {
     // Light and dark shadow tones; withValues for alpha (wide-gamut safe).
     final Color lightShadow = (widget.lightShadowColor ?? Colors.white)
         .withValues(alpha: t.brightness == Brightness.light ? 0.90 : 0.20); // top-left highlight [7]
-    final Color darkShadow = (widget.darkShadowColor ?? cs.shadow)
-        .withValues(alpha: t.brightness == Brightness.light ? 0.22 : 0.45); // bottom-right shade [7][1]
+    final Color darkShadow =
+        (widget.darkShadowColor ?? cs.shadow).withValues(alpha: t.brightness == Brightness.light ? 0.22 : 0.45); // bottom-right shade [7][1]
 
     final shape = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(widget.borderRadius),
@@ -235,7 +235,6 @@ class _NeumorphicCardState extends State<NeumorphicCard> {
     if (!hasPrimary && !hasSecondary) return null;
 
     final v = widget.dense ? VisualDensity.compact : VisualDensity.standard;
-    final t = Theme.of(context);
 
     final buttons = <Widget>[];
     if (hasSecondary) {

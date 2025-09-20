@@ -186,7 +186,7 @@ class _RoutePainter extends CustomPainter {
   }
 
   void _drawPin(Canvas canvas, Offset at, Color color, IconData icon) {
-    final r = 14.0;
+    const r = 14.0;
     final paint = Paint()
       ..color = color
       ..style = PaintingStyle.fill

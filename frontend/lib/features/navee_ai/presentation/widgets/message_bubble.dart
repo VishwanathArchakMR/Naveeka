@@ -34,9 +34,7 @@ class MessageBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final bg = _isUser
-        ? theme.colorScheme.primaryContainer
-        : theme.colorScheme.surfaceContainerHighest;
+    final bg = _isUser ? theme.colorScheme.primaryContainer : theme.colorScheme.surfaceContainerHighest;
     final fg = _isUser ? theme.colorScheme.onPrimaryContainer : Colors.black87;
 
     final bubble = ConstrainedBox(
@@ -54,15 +52,14 @@ class MessageBubble extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
           child: Column(
-            crossAxisAlignment:
-                _isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            crossAxisAlignment: _isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
             children: [
               if (_isSystem)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 4),
                   child: Text(
                     'System',
-                    style: TextStyle(color: fg.withOpacity(0.7), fontSize: 12),
+                    style: TextStyle(color: fg.withValues(alpha: 0.7), fontSize: 12),
                   ),
                 ),
               _ContentView(content: content, fg: fg),
@@ -84,8 +81,7 @@ class MessageBubble extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
       child: Row(
-        mainAxisAlignment:
-            _isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: _isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!_isUser) ...[
@@ -104,10 +100,9 @@ class MessageBubble extends StatelessWidget {
 
   Future<void> _copy(BuildContext context, dynamic value) async {
     final text = _contentAsString(value);
+    final messenger = ScaffoldMessenger.maybeOf(context); // capture before await
     await Clipboard.setData(ClipboardData(text: text));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Copied')),
-    ); // Copy to clipboard via Clipboard.setData and confirm with a SnackBar for route-safe feedback. [12][18]
+    messenger?.showSnackBar(const SnackBar(content: Text('Copied')));
   }
 
   String _contentAsString(dynamic v) {
@@ -147,8 +142,7 @@ class _ContentView extends StatelessWidget {
 
   bool _looksJsonString(String s) {
     final t = s.trim();
-    return (t.startsWith('{') && t.endsWith('}')) ||
-        (t.startsWith('[') && t.endsWith(']'));
+    return (t.startsWith('{') && t.endsWith('}')) || (t.startsWith('[') && t.endsWith(']'));
   }
 
   @override
@@ -196,7 +190,7 @@ class _CodeBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = Colors.black.withOpacity(0.06);
+    final bg = Colors.black.withValues(alpha: 0.06);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(10),
@@ -236,7 +230,7 @@ class _MetaRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ts = timestamp != null ? _fmtTime(timestamp!) : null;
-    final muted = fg.withOpacity(0.7);
+    final muted = fg.withValues(alpha: 0.7);
 
     return Row(
       children: [
@@ -287,8 +281,7 @@ class _MetaRow extends StatelessWidget {
 }
 
 class BubbleAction {
-  const BubbleAction(
-      {required this.icon, required this.label, required this.onPressed});
+  const BubbleAction({required this.icon, required this.label, required this.onPressed});
   final IconData icon;
   final String label;
   final VoidCallback onPressed;

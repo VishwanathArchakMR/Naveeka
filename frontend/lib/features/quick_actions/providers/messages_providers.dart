@@ -148,7 +148,7 @@ abstract class MessagesRepository {
 /// Inject a concrete implementation in app bootstrap with overrideWithValue.
 final messagesRepositoryProvider = Provider<MessagesRepository>((ref) {
   throw UnimplementedError('Provide MessagesRepository via override in main/bootstrap');
-}); // Repository Provider is overridden in app bootstrap for I/O; throwing by default is a common pattern. [web:5777]
+});
 
 /// ---------------- Simple read-only providers ----------------
 
@@ -168,12 +168,12 @@ class ConversationQuery {
 final conversationsFirstPageProvider = FutureProvider.family.autoDispose<CursorPage<ConversationSummary>, ConversationQuery>((ref, q) async {
   final repo = ref.watch(messagesRepositoryProvider);
   return repo.listConversations(cursor: null, limit: q.pageSize, query: (q.query ?? '').trim().isEmpty ? null : q.query!.trim());
-}); // FutureProvider.family handles parameterized fetches with caching and autoDispose per Riverpod patterns. [web:5777]
+});
 
 final threadFirstPageProvider = FutureProvider.family.autoDispose<CursorPage<MessageItem>, String>((ref, conversationId) async {
   final repo = ref.watch(messagesRepositoryProvider);
   return repo.listMessages(conversationId: conversationId, cursor: null);
-}); // A per-thread first-page provider simplifies initial loads per key. [web:5777]
+});
 
 /// ---------------- Controllers (pagination + mutations) ----------------
 
@@ -188,17 +188,16 @@ class PagedState<T> {
   PagedState<T> copy({List<T>? items, String? cursor, bool? loading, Object? error}) =>
       PagedState<T>(items: items ?? this.items, cursor: cursor ?? this.cursor, loading: loading ?? this.loading, error: error);
 
-  static PagedState<T> empty<T>() => PagedState<T>(items: <T>[], cursor: null, loading: false);
-} // Use a non-const generic list to avoid invalid_type_argument_in_const_literal with <T>[]. [web:5888][web:5889]
+  static PagedState<T> empty<T>() => PagedState<T>(items: List.empty(), cursor: null, loading: false);
+}
 
-/// Conversations controller with pagination and optimistic updates for mute/pin/read.
 class ConversationsController extends AsyncNotifier<PagedState<ConversationSummary>> {
   ConversationQuery _q = const ConversationQuery();
 
   @override
   FutureOr<PagedState<ConversationSummary>> build() async {
     return PagedState.empty();
-  } // AsyncNotifier allows async initialization using build with FutureOr. [web:5774][web:5892]
+  }
 
   Future<void> init(ConversationQuery query) async {
     _q = query;
@@ -289,7 +288,7 @@ class ConversationsController extends AsyncNotifier<PagedState<ConversationSumma
   }
 }
 
-final conversationsControllerProvider = AsyncNotifierProvider<ConversationsController, PagedState<ConversationSummary>>(ConversationsController.new); // AsyncNotifierProvider exposes AsyncNotifier + state cleanly. [web:5892][web:5777]
+final conversationsControllerProvider = AsyncNotifierProvider<ConversationsController, PagedState<ConversationSummary>>(ConversationsController.new);
 
 /// Thread store keeps multiple threads keyed by conversationId.
 @immutable
@@ -305,7 +304,7 @@ class ThreadsController extends AsyncNotifier<ThreadStore> {
   @override
   FutureOr<ThreadStore> build() async {
     return ThreadStore.empty;
-  } // Async initialization of multi-thread store via AsyncNotifier. [web:5774]
+  }
 
   PagedState<MessageItem> _get(String cid) => (state.valueOrNull ?? ThreadStore.empty).threads[cid] ?? PagedState.empty<MessageItem>();
 
@@ -427,13 +426,13 @@ class ThreadsController extends AsyncNotifier<ThreadStore> {
   }
 }
 
-final threadsControllerProvider = AsyncNotifierProvider<ThreadsController, ThreadStore>(ThreadsController.new); // Expose multi-thread controller via AsyncNotifierProvider. [web:5892]
+final threadsControllerProvider = AsyncNotifierProvider<ThreadsController, ThreadStore>(ThreadsController.new);
 
 /// Selector for a single thread state by conversationId (read-only view on the store).
 final threadByIdProvider = Provider.family.autoDispose<PagedState<MessageItem>, String>((ref, conversationId) {
   final store = ref.watch(threadsControllerProvider).valueOrNull ?? ThreadStore.empty;
   return store.threads[conversationId] ?? PagedState.empty<MessageItem>();
-}); // Derived provider reads specific thread state without extra fetching. [web:5777]
+});
 
 /// ---------------- Facade for widgets/screens ----------------
 
@@ -463,4 +462,4 @@ class MessagesActions {
   Future<void> setTypingRemote(String cid, bool typing) => _read(messagesRepositoryProvider).setTyping(conversationId: cid, typing: typing);
 }
 
-final messagesActionsProvider = Provider<MessagesActions>((ref) => MessagesActions(ref.read)); // Pass Reader (ref.read) so facade can call _read(provider.notifier). [web:5885]
+final messagesActionsProvider = Provider<MessagesActions>((ref) => MessagesActions(ref.read));

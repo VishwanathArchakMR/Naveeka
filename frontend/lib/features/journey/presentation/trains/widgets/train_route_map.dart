@@ -39,7 +39,7 @@ class TrainRouteMap extends StatelessWidget {
     }
 
     // Fallback center (India centroid) if no points available
-    final fallbackCenter = LatLng(20.5937, 78.9629);
+    const fallbackCenter = LatLng(20.5937, 78.9629);
 
     return SizedBox(
       height: height,
@@ -233,7 +233,7 @@ class _RoutePainter extends CustomPainter {
 
     // Grid
     final grid = Paint()
-      ..color = Colors.black.withOpacity(0.05)
+      ..color = Colors.black.withValues(alpha: 0.05)
       ..strokeWidth = 1;
     const pad = 16.0;
     for (var x = pad; x < size.width - pad; x += 24) {
@@ -259,10 +259,10 @@ class _RoutePainter extends CustomPainter {
       final o = projector.toOffset(points[i]);
       path.lineTo(o.dx, o.dy);
     }
-    canvas.drawPath(path, paint); // drawPath paints the stroked polyline path on the canvas using the configured Paint [web:5834].
+    canvas.drawPath(path, paint); // draw polyline
 
     // Optional station dots on the line
-    final dot = Paint()..color = color.withOpacity(0.9);
+    final dot = Paint()..color = color.withValues(alpha: 0.9);
     for (final p in points) {
       final o = projector.toOffset(p);
       canvas.drawCircle(o, 2.5, dot);

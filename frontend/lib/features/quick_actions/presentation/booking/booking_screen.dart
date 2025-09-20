@@ -1,15 +1,21 @@
 // lib/features/quick_actions/presentation/booking/booking_screen.dart
 
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 
-import '/models/place.dart';
+// Models
+import '../../../../models/place.dart';
+
+// Widgets in this feature
 import 'widgets/booking_search_bar.dart';
-import 'widgets/booking_location_filter.dart';
+import 'widgets/booking_location_filter.dart' as loc;
 import 'widgets/booking_map_view.dart';
 import 'widgets/suggested_bookings.dart';
 import 'widgets/recent_bookings.dart';
+
+// Shared types from Places feature (avoid redefining locally)
+import '../../../places/presentation/widgets/distance_indicator.dart' as di show UnitSystem;
+import '../../../places/presentation/widgets/nearby_places_map.dart' as maps show NearbyMapBuilder;
 
 class BookingScreen extends StatefulWidget {
   const BookingScreen({
@@ -24,7 +30,7 @@ class BookingScreen extends StatefulWidget {
   });
 
   final String initialQuery;
-  final BookingLocationSelection? initialLocation;
+  final loc.BookingLocationSelection? initialLocation;
   final DateTimeRange? initialDateRange;
   final int initialGuests;
 
@@ -32,7 +38,7 @@ class BookingScreen extends StatefulWidget {
   final double? originLng;
 
   // If you use a shared NearbyMapBuilder (Google/Mapbox), inject it here
-  final NearbyMapBuilder? mapBuilder;
+  final maps.NearbyMapBuilder? mapBuilder;
 
   @override
   State<BookingScreen> createState() => _BookingScreenState();
@@ -41,10 +47,10 @@ class BookingScreen extends StatefulWidget {
 class _BookingScreenState extends State<BookingScreen> {
   // Query/filter state
   String _query = '';
-  BookingLocationSelection? _location;
+  loc.BookingLocationSelection? _location;
   DateTimeRange? _dates;
   int _guests = 2;
-  UnitSystem _unit = UnitSystem.metric;
+  di.UnitSystem _unit = di.UnitSystem.metric;
 
   // Suggestions debounce
   Timer? _suggestDebounce;
@@ -67,7 +73,7 @@ class _BookingScreenState extends State<BookingScreen> {
     _location = widget.initialLocation;
     _dates = widget.initialDateRange;
     _guests = widget.initialGuests;
-    _unit = _location?.unit ?? UnitSystem.metric;
+    _unit = _location != null ? _toDiUnit(_location!.unit) : di.UnitSystem.metric;
 
     // Initial fetch
     _refresh();
@@ -101,24 +107,29 @@ class _BookingScreenState extends State<BookingScreen> {
     return c.future;
   }
 
+  // Adapter: map booking_location_filter.UnitSystem -> distance_indicator.UnitSystem
+  di.UnitSystem _toDiUnit(loc.UnitSystem u) {
+    return u == loc.UnitSystem.imperial ? di.UnitSystem.imperial : di.UnitSystem.metric;
+  }
+
   // Location picker
-  Future<BookingLocationSelection?> _pickLocation() async {
-    final sel = await BookingLocationFilterSheet.show(
+  Future<loc.BookingLocationSelection?> _pickLocation() async {
+    final sel = await loc.BookingLocationFilterSheet.show(
       context,
       initial: _location ??
-          BookingLocationSelection(
-            mode: LocationMode.nearMe,
+          const loc.BookingLocationSelection(
+            mode: loc.LocationMode.nearMe,
             radiusKm: 5,
-            unit: _unit,
+            unit: loc.UnitSystem.metric,
           ),
       recentAddresses: const ['Bandra West, Mumbai', 'Koramangala, Bengaluru', 'Connaught Place, Delhi'],
       onResolveCurrentLocation: () async {
-        //  request geolocation permission and return device coords
-        return const GeoPoint(19.0896, 72.8656); // example: Mumbai
+        // request geolocation permission and return device coords
+        return const loc.GeoPoint(19.0896, 72.8656); // example: Mumbai
       },
       onPickOnMap: () async {
         // open your map picker and return pinned location
-        return const GeoPoint(19.1136, 72.8697);
+        return const loc.GeoPoint(19.1136, 72.8697);
       },
       minKm: 0.5,
       maxKm: 50,
@@ -126,7 +137,7 @@ class _BookingScreenState extends State<BookingScreen> {
     if (sel == null) return null;
     setState(() {
       _location = sel;
-      _unit = sel.unit;
+      _unit = _toDiUnit(sel.unit);
     });
     await _refresh();
     return sel;
@@ -209,7 +220,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
   // Booking action
   Future<void> _book(Place p) async {
-    //call BookingApi.getQuote / createReservation or open partner link
+    // call BookingApi.getQuote / createReservation or open partner link
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Booking: ${p.name}')),
     );
@@ -230,7 +241,6 @@ class _BookingScreenState extends State<BookingScreen> {
   // Query change (SearchAnchor)
   void _onQueryChanged(String q) {
     setState(() => _query = q);
-    //trigger provider search + update _suggestions from backend
   }
 
   void _onSubmit(String q) async {
@@ -240,7 +250,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Screen uses CustomScrollView slivers for efficient, complex scrolling layout. [1]
+    // Screen uses CustomScrollView slivers for efficient, complex scrolling layout.
     final body = CustomScrollView(
       slivers: [
         // Header area
@@ -269,12 +279,12 @@ class _BookingScreenState extends State<BookingScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: BookingMapView(
               places: _nearby,
-              mapBuilder: widget.mapBuilder,
+              mapBuilder: widget.mapBuilder, // typed as maps.NearbyMapBuilder?
               originLat: widget.originLat,
               originLng: widget.originLng,
               onOpenFilters: _pickLocation,
               onOpenPlace: (p) {
-                //  navigate to details
+                // navigate to details
               },
               onBook: _book,
               nextAvailableById: _nextAvailable,
@@ -292,7 +302,7 @@ class _BookingScreenState extends State<BookingScreen> {
               places: _suggested,
               originLat: widget.originLat,
               originLng: widget.originLng,
-              unit: _unit,
+              unit: _unit, // di.UnitSystem
               onOpenPlace: (p) {
                 // navigate
               },
@@ -361,38 +371,4 @@ class _BookingScreenState extends State<BookingScreen> {
       ),
     );
   }
-}
-
-// Optional: Google/Mapbox builder contract import passthrough.
-// If your app already defines NearbyMapBuilder in another module, remove this block.
-typedef NearbyMapBuilder = Widget Function(BuildContext context, NearbyMapConfig config);
-
-class NearbyMapConfig {
-  NearbyMapConfig({
-    required this.centerLat,
-    required this.centerLng,
-    required this.markers,
-    this.initialZoom = 12,
-    this.onMarkerTap,
-    this.onRecenter,
-  });
-  final double centerLat;
-  final double centerLng;
-  final List<NearbyMarker> markers;
-  final double initialZoom;
-  final void Function(String id)? onMarkerTap;
-  final VoidCallback? onRecenter;
-}
-
-class NearbyMarker {
-  NearbyMarker({
-    required this.id,
-    required this.lat,
-    required this.lng,
-    this.selected = false,
-  });
-  final String id;
-  final double lat;
-  final double lng;
-  final bool selected;
 }

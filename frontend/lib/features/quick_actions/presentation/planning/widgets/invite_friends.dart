@@ -105,7 +105,8 @@ class InviteFriendsCard extends StatelessWidget {
                         CircleAvatar(
                           radius: 18,
                           backgroundColor: Colors.black12,
-                          backgroundImage: (c.avatarUrl != null && c.avatarUrl!.trim().isNotEmpty) ? NetworkImage(c.avatarUrl!) : null,
+                          backgroundImage:
+                              (c.avatarUrl != null && c.avatarUrl!.trim().isNotEmpty) ? NetworkImage(c.avatarUrl!) : null,
                           child: (c.avatarUrl == null || c.avatarUrl!.trim().isEmpty)
                               ? Text(
                                   c.name.isEmpty ? '?' : c.name.toUpperCase(),
@@ -138,6 +139,7 @@ class InviteFriendsCard extends StatelessWidget {
               child: FilledButton.icon(
                 onPressed: () async {
                   onOpen?.call();
+                  if (!context.mounted) return;
                   await InviteFriendsSheet.show(context);
                 },
                 icon: const Icon(Icons.person_add_alt_1),
@@ -195,8 +197,8 @@ class InviteFriendsSheet extends StatefulWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (_) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      builder: (sheetContext) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(sheetContext).viewInsets.bottom),
         child: InviteFriendsSheet(
           initialContacts: initialContacts,
           loading: loading,
@@ -253,9 +255,7 @@ class _InviteFriendsSheetState extends State<InviteFriendsSheet> {
   List<FriendContact> _applyFilters() {
     final q = _q.text.trim().toLowerCase();
     return _items.where((c) {
-      final matchesText = q.isEmpty ||
-          c.name.toLowerCase().contains(q) ||
-          (c.username ?? '').toLowerCase().contains(q);
+      final matchesText = q.isEmpty || c.name.toLowerCase().contains(q) || (c.username ?? '').toLowerCase().contains(q);
       final matchesSrc = _filter == null || c.source == _filter;
       return matchesText && matchesSrc;
     }).toList(growable: false);
@@ -388,7 +388,8 @@ class _InviteFriendsSheetState extends State<InviteFriendsSheet> {
                       leading: CircleAvatar(
                         radius: 18,
                         backgroundColor: Colors.black12,
-                        backgroundImage: (c.avatarUrl != null && c.avatarUrl!.trim().isNotEmpty) ? NetworkImage(c.avatarUrl!) : null,
+                        backgroundImage:
+                            (c.avatarUrl != null && c.avatarUrl!.trim().isNotEmpty) ? NetworkImage(c.avatarUrl!) : null,
                         child: (c.avatarUrl == null || c.avatarUrl!.trim().isEmpty)
                             ? Text(c.name.isEmpty ? '?' : c.name.toUpperCase(), style: const TextStyle(fontSize: 12))
                             : null,
@@ -447,12 +448,15 @@ class _InviteFriendsSheetState extends State<InviteFriendsSheet> {
                             try {
                               final sel = _items.where((e) => _selected.contains(e.id)).toList();
                               await widget.onSendInvites!(sel);
-                              if (mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Invited ${sel.length} ${sel.length == 1 ? 'friend' : 'friends'}')),
-                                );
-                                Navigator.pop(context);
-                              }
+
+                              // Guard the captured BuildContext after await
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Invited ${sel.length} ${sel.length == 1 ? 'friend' : 'friends'}')),
+                              );
+
+                              if (!context.mounted) return;
+                              Navigator.pop(context);
                             } finally {
                               if (mounted) setState(() => _busySend = false);
                             }
@@ -493,7 +497,6 @@ class _SourceChips extends StatelessWidget {
       runSpacing: 8,
       children: all.map((t) {
         final isOn = selected == t.$1;
-        final bg = isOn ? cs.primary.withValues(alpha: 0.14) : cs.surfaceContainerHigh.withValues(alpha: 1.0);
         final fg = isOn ? cs.primary : cs.onSurface;
         return ChoiceChip(
           avatar: Icon(t.$3, size: 16, color: fg),
@@ -501,6 +504,7 @@ class _SourceChips extends StatelessWidget {
           selected: isOn,
           onSelected: (_) => onChanged(t.$1),
           selectedColor: cs.primary.withValues(alpha: 0.18),
+          backgroundColor: cs.surfaceContainerHigh.withValues(alpha: 1.0),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
           side: BorderSide(color: isOn ? cs.primary : cs.outlineVariant),
         );

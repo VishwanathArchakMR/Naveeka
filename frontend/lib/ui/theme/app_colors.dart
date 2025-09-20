@@ -94,14 +94,16 @@ extension AppColorTokens on ColorScheme {
 
 /// Small blending helpers to derive emphasized colors without opacity API.
 extension AppBlend on Color {
-  /// Linear blend with another color by factor t in [0, 1].
+  /// Linear blend with another color by factor t in [0, 1] using wide-gamut components.
   Color blend(Color other, double t) {
-    final clamped = t.clamp(0.0, 1.0);
-    final r = (red + (other.red - red) * clamped).round();
-    final g = (green + (other.green - green) * clamped).round();
-    final b = (blue + (other.blue - blue) * clamped).round();
-    final a = (alpha + (other.alpha - alpha) * clamped).round();
-    return Color.fromARGB(a, r, g, b);
+    final double clamped = t.clamp(0.0, 1.0).toDouble();
+    // r/g/b/a are doubles in [0, 1] under the wide-gamut API.
+    final double rd = r + (other.r - r) * clamped;
+    final double gd = g + (other.g - g) * clamped;
+    final double bd = b + (other.b - b) * clamped;
+    final double ad = a + (other.a - a) * clamped;
+    int toInt8(double x) => (x * 255.0).round() & 0xff;
+    return Color.fromARGB(toInt8(ad), toInt8(rd), toInt8(gd), toInt8(bd));
   }
 
   /// Set only alpha using wide-gamut safe values.

@@ -166,7 +166,19 @@ class HomeTopBar extends ConsumerWidget implements PreferredSizeWidget {
             IconButton(
               icon: const Icon(Icons.notifications_outlined),
               onPressed: () {
-                // TODO: wire to notifications screen/service
+                // Navigate to notifications; try named first, then path, else inform.
+                try {
+                  context.pushNamed('notifications');
+                } catch (_) {
+                  try {
+                    context.push('/notifications');
+                  } catch (_) {
+                    final messenger = ScaffoldMessenger.maybeOf(context);
+                    messenger?.showSnackBar(
+                      const SnackBar(content: Text('Notifications screen is not available')),
+                    );
+                  }
+                }
               },
               tooltip: 'Notifications',
             ),

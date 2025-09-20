@@ -115,8 +115,8 @@ class _PrivacySecurityState extends State<PrivacySecurity> with WidgetsBindingOb
           ),
         );
       },
-    ); // Modal sheets are the standard API for focused confirmations in Flutter. [web:5748]
-    return res == true; // Return true on positive confirmation to mimic successful unlock. [web:5748]
+    );
+    return res == true;
   }
 
   void _openAppLockSheet() {
@@ -147,7 +147,7 @@ class _PrivacySecurityState extends State<PrivacySecurity> with WidgetsBindingOb
         },
         onToggleRequire: widget.onRequireOnLaunchChanged,
       ),
-    ); // The shaped showModalBottomSheet presents a focused configuration flow. [web:5748]
+    );
   }
 
   void _openDeleteSheet() {
@@ -161,7 +161,7 @@ class _PrivacySecurityState extends State<PrivacySecurity> with WidgetsBindingOb
       builder: (_) => _DeleteAccountSheet(
         onConfirm: widget.onDeleteAccount,
       ),
-    ); // Modal sheet is a clear UX for destructive confirmations. [web:5748]
+    );
   }
 
   @override
@@ -203,9 +203,7 @@ class _PrivacySecurityState extends State<PrivacySecurity> with WidgetsBindingOb
                     ),
                     trailing: FilledButton.icon(
                       onPressed: _busy ? null : _openAppLockSheet,
-                      icon: _busy
-                          ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                          : const Icon(Icons.admin_panel_settings_outlined),
+                      icon: _busy ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.admin_panel_settings_outlined),
                       label: const Text('Configure'),
                     ),
                   ),
@@ -247,7 +245,7 @@ class _PrivacySecurityState extends State<PrivacySecurity> with WidgetsBindingOb
                   ),
                 ],
               ),
-            ), // Platform integrations for screen security should be handled outside this widget. [web:5275]
+            ),
 
             const SizedBox(height: 12),
 
@@ -353,9 +351,9 @@ class _ActionTile extends StatelessWidget {
       onTap: onTap == null
           ? null
           : () async {
-              final messenger = ScaffoldMessenger.of(context);
+              final messenger = ScaffoldMessenger.maybeOf(context); // capture before await
               await onTap!.call();
-              messenger.showSnackBar(SnackBar(content: Text('$title completed'))); // Capture a messenger before await to satisfy the lint. [web:5680][web:5873]
+              messenger?.showSnackBar(SnackBar(content: Text('$title completed')));
             },
     );
   }
@@ -427,7 +425,7 @@ class _AppLockSheetState extends State<_AppLockSheet> {
           ],
         ),
       ),
-    ); // This sheet is presented with showModalBottomSheet for a focused settings flow. [web:5748]
+    );
   }
 }
 
@@ -498,24 +496,29 @@ class _DeleteAccountSheetState extends State<_DeleteAccountSheet> {
                     ? null
                     : () async {
                         setState(() => _busy = true);
+                        bool success = false;
                         try {
                           if (widget.onConfirm != null) {
                             await widget.onConfirm!.call(_reason.text.trim());
                           }
-                          if (mounted) Navigator.maybePop(context);
+                          success = true;
                         } finally {
-                          if (mounted) setState(() => _busy = false);
+                          if (mounted) {
+                            setState(() => _busy = false);
+                            if (success) {
+                              // Use State.context under a mounted check, not the captured build() context.
+                              Navigator.maybePop(this.context);
+                            }
+                          }
                         }
                       },
-                icon: _busy
-                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                    : const Icon(Icons.delete_forever),
+                icon: _busy ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.delete_forever),
                 label: const Text('Delete account'),
               ),
             ),
           ],
         ),
       ),
-    ); // This destructive flow uses a modal sheet for clarity and requires explicit confirmation. [web:5748]
+    );
   }
 }

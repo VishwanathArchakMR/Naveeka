@@ -207,7 +207,6 @@ class FloatingButton extends StatelessWidget {
         }
         break;
       case FloatingButtonKind.regular:
-      default:
         fab = FloatingActionButton(
           heroTag: heroTag,
           tooltip: tooltip,

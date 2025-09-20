@@ -59,7 +59,7 @@ flutter:
   # generate: true
 
   assets:
-    # NOTE: Actual structure is assets/assets/...
+   // # NOTE: Actual structure is assets/assets/...
     - assets/assets/images/
     - assets/assets/images/logos/
     - assets/assets/images/places/
@@ -77,7 +77,7 @@ flutter:
     - assets/assets/animations/
     - assets/assets/seed-data/
     # dotenv file at project root (keep in assets if using flutter_dotenv)
-    - .env
+    - .env  //
 
   fonts:
     - family: Inter

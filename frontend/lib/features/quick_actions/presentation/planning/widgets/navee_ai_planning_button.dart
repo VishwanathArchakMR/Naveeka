@@ -1,5 +1,4 @@
 // lib/features/quick_actions/presentation/planning/widgets/navee_ai_planning_button.dart
-
 import 'package:flutter/material.dart';
 
 import './location_picker.dart'; // GeoPoint + LocationPickerButton
@@ -184,7 +183,8 @@ class _NaveeAiPlanningSheetState extends State<_NaveeAiPlanningSheet> {
   bool _access = false;
   bool _transit = false;
 
-  final bool _busyGeo = false;
+  // Removed unused _busyGeo flag.
+
   bool _busySearch = false;
   List<LocationSuggestion> _results = const [];
 
@@ -349,10 +349,13 @@ class _NaveeAiPlanningSheetState extends State<_NaveeAiPlanningSheet> {
                             initialCenter: _origin,
                             mapBuilder: widget.mapBuilder,
                             onResolveCurrent: widget.onResolveCurrent,
-                            onShare: (res) async {
+                            // API change: provide required onPick instead of removed onShare.
+                            onPick: (res) async {
                               setState(() {
-                                _origin = res.point;
-                                _radiusKm = res.radiusKm ?? _radiusKm;
+                                // res is expected to expose point and optional radiusKm.
+                                // Using dynamic access keeps this compatible with the picker’s result.
+                                _origin = (res as dynamic).point ?? _origin;
+                                _radiusKm = (res as dynamic).radiusKm ?? _radiusKm;
                               });
                             },
                           ),
@@ -391,26 +394,28 @@ class _NaveeAiPlanningSheetState extends State<_NaveeAiPlanningSheet> {
                     ),
                     if (_results.isNotEmpty) ...[
                       const SizedBox(height: 8),
-                      ..._results.take(4).map((r) => ListTile(
-                            dense: true,
-                            contentPadding: EdgeInsets.zero,
-                            leading: Container(
-                              width: 36,
-                              height: 36,
-                              decoration: BoxDecoration(
-                                color: cs.primary.withValues(alpha: 0.14),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              alignment: Alignment.center,
-                              child: Icon(Icons.place_outlined, color: cs.primary),
+                      ..._results.take(4).map(
+                        (r) => ListTile(
+                          dense: true,
+                          contentPadding: EdgeInsets.zero,
+                          leading: Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: cs.primary.withValues(alpha: 0.14),
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                            title: Text(r.title, maxLines: 1, overflow: TextOverflow.ellipsis),
-                            subtitle: (r.subtitle ?? '').trim().isEmpty ? null : Text(r.subtitle!.trim(), maxLines: 1, overflow: TextOverflow.ellipsis),
-                            onTap: () => setState(() {
-                              _origin = r.point;
-                              _radiusKm ??= 2.0;
-                            }),
-                          )),
+                            alignment: Alignment.center,
+                            child: Icon(Icons.place_outlined, color: cs.primary),
+                          ),
+                          title: Text(r.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+                          subtitle: (r.subtitle ?? '').trim().isEmpty ? null : Text(r.subtitle!.trim(), maxLines: 1, overflow: TextOverflow.ellipsis),
+                          onTap: () => setState(() {
+                            _origin = r.point;
+                            _radiusKm ??= 2.0;
+                          }),
+                        ),
+                      ),
                     ],
 
                     const SizedBox(height: 12),

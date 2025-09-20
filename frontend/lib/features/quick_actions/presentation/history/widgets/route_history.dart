@@ -108,8 +108,7 @@ class RouteHistory extends StatelessWidget {
       final dayKey = DateTime(t.year, t.month, t.day);
       map.putIfAbsent(dayKey, () => <RouteHistoryItem>[]).add(it);
     }
-    final entries = map.entries.toList()
-      ..sort((a, b) => b.key.compareTo(a.key)); // newest day first
+    final entries = map.entries.toList()..sort((a, b) => b.key.compareTo(a.key)); // newest day first
     return entries
         .map((e) {
           final list = [...e.value]..sort((a, b) => a.time.compareTo(b.time)); // chronological within day
@@ -272,9 +271,7 @@ class _TimelineTile extends StatelessWidget {
                   color: (item.color ?? cs.primary).withValues(alpha: 1.0),
                   shape: BoxShape.circle,
                 ),
-                child: item.icon == null
-                    ? null
-                    : Icon(item.icon, size: 10, color: cs.onPrimary),
+                child: item.icon == null ? null : Icon(item.icon, size: 10, color: cs.onPrimary),
               ),
             ),
           ),
@@ -357,11 +354,11 @@ class _RailPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final p = Paint()
       ..color = color
-      ..strokeWidth = 2;
+      ..strokeWidth = 2.0; // double required
 
     final centerX = size.width / 2;
     const dotRadius = 12 / 2;
-    const topY = 0;
+    const topY = 0.0;
     final centerY = size.height / 2;
     if (drawTop) {
       canvas.drawLine(
@@ -381,8 +378,6 @@ class _RailPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _RailPainter oldDelegate) {
-    return color != oldDelegate.color ||
-        drawTop != oldDelegate.drawTop ||
-        drawBottom != oldDelegate.drawBottom;
+    return color != oldDelegate.color || drawTop != oldDelegate.drawTop || drawBottom != oldDelegate.drawBottom;
   }
 }

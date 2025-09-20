@@ -530,8 +530,8 @@ class _PeekCard extends StatelessWidget {
                       alignment: Alignment.centerLeft,
                       child: dist.DistanceIndicator.fromPlace(
                         place,
-                        originLat: olat!,
-                        originLng: olng!,
+                        originLat: olat,
+                        originLng: olng,
                         unit: unit,
                         compact: true,
                         labelSuffix: 'away',

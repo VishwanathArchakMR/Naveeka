@@ -108,7 +108,7 @@ class _SuggestedAccountsState extends State<SuggestedAccounts> {
       _loadRequested = true;
       widget.onLoadMore!.call().whenComplete(() => _loadRequested = false);
     }
-  } // Horizontal ListView pagination triggers near the trailing edge for seamless loading. [1][4]
+  } // Horizontal ListView pagination triggers near the trailing edge for seamless loading.
 
   @override
   Widget build(BuildContext context) {
@@ -168,8 +168,11 @@ class _SuggestedAccountsState extends State<SuggestedAccounts> {
                                 setState(() => _local[idx] = _local[idx].copyWith(isFollowing: next));
                               }
                               final ok = await widget.onToggleFollow!(acc, next);
-                              if (!ok && mounted && idx != -1) {
-                                setState(() => _local[idx] = _local[idx].copyWith(isFollowing: !next));
+                              if (!ok) {
+                                if (idx != -1 && mounted) {
+                                  setState(() => _local[idx] = _local[idx].copyWith(isFollowing: !next));
+                                }
+                                if (!context.mounted) return;
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(content: Text('Could not update follow')),
                                 );

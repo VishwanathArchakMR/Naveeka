@@ -22,7 +22,8 @@ class ApiSuccess<T> extends ApiResult<T> {
   @override
   R fold<R>({required R Function(ApiError e) onError, required R Function(T v) onSuccess}) => onSuccess(value);
   @override
-  Future<R> when<R>({required Future<R> Function(T v) success, required Future<R> Function(ApiError e) failure}) => success(value);
+  Future<R> when<R>({required Future<R> Function(T v) success, required Future<R> Function(ApiError e) failure}) =>
+      success(value);
 }
 
 class ApiFailure<T> extends ApiResult<T> {
@@ -31,7 +32,8 @@ class ApiFailure<T> extends ApiResult<T> {
   @override
   R fold<R>({required R Function(ApiError e) onError, required R Function(T v) onSuccess}) => onError(err);
   @override
-  Future<R> when<R>({required Future<R> Function(T v) success, required Future<R> Function(ApiError e) failure}) => failure(err);
+  Future<R> when<R>({required Future<R> Function(T v) success, required Future<R> Function(ApiError e) failure}) =>
+      failure(err);
 }
 
 class ApiError implements Exception {
@@ -74,7 +76,7 @@ class FavoritesApi {
         ..._config.defaultHeaders,
         if (authToken != null && authToken.isNotEmpty) 'Authorization': 'Bearer $authToken',
       },
-    ); // Dio supports base options for baseUrl, timeouts, and headers for consistent configuration. [3][5]
+    );
   }
 
   final Dio _dio;
@@ -104,7 +106,7 @@ class FavoritesApi {
       parse: (data) => FavoritePage.fromJson(data as Map<String, dynamic>),
       cancelToken: cancelToken,
       retries: 2,
-    ); // Pass CancelToken so the request can be cancelled if the UI no longer needs it. [1][4]
+    );
   }
 
   /// Check if a place is favorited by the current user.
@@ -121,7 +123,7 @@ class FavoritesApi {
       },
       cancelToken: cancelToken,
       retries: 1,
-    ); // GET is idempotent; a small retry helps recover from transient failures/timeouts. [3]
+    );
   }
 
   /// Add to favorites (idempotent server-side).
@@ -140,7 +142,7 @@ class FavoritesApi {
       parse: (data) => FavoriteItem.fromJson(data as Map<String, dynamic>),
       cancelToken: cancelToken,
       retries: 0,
-    ); // For POST we avoid aggressive retries to prevent duplicate mutations; an idempotency key can safely deduplicate server-side. [3]
+    );
   }
 
   /// Remove from favorites (idempotent).
@@ -152,7 +154,7 @@ class FavoritesApi {
       path: '/v1/favorites/$placeId',
       parse: (_) {},
       cancelToken: cancelToken,
-    ); // DELETE is idempotent; no retries by default to avoid masking client/server errors. [3]
+    );
   }
 
   /// Bulk set favorites for multiple places in one call.
@@ -167,7 +169,7 @@ class FavoritesApi {
       parse: (data) => BulkFavoriteResult.fromJson(data as Map<String, dynamic>),
       cancelToken: cancelToken,
       retries: 0,
-    ); // Bulk operation helps sync local optimistic UI with server in one network roundtrip. [5]
+    );
   }
 
   // ----------------------------
@@ -187,7 +189,7 @@ class FavoritesApi {
         final res = await _dio.get<dynamic>(path, queryParameters: query, cancelToken: cancelToken);
         return _parseResponse<T>(res, parse);
       },
-    ); // Dio supports cancellation via CancelToken passed into the request method to stop in-flight calls on demand. [1][3]
+    );
   }
 
   Future<ApiResult<T>> _post<T>({
@@ -270,7 +272,8 @@ class FavoritesApi {
   int _backoffDelayMs(int attempt) {
     final base = 250 * (1 << (attempt - 1));
     final jitter = (base * 0.2).toInt();
-    return base + (DateTime.now().microsecondsSinceEpoch % (jitter == 0 ? 1 : jitter));
+    final mod = jitter == 0 ? 1 : jitter;
+    return base + (DateTime.now().microsecondsSinceEpoch % mod);
   }
 
   ApiResult<T> _parseResponse<T>(Response res, T Function(dynamic) parse) {
@@ -294,6 +297,42 @@ class FavoritesApi {
       } catch (_) {}
     }
     return null;
+  }
+
+  // Translate DioException to ApiError consistently with BookingApi.
+  ApiError _mapDioError(DioException e) {
+    final code = e.response?.statusCode;
+    final details = _asMap(e.response?.data);
+    String message;
+    switch (e.type) {
+      case DioExceptionType.connectionTimeout:
+        message = 'Connection timed out';
+        break;
+      case DioExceptionType.sendTimeout:
+        message = 'Send timed out';
+        break;
+      case DioExceptionType.receiveTimeout:
+        message = 'Receive timed out';
+        break;
+      case DioExceptionType.badCertificate:
+        message = 'Bad TLS certificate';
+        break;
+      case DioExceptionType.connectionError:
+        message = 'Network connection error';
+        break;
+      case DioExceptionType.cancel:
+        message = 'Cancelled';
+        break;
+      case DioExceptionType.badResponse:
+        final status = e.response?.statusCode ?? 0;
+        final serverMsg = (details?['message'] ?? e.response?.statusMessage ?? 'HTTP $status').toString();
+        message = serverMsg;
+        break;
+      case DioExceptionType.unknown:
+        message = e.message ?? 'Unknown network error';
+        break;
+    }
+    return ApiError(message: message, code: code, details: details);
   }
 }
 
@@ -323,7 +362,7 @@ class FavoriteItem {
       createdAt: DateTime.parse(json['createdAt'] as String),
       placeName: json['placeName'] as String?,
       coverImage: json['coverImage'] as String?,
-    ); // DateTime.parse is compatible with strings generated by toIso8601String for round-tripping ISO-8601 timestamps. [16][7]
+    );
   }
 
   Map<String, dynamic> toJson() => {
@@ -332,7 +371,7 @@ class FavoriteItem {
         'createdAt': createdAt.toIso8601String(),
         'placeName': placeName,
         'coverImage': coverImage,
-      }; // toIso8601String serializes DateTime in ISO‑8601 extended format suitable for JSON APIs. [7]
+      };
 }
 
 class FavoritePage {

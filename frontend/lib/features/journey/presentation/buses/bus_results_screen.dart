@@ -5,7 +5,6 @@ import 'package:intl/intl.dart';
 
 import '../../data/buses_api.dart';
 import 'widgets/bus_card.dart';
-import 'widgets/bus_route_map.dart';
 import 'bus_booking_screen.dart';
 
 class BusResultsScreen extends StatefulWidget {
@@ -58,10 +57,22 @@ class _BusResultsScreenState extends State<BusResultsScreen> {
 
   final List<Map<String, dynamic>> _items = [];
 
+  // Active filter params (mutable copies from widget.*)
+  List<String>? _operators;
+  List<String>? _classes;
+  String? _q;
+  double? _minPrice;
+  double? _maxPrice;
+
   @override
   void initState() {
     super.initState();
     _sort = widget.sort;
+    _operators = widget.operators == null ? null : List<String>.from(widget.operators!);
+    _classes = widget.classes == null ? null : List<String>.from(widget.classes!);
+    _q = widget.q;
+    _minPrice = widget.minPrice;
+    _maxPrice = widget.maxPrice;
     _fetch(reset: true);
     _scrollCtrl.addListener(_onScroll);
   }
@@ -106,16 +117,17 @@ class _BusResultsScreenState extends State<BusResultsScreen> {
       toCode: widget.toCode,
       date: widget.date,
       returnDate: widget.returnDate,
-      operators: widget.operators,
-      classes: widget.classes,
-      q: widget.q,
-      minPrice: widget.minPrice,
-      maxPrice: widget.maxPrice,
+      operators: _operators,
+      classes: _classes,
+      q: _q,
+      minPrice: _minPrice,
+      maxPrice: _maxPrice,
       sort: _sort,
       page: _page,
       limit: widget.pageSize,
     );
 
+    if (!mounted) return;
     res.fold(
       onSuccess: (data) {
         final list = _asList(data);
@@ -134,9 +146,8 @@ class _BusResultsScreenState extends State<BusResultsScreen> {
           _loadMore = false;
           _hasMore = false;
         });
-        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(err.safeMessage ?? 'Failed to load buses')),
+          SnackBar(content: Text(err.safeMessage)),
         );
       },
     );
@@ -205,9 +216,7 @@ class _BusResultsScreenState extends State<BusResultsScreen> {
         actions: [
           IconButton(
             tooltip: 'Filters',
-            onPressed: () {
-              // TODO: Present filters bottom sheet; update _sort/params then _fetch(reset:true)
-            },
+            onPressed: _openFilters, // implemented bottom sheet
             icon: const Icon(Icons.tune),
           ),
         ],
@@ -268,6 +277,7 @@ class _BusResultsScreenState extends State<BusResultsScreen> {
           SizedBox(
             width: 200,
             child: DropdownButtonFormField<String>(
+              key: ValueKey(_sort),
               initialValue: _sort,
               isDense: true,
               icon: const Icon(Icons.sort),
@@ -334,79 +344,221 @@ class _BusResultsScreenState extends State<BusResultsScreen> {
     ));
   }
 
-  void _openRoutePreview(Map<String, dynamic> bus) {
-    // Optional route preview bottom sheet (hook this from an icon/action if desired)
-    final stops = (bus['stops'] as List<Map<String, dynamic>>?) ?? const <Map<String, dynamic>>[];
-    final pts = (bus['routePoints'] as List<Map<String, dynamic>>?) ?? const <Map<String, dynamic>>[];
+  // Filters bottom sheet implementation
+  Future<void> _openFilters() async {
+    // Local mutable copies for UI
+    String? sort = _sort;
+    double? minPrice = _minPrice;
+    double? maxPrice = _maxPrice;
+    final classes = (_classes == null) ? <String>{} : _classes!.toSet();
+    final operators = (_operators == null) ? <String>{} : _operators!.toSet();
+    final qCtrl = TextEditingController(text: _q ?? '');
 
-    // Try building a polyline if route points exist
-    final poly = pts
-        .map((p) {
-          final lat = p['lat'];
-          final lng = p['lng'];
-          double? d(dynamic v) {
-            if (v is double) return v;
-            if (v is int) return v.toDouble();
-            if (v is String) return double.tryParse(v);
-            return null;
-          }
-
-          final la = d(lat), ln = d(lng);
-          if (la == null || ln == null) return null;
-          return LatLng(la, ln);
-        })
-        .whereType<LatLng>()
-        .toList(growable: false);
-
-    // Origin/destination fallbacks from first/last stop if known
-    double? dval(dynamic v) {
-      if (v is double) return v;
-      if (v is int) return v.toDouble();
-      if (v is String) return double.tryParse(v);
-      return null;
-    }
-
-    final double? oLat = stops.isNotEmpty ? dval(stops.first['lat']) : null;
-    final double? oLng = stops.isNotEmpty ? dval(stops.first['lng']) : null;
-    final double? dLat = stops.isNotEmpty ? dval(stops.last['lat']) : null;
-    final double? dLng = stops.isNotEmpty ? dval(stops.last['lng']) : null;
-
-    if (oLat == null || oLng == null || dLat == null || dLng == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Route preview not available')),
-      );
-      return;
-    }
-
-    showModalBottomSheet<void>(
+    final result = await showModalBottomSheet<_FilterResult>(
       context: context,
-      isScrollControlled: true,
       useSafeArea: true,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (ctx) {
         return Padding(
-          padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(height: 4, width: 40, margin: const EdgeInsets.only(bottom: 8), decoration: BoxDecoration(color: Colors.black12, borderRadius: BorderRadius.circular(2))),
-              Text('Route preview', style: Theme.of(ctx).textTheme.titleMedium),
-              const SizedBox(height: 12),
-              BusRouteMap(
-                originLat: oLat,
-                originLng: oLng,
-                destinationLat: dLat,
-                destinationLng: dLng,
-                stops: stops,
-                routePoints: poly.isEmpty ? null : poly,
-                height: 300,
-              ),
-            ],
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 12,
+            bottom: MediaQuery.viewInsetsOf(ctx).bottom + 16,
+          ),
+          child: StatefulBuilder(
+            builder: (ctx, setM) {
+              return SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(height: 4, width: 40, margin: const EdgeInsets.only(bottom: 12), decoration: BoxDecoration(color: Colors.black26, borderRadius: BorderRadius.circular(2))),
+                    Text('Filters', style: Theme.of(ctx).textTheme.titleMedium),
+                    const SizedBox(height: 12),
+
+                    // Search text
+                    TextField(
+                      controller: qCtrl,
+                      decoration: const InputDecoration(
+                        labelText: 'Query',
+                        hintText: 'Operator, class, features…',
+                        prefixIcon: Icon(Icons.search),
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Price range
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                              labelText: 'Min price',
+                              border: OutlineInputBorder(),
+                            ),
+                            controller: TextEditingController(text: minPrice?.toStringAsFixed(0) ?? ''),
+                            onChanged: (s) => setM(() => minPrice = double.tryParse(s)),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextField(
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                              labelText: 'Max price',
+                              border: OutlineInputBorder(),
+                            ),
+                            controller: TextEditingController(text: maxPrice?.toStringAsFixed(0) ?? ''),
+                            onChanged: (s) => setM(() => maxPrice = double.tryParse(s)),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Classes quick chips (example set)
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text('Classes', style: Theme.of(ctx).textTheme.labelLarge),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      children: [
+                        for (final c in const ['AC', 'Non-AC', 'Sleeper', 'Seater'])
+                          FilterChip(
+                            label: Text(c),
+                            selected: classes.contains(c),
+                            onSelected: (v) => setM(() {
+                              if (v) {
+                                classes.add(c);
+                              } else {
+                                classes.remove(c);
+                              }
+                            }),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Operators quick chips (example set)
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text('Operators', style: Theme.of(ctx).textTheme.labelLarge),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      children: [
+                        for (final o in const ['VRL', 'SRS', 'KSRTC', 'Orange'])
+                          FilterChip(
+                            label: Text(o),
+                            selected: operators.contains(o),
+                            onSelected: (v) => setM(() {
+                              if (v) {
+                                operators.add(o);
+                              } else {
+                                operators.remove(o);
+                              }
+                            }),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Sort
+                    DropdownButtonFormField<String>(
+                      key: ValueKey(sort),
+                      initialValue: sort,
+                      decoration: const InputDecoration(
+                        labelText: 'Sort by',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: const [
+                        DropdownMenuItem(value: 'price_asc', child: Text('Price (low to high)')),
+                        DropdownMenuItem(value: 'departure_asc', child: Text('Departure time')),
+                        DropdownMenuItem(value: 'rating_desc', child: Text('Rating')),
+                      ],
+                      onChanged: (v) => setM(() => sort = v),
+                    ),
+
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        TextButton.icon(
+                          onPressed: () {
+                            setM(() {
+                              qCtrl.text = '';
+                              minPrice = null;
+                              maxPrice = null;
+                              classes.clear();
+                              operators.clear();
+                              sort = 'price_asc';
+                            });
+                          },
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Reset'),
+                        ),
+                        const Spacer(),
+                        FilledButton.icon(
+                          onPressed: () {
+                            Navigator.of(ctx).maybePop(_FilterResult(
+                              sort: sort,
+                              q: qCtrl.text.trim().isEmpty ? null : qCtrl.text.trim(),
+                              minPrice: minPrice,
+                              maxPrice: maxPrice,
+                              classes: classes.isEmpty ? null : classes.toList(),
+                              operators: operators.isEmpty ? null : operators.toList(),
+                            ));
+                          },
+                          icon: const Icon(Icons.check),
+                          label: const Text('Apply'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
         );
       },
     );
+
+    if (!mounted) return;
+    if (result != null) {
+      setState(() {
+        _sort = result.sort ?? _sort;
+        _q = result.q;
+        _minPrice = result.minPrice;
+        _maxPrice = result.maxPrice;
+        _classes = result.classes;
+        _operators = result.operators;
+      });
+      await _fetch(reset: true);
+    }
   }
+}
+
+class _FilterResult {
+  _FilterResult({
+    this.sort,
+    this.q,
+    this.minPrice,
+    this.maxPrice,
+    this.classes,
+    this.operators,
+  });
+
+  final String? sort;
+  final String? q;
+  final double? minPrice;
+  final double? maxPrice;
+  final List<String>? classes;
+  final List<String>? operators;
 }

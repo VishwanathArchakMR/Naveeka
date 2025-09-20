@@ -160,7 +160,8 @@ class TrailMedia {
       mapEquals(other.metadata, metadata); // [9]
 
   @override
-  int get hashCode => Object.hash(url, kind, mimeType, width, height, durationSeconds, thumbnailUrl, _mapHash(metadata)); // [9]
+  int get hashCode =>
+      Object.hash(url, kind, mimeType, width, height, durationSeconds, thumbnailUrl, _mapHash(metadata)); // [9]
 
   static int _mapHash(Map<String, dynamic>? m) =>
       m == null ? 0 : Object.hashAllUnordered(m.entries.map((e) => Object.hash(e.key, e.value))); // [9]
@@ -435,7 +436,9 @@ class TrailPost {
       media: rawMedia.whereType<Map<String, dynamic>>().map(TrailMedia.fromJson).toList(growable: false),
       visibility: parseVis(json['visibility']),
       status: parseStatus(json['status']),
-      coordinates: json['coordinates'] != null ? Coordinates.fromJson((json['coordinates'] as Map).cast<String, dynamic>()) : null,
+      coordinates: json['coordinates'] != null
+          ? Coordinates.fromJson((json['coordinates'] as Map).cast<String, dynamic>())
+          : null,
       placeId: (json['placeId'] as String?)?.toString(),
       tags: ((json['tags'] as List?) ?? const <dynamic>[]).map((e) => e.toString()).toList(growable: false),
       mentions: ((json['mentions'] as List?) ?? const <dynamic>[]).map((e) => e.toString()).toList(growable: false),
@@ -501,30 +504,34 @@ class TrailPost {
       mapEquals(other.metadata, metadata); // [9]
 
   @override
-  int get hashCode => Object.hash(
-        id,
-        trailId,
-        type,
-        author,
-        createdAt,
-        updatedAt,
-        caption,
-        language,
-        Object.hashAll(media),
-        visibility,
-        status,
-        coordinates,
-        placeId,
-        Object.hash(Object.hashAll(tags), Object.hashAll(mentions)),
-        likeCount,
-        commentCount,
-        saveCount,
-        myLiked,
-        mySaved,
-        Object.hashAll(comments),
-        _mapHash(metadata),
-      ); // [9]
-
-  static int _mapHash(Map<String, dynamic>? m) =>
-      m == null ? 0 : Object.hashAllUnordered(m.entries.map((e) => Object.hash(e.key, e.value))); // [9]
+  int get hashCode {
+    final metaHash = metadata == null
+        ? 0
+        : Object.hashAllUnordered(
+            metadata!.entries.map((e) => Object.hash(e.key, e.value)),
+          );
+    return Object.hashAll([
+      id,
+      trailId,
+      type,
+      author,
+      createdAt,
+      updatedAt,
+      caption,
+      language,
+      Object.hashAll(media),
+      visibility,
+      status,
+      coordinates,
+      placeId,
+      Object.hash(Object.hashAll(tags), Object.hashAll(mentions)),
+      likeCount,
+      commentCount,
+      saveCount,
+      myLiked,
+      mySaved,
+      Object.hashAll(comments),
+      metaHash,
+    ]);
+  }
 }

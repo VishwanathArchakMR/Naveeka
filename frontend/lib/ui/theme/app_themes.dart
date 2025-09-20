@@ -375,7 +375,7 @@ class AppThemes {
       surfaceTintColor: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFF8F9FA),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       elevation: isDark ? 0 : 1,
-      shadowColor: Colors.black.withOpacity(0.1),
+      shadowColor: Colors.black.withValues(alpha: 0.1),
       margin: EdgeInsets.zero,
     );
   }
@@ -387,8 +387,8 @@ class AppThemes {
       backgroundColor: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFF0F0F0),
       deleteIconColor: isDark ? Colors.white70 : Colors.black54,
       disabledColor: isDark ? const Color(0xFF1A1A1A) : const Color(0xFFE0E0E0),
-      selectedColor: naveekaBlue.withOpacity(0.2),
-      secondarySelectedColor: naveekaGreen.withOpacity(0.2),
+      selectedColor: naveekaBlue.withValues(alpha: 0.2),
+      secondarySelectedColor: naveekaGreen.withValues(alpha: 0.2),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       labelStyle: TextStyle(
         fontFamily: primaryFont,
@@ -406,3 +406,4 @@ class AppThemes {
     );
   }
 }
+

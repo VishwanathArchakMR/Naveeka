@@ -36,8 +36,8 @@ class ShimmerSkeleton extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     final Color base = cs.onSurfaceVariant.withValues(alpha: 0.10);
-    final Color highlight = (useAccent ? (accentColor ?? cs.primary) : cs.onSurfaceVariant)
-        .withValues(alpha: useAccent ? 0.35 : 0.22);
+    final Color highlight =
+        (useAccent ? (accentColor ?? cs.primary) : cs.onSurfaceVariant).withValues(alpha: useAccent ? 0.35 : 0.22);
 
     if (!enabled) return child;
 
@@ -155,9 +155,8 @@ class SkeletonParagraph extends StatelessWidget {
     final widgets = <Widget>[];
     for (int i = 0; i < lines; i++) {
       // Taper the last line shorter for realism.
-      final double factor = i == lines - 1
-          ? (minWidthFactor + (maxWidthFactor - minWidthFactor) * 0.6)
-          : (minWidthFactor + (maxWidthFactor - minWidthFactor) * 0.9);
+      final double factor =
+          i == lines - 1 ? (minWidthFactor + (maxWidthFactor - minWidthFactor) * 0.6) : (minWidthFactor + (maxWidthFactor - minWidthFactor) * 0.9);
       widgets.add(SkeletonLine(height: height, maxWidth: factor, intensity: intensity));
       if (i != lines - 1) widgets.add(SizedBox(height: gap));
     }
@@ -248,14 +247,13 @@ class GenericCardSkeleton extends StatelessWidget {
 class _Pill extends StatelessWidget {
   const _Pill({this.w = 64});
   final double w;
-  final double h;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Container(
       width: w,
-      height: h,
+      height: 28, // fixed height to avoid unused optional parameter
       decoration: BoxDecoration(
         color: cs.onSurfaceVariant.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(999),

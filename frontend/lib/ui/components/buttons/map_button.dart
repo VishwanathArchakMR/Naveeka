@@ -8,7 +8,7 @@ enum MapStyle { standard, satellite, terrain }
 /// Visual variants using Material 3 IconButton constructors.
 enum MapButtonVariant { standard, filled, filledTonal, outlined }
 
-/// A compact “map layers” button with a menu for style and traffic,
+/// A compact "map layers" button with a menu for style and traffic,
 /// and an optional action to open a full-screen map.
 /// The widget is stateless on its own; pass the current state and react to callbacks.
 class MapButton extends StatelessWidget {
@@ -101,9 +101,7 @@ class MapButton extends StatelessWidget {
       ],
     );
 
-    final VoidCallback? onPressed = enabled
-        ? () => _showMenu(context)
-        : null;
+    final VoidCallback? onPressed = enabled ? () => _showMenu(context) : null;
 
     switch (variant) {
       case MapButtonVariant.filled:
@@ -252,14 +250,12 @@ class _RadioRow<T> extends StatelessWidget {
     final selected = value == groupValue;
     return Row(
       children: <Widget>[
-        Radio<T>(
-          value: value,
-          groupValue: groupValue,
-          onChanged: (_) {}, // handled by PopupMenu selection
-          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          visualDensity: VisualDensity.compact,
+        Icon(
+          selected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+          size: 20,
+          color: selected ? Theme.of(context).colorScheme.primary : null,
         ),
-        const SizedBox(width: 4),
+        const SizedBox(width: 8),
         Text(
           label,
           style: TextStyle(
@@ -281,13 +277,12 @@ class _CheckboxRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: <Widget>[
-        Checkbox(
-          value: checked,
-          onChanged: (_) {}, // handled by PopupMenu selection
-          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          visualDensity: VisualDensity.compact,
+        Icon(
+          checked ? Icons.check_box : Icons.check_box_outline_blank,
+          size: 20,
+          color: checked ? Theme.of(context).colorScheme.primary : null,
         ),
-        const SizedBox(width: 4),
+        const SizedBox(width: 8),
         Text(
           label,
           style: TextStyle(

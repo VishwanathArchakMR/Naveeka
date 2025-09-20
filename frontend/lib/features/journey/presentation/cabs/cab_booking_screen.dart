@@ -87,7 +87,8 @@ class _CabBookingScreenState extends State<CabBookingScreen> {
   }
 
   void _snack(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg))); // Robust SnackBars via ScaffoldMessenger [10]
+    if (!mounted) return; // Guard context usage after async gaps
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   double? _d(String s) => double.tryParse(s.trim());
@@ -100,16 +101,20 @@ class _CabBookingScreenState extends State<CabBookingScreen> {
       initialDate: _scheduledAt.isBefore(now) ? now : _scheduledAt,
       firstDate: now,
       lastDate: now.add(const Duration(days: 30)),
-    ); // Standard date picker for scheduling [21]
+    );
     if (date == null) return;
+
+    // Guard context usage before showing time picker (this fixes line 109)
+    if (!mounted) return;
 
     // Time
     final time = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.fromDateTime(_scheduledAt),
-    ); // Standard time picker for scheduling [1]
+    );
     if (time == null) return;
 
+    if (!mounted) return; // Guard setState after awaits
     setState(() {
       _scheduledAt = DateTime(date.year, date.month, date.day, time.hour, time.minute);
     });
@@ -142,8 +147,9 @@ class _CabBookingScreenState extends State<CabBookingScreen> {
       dropLng: lng2,
       whenIso: whenIso,
       providers: widget.defaultProvider != null ? [widget.defaultProvider!] : null,
-    );
+    ); // async gap
 
+    if (!mounted) return; // Guard after await
     res.fold(
       onSuccess: (list) {
         // Normalize list items
@@ -156,7 +162,7 @@ class _CabBookingScreenState extends State<CabBookingScreen> {
             return null;
           }
 
-        double? dnum(dynamic v) {
+          double? dnum(dynamic v) {
             if (v is num) return v.toDouble();
             if (v is String) return double.tryParse(v);
             return null;
@@ -172,6 +178,7 @@ class _CabBookingScreenState extends State<CabBookingScreen> {
           };
         }).toList(growable: false);
 
+        if (!mounted) return; // Guard setState
         setState(() {
           _estimates = normalized;
           _loadingEstimates = false;
@@ -179,8 +186,9 @@ class _CabBookingScreenState extends State<CabBookingScreen> {
         });
       },
       onError: (err) {
+        if (!mounted) return; // Guard setState/snack
         setState(() => _loadingEstimates = false);
-        _snack(err.safeMessage ?? 'Failed to load estimates');
+        _snack(err.safeMessage);
       },
     );
   }
@@ -213,14 +221,18 @@ class _CabBookingScreenState extends State<CabBookingScreen> {
       vehicle: body['vehicle'] as String?,
       provider: body['provider'] as String?,
       whenIso: body['when'] as String?,
-    );
+    ); // async gap
 
+    if (!mounted) return; // Guard after await
     res.fold(
       onSuccess: (q) {
+        if (!mounted) return; // Guard setState/snack
         setState(() => _quote = q);
         _snack('Quote locked');
       },
-      onError: (e) => _snack(e.safeMessage ?? 'Failed to create quote'),
+      onError: (e) {
+        _snack(e.safeMessage); // _snack guards context
+      },
     );
   }
 
@@ -232,6 +244,7 @@ class _CabBookingScreenState extends State<CabBookingScreen> {
       return;
     }
 
+    if (!mounted) return; // Guard before setState
     setState(() => _submitting = true);
 
     final api = CabsApi();
@@ -244,17 +257,20 @@ class _CabBookingScreenState extends State<CabBookingScreen> {
       },
       payment: {'method': 'pay_later'},
       notes: null,
-    );
+    ); // async gap
 
+    if (!mounted) return; // Guard after await
     res.fold(
       onSuccess: (data) {
         _snack('Ride booked');
+        if (!mounted) return; // Guard navigation
         Navigator.of(context).maybePop(data);
       },
-      onError: (e) => _snack(e.safeMessage ?? 'Booking failed'),
+      onError: (e) => _snack(e.safeMessage),
     );
 
-    if (mounted) setState(() => _submitting = false);
+    if (!mounted) return; // Guard setState
+    setState(() => _submitting = false);
   }
 
   @override
@@ -356,7 +372,7 @@ class _CabBookingScreenState extends State<CabBookingScreen> {
                   ],
                   selected: {_mode},
                   onSelectionChanged: (s) => setState(() => _mode = s.first),
-                ), // SegmentedButton is ideal for 2–5 discrete choices [12]
+                ),
                 const Spacer(),
                 if (_mode == _WhenMode.later)
                   TextButton.icon(

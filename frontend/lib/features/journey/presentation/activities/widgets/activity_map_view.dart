@@ -60,7 +60,7 @@ class _ActivityMapViewState extends State<ActivityMapView> {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Theme.of(context).colorScheme.surfaceVariant,
+                Theme.of(context).colorScheme.surfaceContainerHighest,
                 Theme.of(context).colorScheme.surface,
               ],
               begin: Alignment.topLeft,

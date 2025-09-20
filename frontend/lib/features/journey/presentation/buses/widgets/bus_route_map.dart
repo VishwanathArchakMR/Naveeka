@@ -48,14 +48,9 @@ class BusRouteMap extends StatelessWidget {
     final origin = LatLng(originLat, originLng);
     final destination = LatLng(destinationLat, destinationLng);
 
-    final stopPoints = stops
-        .map((s) => _toLatLng(s['lat'], s['lng']))
-        .whereType<LatLng>()
-        .toList(growable: false);
+    final stopPoints = stops.map((s) => _toLatLng(s['lat'], s['lng'])).whereType<LatLng>().toList(growable: false);
 
-    final polyline = (routePoints != null && routePoints!.isNotEmpty)
-        ? routePoints!
-        : <LatLng>[origin, destination];
+    final polyline = (routePoints != null && routePoints!.isNotEmpty) ? routePoints! : <LatLng>[origin, destination];
 
     final allPoints = <LatLng>[
       origin,
@@ -298,7 +293,7 @@ class _BusRoutePainter extends CustomPainter {
   }
 
   void _drawPin(Canvas canvas, Offset at, Color color, IconData icon) {
-    final r = 14.0;
+    const r = 14.0;
     final paint = Paint()..color = color;
     final shadow = Paint()
       ..color = Colors.black.withValues(alpha: 0.25)

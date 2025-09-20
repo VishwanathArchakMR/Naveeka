@@ -237,10 +237,11 @@ class _CreateTripScreenState extends State<CreateTripScreen> {
                   initialCenter: _draft.origin,
                   mapBuilder: widget.mapBuilder,
                   onResolveCurrent: widget.onResolveCurrent,
-                  onShare: (pick) async {
+                  // API update: onPick is required; onShare was removed.
+                  onPick: (pick) async {
                     setState(() {
-                      _draft.origin = pick.point;
-                      _draft.radiusKm = pick.radiusKm ?? _draft.radiusKm;
+                      _draft.origin = (pick as dynamic).point ?? _draft.origin;
+                      _draft.radiusKm = (pick as dynamic).radiusKm ?? _draft.radiusKm;
                     });
                   },
                 ),

@@ -382,10 +382,11 @@ class _PlanningSearchSheetState extends State<_PlanningSearchSheet> {
                             initialCenter: _origin,
                             mapBuilder: widget.mapBuilder,
                             onResolveCurrent: widget.onResolveCurrent,
-                            onShare: (pick) async {
+                            // API update: provide required onPick and remove deprecated onShare
+                            onPick: (pick) async {
                               setState(() {
-                                _origin = pick.point;
-                                _radiusKm = pick.radiusKm ?? _radiusKm;
+                                _origin = (pick as dynamic).point ?? _origin;
+                                _radiusKm = (pick as dynamic).radiusKm ?? _radiusKm;
                               });
                             },
                           ),

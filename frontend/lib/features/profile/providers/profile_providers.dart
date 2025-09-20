@@ -3,11 +3,26 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../data/profile_api.dart';
 import '../../../models/place.dart';
 
-/// DI: Profile API client (implement in features/profile/data/profile_api.dart)
-final profileApiProvider = Provider<ProfileApi>((ref) => ProfileApi());
+/// API contract to be implemented in features/profile/data/profile_api.dart and injected via override.
+abstract class ProfileApi {
+  Future<dynamic> getIdentity({required String userId});
+  Future<dynamic> getCounts({required String userId});
+  Future<dynamic> getTravelStats({required String userId});
+
+  Future<List<Place>> getVisitedPlaces({required String userId});
+  Future<List<Place>> getContributionPlaces({required String userId, required int page, required int limit});
+  Future<List<dynamic>> getContributionReviews({required String userId, required int page, required int limit});
+  Future<List<String>> getContributionPhotos({required String userId, required int page, required int limit});
+  Future<List<dynamic>> getJourneys({required String userId, required int page, required int limit});
+  Future<List<dynamic>> getActivity({required String userId, required int page, required int limit});
+} // Define the surface area used by providers; override with a concrete implementation at app bootstrap.
+
+/// DI: Profile API client (override in main/bootstrap with a concrete implementation)
+final profileApiProvider = Provider<ProfileApi>((ref) {
+  throw UnimplementedError('Provide ProfileApi via override');
+}); // Throwing by default makes missing overrides explicit during boot.
 
 /// Current user id (inject/override from auth layer)
 final currentUserIdProvider = Provider<String?>((ref) => null);
@@ -179,25 +194,20 @@ class ProfileBundle {
 final profileIdentityProvider =
     FutureProvider.autoDispose.family<ProfileIdentity, String>((ref, userId) async {
   final api = ref.watch(profileApiProvider);
-  // Optionally keep successful result alive until next invalidation.
-  final link = ref.keepAlive();
-  try {
-    final dto = await api.getIdentity(userId: userId);
-    return ProfileIdentity(
-      name: dto.name,
-      username: dto.username,
-      headline: dto.headline,
-      bio: dto.bio,
-      avatarUrl: dto.avatarUrl,
-      coverUrl: dto.coverUrl,
-      location: dto.location,
-      joinedOn: dto.joinedOn,
-      verified: dto.verified ?? false,
-    );
-  } finally {
-    // Keep cached; close() later if you want autoDispose to kick back in.
-    // link.close(); // leave alive by default
-  }
+  final dto = await api.getIdentity(userId: userId);
+  // Keep successful loads cached with autoDispose by enabling keepAlive after success.
+  ref.keepAlive(); // Keeps state alive until an explicit invalidate/refresh. [Riverpod docs]
+  return ProfileIdentity(
+    name: dto.name ?? '',
+    username: dto.username,
+    headline: dto.headline,
+    bio: dto.bio,
+    avatarUrl: dto.avatarUrl,
+    coverUrl: dto.coverUrl,
+    location: dto.location,
+    joinedOn: dto.joinedOn,
+    verified: dto.verified ?? false,
+  );
 });
 
 /// Counts
@@ -307,7 +317,7 @@ final profileActivityProvider =
       .toList(growable: false);
 });
 
-/// Combined bundle (parallel loads handled by Future.wait)
+/// Combined bundle (load in parallel, preserve strong types)
 final profileBundleProvider =
     FutureProvider.autoDispose.family<ProfileBundle, String>((ref, userId) async {
   final identityF = ref.watch(profileIdentityProvider(userId).future);
@@ -320,30 +330,29 @@ final profileBundleProvider =
   final journeysF = ref.watch(profileJourneysProvider(userId).future);
   final activityF = ref.watch(profileActivityProvider(userId).future);
 
-  final results = await Future.wait([
-    identityF,
-    countsF,
-    travelF,
-    visitedF,
-    contribPlacesF,
-    contribReviewsF,
-    contribPhotosF,
-    journeysF,
-    activityF,
-  ]);
+  // Await each future for type safety, instead of downcasting from a heterogeneous List.
+  final identity = await identityF;
+  final counts = await countsF;
+  final travel = await travelF;
+  final visited = await visitedF;
+  final contribPlaces = await contribPlacesF;
+  final contribReviews = await contribReviewsF;
+  final contribPhotos = await contribPhotosF;
+  final journeys = await journeysF;
+  final activity = await activityF;
 
   return ProfileBundle(
-    identity: results as ProfileIdentity,
-    counts: results as ProfileCounts,
-    travel: results as TravelStatsData,
-    visitedPlaces: results as List<Place>,
-    contribPlaces: results,
-    contribReviews: results as List<ContributionReview>,
-    contribPhotos: results as List<String>,
-    journeys: results as List<JourneyDto>,
-    activity: results as List<ActivityEntry>,
+    identity: identity,
+    counts: counts,
+    travel: travel,
+    visitedPlaces: visited,
+    contribPlaces: contribPlaces,
+    contribReviews: contribReviews,
+    contribPhotos: contribPhotos,
+    journeys: journeys,
+    activity: activity,
   );
-});
+}); // Avoids unsafe casts from Future.wait with heterogenous types; uses typed awaits instead.
 
 /// ----------------------------
 /// Refresh-all helper

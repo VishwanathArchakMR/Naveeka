@@ -21,7 +21,8 @@ class ApiSuccess<T> extends ApiResult<T> {
   @override
   R fold<R>({required R Function(ApiError e) onError, required R Function(T v) onSuccess}) => onSuccess(value);
   @override
-  Future<R> when<R>({required Future<R> Function(T v) success, required Future<R> Function(ApiError e) failure}) => success(value);
+  Future<R> when<R>({required Future<R> Function(T v) success, required Future<R> Function(ApiError e) failure}) =>
+      success(value);
 }
 
 class ApiFailure<T> extends ApiResult<T> {
@@ -30,7 +31,8 @@ class ApiFailure<T> extends ApiResult<T> {
   @override
   R fold<R>({required R Function(ApiError e) onError, required R Function(T v) onSuccess}) => onError(err);
   @override
-  Future<R> when<R>({required Future<R> Function(T v) success, required Future<R> Function(ApiError e) failure}) => failure(err);
+  Future<R> when<R>({required Future<R> Function(T v) success, required Future<R> Function(ApiError e) failure}) =>
+      failure(err);
 }
 
 class ApiError implements Exception {
@@ -279,7 +281,8 @@ class BookingApi {
     // base 300ms, exponential with jitter
     final base = 300 * (1 << (attempt - 1));
     final jitter = (base * 0.2).toInt();
-    return base + (DateTime.now().microsecondsSinceEpoch % jitter);
+    final mod = jitter == 0 ? 1 : jitter;
+    return base + (DateTime.now().microsecondsSinceEpoch % mod);
   }
 
   ApiResult<T> _parseResponse<T>(Response res, T Function(dynamic) parse) {
@@ -304,6 +307,44 @@ class BookingApi {
       } catch (_) {}
     }
     return null;
+  }
+
+  // Map DioException into ApiError with best-effort message and details.
+  ApiError _mapDioError(DioException e) {
+    // Prefer server-provided error body if present.
+    final code = e.response?.statusCode;
+    final details = _asMap(e.response?.data);
+    // Build a readable message based on type and status.
+    String message;
+    switch (e.type) {
+      case DioExceptionType.connectionTimeout:
+        message = 'Connection timed out';
+        break;
+      case DioExceptionType.sendTimeout:
+        message = 'Send timed out';
+        break;
+      case DioExceptionType.receiveTimeout:
+        message = 'Receive timed out';
+        break;
+      case DioExceptionType.badCertificate:
+        message = 'Bad TLS certificate';
+        break;
+      case DioExceptionType.connectionError:
+        message = 'Network connection error';
+        break;
+      case DioExceptionType.cancel:
+        message = 'Cancelled';
+        break;
+      case DioExceptionType.badResponse:
+        final status = e.response?.statusCode ?? 0;
+        final serverMsg = (details?['message'] ?? e.response?.statusMessage ?? 'HTTP $status').toString();
+        message = serverMsg;
+        break;
+      case DioExceptionType.unknown:
+        message = e.message ?? 'Unknown network error';
+        break;
+    }
+    return ApiError(message: message, code: code, details: details);
   }
 }
 
@@ -376,7 +417,13 @@ class BookingItem {
 }
 
 class BookingQuote {
-  BookingQuote({required this.currency, required this.subtotal, required this.tax, required this.total, this.breakdown = const []});
+  BookingQuote({
+    required this.currency,
+    required this.subtotal,
+    required this.tax,
+    required this.total,
+    this.breakdown = const [],
+  });
   final String currency;
   final double subtotal;
   final double tax;

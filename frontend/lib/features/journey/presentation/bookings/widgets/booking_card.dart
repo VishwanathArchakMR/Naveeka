@@ -263,7 +263,6 @@ class _DatesRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasEnd = end != null && start != null && !end!.isAtSameMomentAs(start!);
     return Row(
       children: [
         const Icon(Icons.event, size: 16, color: Colors.black54),

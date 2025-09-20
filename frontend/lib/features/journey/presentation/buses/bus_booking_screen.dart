@@ -50,7 +50,7 @@ class _BusBookingScreenState extends State<BusBookingScreen> {
   final _phoneCtrl = TextEditingController();
 
   // Cache seat map to avoid refetching repeatedly (simple shape)
-  List<String> _availableSeats = const [];
+  List<String> _availableSeats = const <String>[];
 
   @override
   void dispose() {
@@ -74,6 +74,7 @@ class _BusBookingScreenState extends State<BusBookingScreen> {
       title: 'Select boarding & dropping',
     ); // Presents as a modal bottom sheet and returns selection on pop [1]
 
+    if (!mounted) return;
     if (res != null) {
       setState(() {
         _boardingId = res['boardingId'] as String?;
@@ -90,6 +91,7 @@ class _BusBookingScreenState extends State<BusBookingScreen> {
     if (_availableSeats.isEmpty) {
       final api = BusesApi();
       final seatRes = await api.seatMap(id: widget.busId, date: widget.date);
+      if (!mounted) return;
       seatRes.fold(
         onSuccess: (data) {
           // Expecting { seats: [{id:'U1', available:true}, ...] }
@@ -98,11 +100,11 @@ class _BusBookingScreenState extends State<BusBookingScreen> {
                   .map((e) => (e['id'] ?? '').toString())
                   .where((id) => id.isNotEmpty)
                   .toList() ??
-              const <String>[];
+              <String>[];
           setState(() => _availableSeats = seats);
         },
         onError: (err) {
-          _snack(err.safeMessage ?? 'Failed to load seats');
+          _snack(err.safeMessage);
         },
       );
     }
@@ -122,10 +124,12 @@ class _BusBookingScreenState extends State<BusBookingScreen> {
       ),
     ); // Bottom sheet is the standard pattern for contextual pickers in Flutter [1][2]
 
+    if (!mounted) return;
     if (picked != null) {
-      setState(() => _selectedSeats
-        ..clear()
-        ..addAll(picked));
+      setState(() {
+        _selectedSeats.clear();
+        _selectedSeats.addAll(picked);
+      });
       await _reprice();
     }
   }
@@ -146,6 +150,7 @@ class _BusBookingScreenState extends State<BusBookingScreen> {
       passengers: _selectedSeats.length,
     ); // Query fares with selected seats, date, and optional boarding/dropping [1]
 
+    if (!mounted) return;
     res.fold(
       onSuccess: (data) {
         setState(() {
@@ -158,7 +163,7 @@ class _BusBookingScreenState extends State<BusBookingScreen> {
           _loadingFare = false;
           _farePayload = null;
         });
-        _snack(err.safeMessage ?? 'Failed to price selected seats');
+        _snack(err.safeMessage);
       },
     );
   }
@@ -199,13 +204,14 @@ class _BusBookingScreenState extends State<BusBookingScreen> {
 
     final api = BusesApi();
     final res = await api.book(id: widget.busId, payload: payload);
+    if (!mounted) return;
     res.fold(
       onSuccess: (data) {
         _snack('Booking confirmed');
-        Navigator.of(context).maybePop(data);
+        if (mounted) Navigator.of(context).maybePop(data);
       },
       onError: (err) {
-        _snack(err.safeMessage ?? 'Booking failed');
+        _snack(err.safeMessage);
       },
     );
 
@@ -509,5 +515,5 @@ class _FareSummary extends StatelessWidget {
     if (v is num) return v;
     if (v is String) return num.tryParse(v);
     return null;
-  }
+    }
 }

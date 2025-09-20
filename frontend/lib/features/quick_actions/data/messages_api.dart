@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
+import 'package:http_parser/http_parser.dart' show MediaType;
 
 /// Unified result wrapper compatible with fold/when patterns used across data modules.
 sealed class ApiResult<T> {
@@ -22,7 +23,8 @@ class ApiSuccess<T> extends ApiResult<T> {
   @override
   R fold<R>({required R Function(ApiError e) onError, required R Function(T v) onSuccess}) => onSuccess(value);
   @override
-  Future<R> when<R>({required Future<R> Function(T v) success, required Future<R> Function(ApiError e) failure}) => success(value);
+  Future<R> when<R>({required Future<R> Function(T v) success, required Future<R> Function(ApiError e) failure}) =>
+      success(value);
 }
 
 class ApiFailure<T> extends ApiResult<T> {
@@ -31,7 +33,8 @@ class ApiFailure<T> extends ApiResult<T> {
   @override
   R fold<R>({required R Function(ApiError e) onError, required R Function(T v) onSuccess}) => onError(err);
   @override
-  Future<R> when<R>({required Future<R> Function(T v) success, required Future<R> Function(ApiError e) failure}) => failure(err);
+  Future<R> when<R>({required Future<R> Function(T v) success, required Future<R> Function(ApiError e) failure}) =>
+      failure(err);
 }
 
 class ApiError implements Exception {
@@ -109,7 +112,7 @@ class MessagesApi {
       parse: (data) => ConversationPage.fromJson(data as Map<String, dynamic>),
       cancelToken: cancelToken,
       retries: 2,
-    ); // GET requests are cancelable via CancelToken and include limited retries for resilience. [21][3]
+    );
   }
 
   Future<ApiResult<Conversation>> getConversation({
@@ -121,7 +124,7 @@ class MessagesApi {
       parse: (data) => Conversation.fromJson(data as Map<String, dynamic>),
       cancelToken: cancelToken,
       retries: 1,
-    ); // Basic GET that returns a typed Conversation with ISO‑8601 timestamps parsed into DateTime. [20]
+    );
   }
 
   Future<ApiResult<Conversation>> createConversation({
@@ -135,7 +138,7 @@ class MessagesApi {
       parse: (data) => Conversation.fromJson(data as Map<String, dynamic>),
       cancelToken: cancelToken,
       retries: 0,
-    ); // POST avoids retries to prevent duplicate creation while still supporting cancelation. [21][3]
+    );
   }
 
   Future<ApiResult<void>> deleteConversation({
@@ -146,7 +149,7 @@ class MessagesApi {
       path: '/v1/messages/conversations/$conversationId',
       parse: (_) {},
       cancelToken: cancelToken,
-    ); // DELETE is idempotent on the server and returns void for simpler UI flows. [3]
+    );
   }
 
   // ----------------------------
@@ -173,7 +176,7 @@ class MessagesApi {
       parse: (data) => MessagePage.fromJson(data as Map<String, dynamic>),
       cancelToken: cancelToken,
       retries: 2,
-    ); // Standard page/limit pagination with directional cursors supported by beforeId/afterId. [3]
+    );
   }
 
   Future<ApiResult<Message>> sendMessageText({
@@ -190,7 +193,7 @@ class MessagesApi {
       parse: (data) => Message.fromJson(data as Map<String, dynamic>),
       cancelToken: cancelToken,
       retries: 0,
-    ); // Text messages are simple JSON posts, with optional Idempotency-Key to deduplicate on the server. [3]
+    );
   }
 
   Future<ApiResult<Message>> sendMessageWithAttachments({
@@ -204,10 +207,11 @@ class MessagesApi {
     final files = <MapEntry<String, MultipartFile>>[];
     for (var i = 0; i < attachments.length; i++) {
       final a = attachments[i];
+      final mediaType = a.contentType != null ? MediaType.parse(a.contentType!) : null;
       final mf = MultipartFile.fromBytes(
         a.bytes,
         filename: a.filename,
-        contentType: a.contentType != null ? HeadersContentType.parse(a.contentType!) : null,
+        contentType: mediaType,
       );
       files.add(MapEntry('files', mf));
     }
@@ -231,7 +235,7 @@ class MessagesApi {
       }
       return ApiFailure<Message>(_mapDioError(e));
     }
-  } // Multipart uploads use Dio’s MultipartFile and FormData to send binary attachments along with text fields. [2][3]
+  }
 
   Future<ApiResult<void>> markRead({
     required String conversationId,
@@ -245,7 +249,7 @@ class MessagesApi {
       parse: (_) {},
       cancelToken: cancelToken,
       retries: 0,
-    ); // Read receipts send ISO‑8601 timestamps using DateTime.toIso8601String for portable serialization. [7]
+    );
   }
 
   Future<ApiResult<void>> typing({
@@ -259,7 +263,7 @@ class MessagesApi {
       parse: (_) {},
       cancelToken: cancelToken,
       retries: 0,
-    ); // Typing indicators are short‑lived POSTs that the server can broadcast to other participants. [3]
+    );
   }
 
   Future<ApiResult<void>> deleteMessage({
@@ -271,7 +275,7 @@ class MessagesApi {
       path: '/v1/messages/conversations/$conversationId/messages/$messageId',
       parse: (_) {},
       cancelToken: cancelToken,
-    ); // Message deletion is idempotent server‑side and returns void for simpler UI handling. [3]
+    );
   }
 
   // ----------------------------
@@ -291,7 +295,7 @@ class MessagesApi {
         final res = await _dio.get<dynamic>(path, queryParameters: query, cancelToken: cancelToken);
         return _parseResponse<T>(res, parse);
       },
-    ); // CancelToken enables canceling in‑flight GETs when the view unmounts or filters change. [21]
+    );
   }
 
   Future<ApiResult<T>> _post<T>({
@@ -313,7 +317,7 @@ class MessagesApi {
         );
         return _parseResponse<T>(res, parse);
       },
-    ); // POST is not retried aggressively to avoid duplicate mutations while still leveraging Dio’s cancellations. [3][21]
+    );
   }
 
   Future<ApiResult<T>> _delete<T>({
@@ -328,7 +332,7 @@ class MessagesApi {
         final res = await _dio.delete<dynamic>(path, cancelToken: cancelToken);
         return _parseResponse<T>(res, parse);
       },
-    ); // DELETE avoids retries and supports cancellation with CancelToken for responsive UIs. [21][3]
+    );
   }
 
   Future<ApiResult<T>> _withRetry<T>({
@@ -375,7 +379,7 @@ class MessagesApi {
     final base = 250 * (1 << (attempt - 1));
     final jitter = (base * 0.2).toInt();
     return base + (DateTime.now().microsecondsSinceEpoch % (jitter == 0 ? 1 : jitter));
-  }
+    }
 
   ApiResult<T> _parseResponse<T>(Response res, T Function(dynamic) parse) {
     final code = res.statusCode ?? 0;

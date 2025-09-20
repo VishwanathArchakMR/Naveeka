@@ -1,5 +1,4 @@
 // lib/ui/components/skeletons/map_skeleton.dart
-
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
@@ -116,8 +115,10 @@ class _MapTilesPainter extends CustomPainter {
 
   final Color tileColor1;
   final Color tileColor2;
-  final double tile;
-  final double gap;
+
+  // Defaults moved to field initializers to avoid unused optional parameters.
+  final double tile = 16.0;
+  final double gap = 2.0;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -129,7 +130,12 @@ class _MapTilesPainter extends CustomPainter {
         final bool alt = (((x / tile).floor() + (y / tile).floor()) % 2) == 0;
         p.color = (alt ? tileColor1 : tileColor2);
         final r = RRect.fromRectAndRadius(
-          Rect.fromLTWH(x, y, math.min(tile - gap, size.width - x), math.min(tile - gap, size.height - y)),
+          Rect.fromLTWH(
+            x,
+            y,
+            math.min(tile - gap, size.width - x),
+            math.min(tile - gap, size.height - y),
+          ),
           const Radius.circular(2),
         );
         canvas.drawRRect(r, p);
@@ -266,7 +272,7 @@ class _OverlayChips extends StatelessWidget {
       ),
       child: SizedBox(width: w, height: h),
     );
-    }
+  }
 
   Widget _square(Color bg, Color border, double s) {
     return DecoratedBox(

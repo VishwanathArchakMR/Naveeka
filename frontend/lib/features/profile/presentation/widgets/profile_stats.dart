@@ -129,9 +129,7 @@ class ProfileStats extends StatelessWidget {
                       value: t.value,
                       onTap: t.onTap,
                     );
-                    return tooltips
-                        ? Tooltip(message: t.label, child: child)
-                        : child;
+                    return tooltips ? Tooltip(message: t.label, child: child) : child;
                   }).toList(growable: false),
                 );
               },
@@ -191,7 +189,7 @@ class _TilePill extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.06),
+                  color: Colors.black.withValues(alpha: 0.06),
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text('$value', style: const TextStyle(fontWeight: FontWeight.w800)),

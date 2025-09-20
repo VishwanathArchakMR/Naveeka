@@ -59,7 +59,8 @@ class _BookingSearchBarState extends State<BookingSearchBar> {
   @override
   void initState() {
     super.initState();
-    _controller = SearchController(text: widget.query);
+    _controller = SearchController(); // no named 'text' parameter
+    _controller.text = widget.query; // set initial text after construction [web:6491]
     _controller.addListener(_onSearchTextChanged);
   }
 
@@ -89,7 +90,7 @@ class _BookingSearchBarState extends State<BookingSearchBar> {
         final next = await widget.onSuggest!(q);
         if (!mounted) return;
         setState(() => _suggestions = next);
-        // When suggestions change while the view is open, SearchAnchor rebuilds the overlay. [17]
+        // When suggestions change while the view is open, SearchAnchor rebuilds the overlay.
       }
     });
   }
@@ -116,11 +117,12 @@ class _BookingSearchBarState extends State<BookingSearchBar> {
           isFullScreen: false,
           searchController: _controller,
           barHintText: widget.hintText,
-          barElevation: const WidgetStatePropertyAll(1),
-          barBackgroundColor: WidgetStatePropertyAll(
+          // Use WidgetStatePropertyAll (MaterialStatePropertyAll is deprecated alias) [web:6502][web:6509][web:6500]
+          barElevation: const WidgetStatePropertyAll<double>(1),
+          barBackgroundColor: WidgetStatePropertyAll<Color>(
             Theme.of(context).colorScheme.surfaceContainerHigh,
           ),
-          barLeading: const [Icon(Icons.search)],
+          barLeading: const Icon(Icons.search), // single widget, not a list [web:6493]
           barTrailing: [
             if (widget.onOpenFilters != null)
               IconButton(
@@ -129,9 +131,12 @@ class _BookingSearchBarState extends State<BookingSearchBar> {
                 onPressed: widget.enabled ? widget.onOpenFilters : null,
               ),
           ],
-          viewOnSubmitted: (value) {
-            widget.onSubmitted?.call(value.trim());
-            _controller.closeView(value);
+          // Use onSubmitted on the bar (SearchAnchor.bar) instead of the unsupported viewOnSubmitted [web:6493]
+          onSubmitted: (value) {
+            final v = value.trim();
+            if (v.isEmpty) return;
+            widget.onSubmitted?.call(v);
+            _controller.closeView(v);
           },
           suggestionsBuilder: (context, controller) {
             final items = _suggestions.isEmpty && controller.text.isEmpty
@@ -158,7 +163,7 @@ class _BookingSearchBarState extends State<BookingSearchBar> {
               );
             });
           },
-        ), // SearchAnchor.bar provides a Material 3 search bar and an overlay search view for suggestions in one cohesive widget. [12][2]
+        ), // SearchAnchor.bar uses barX and onSubmitted parameters; viewOnSubmitted applies to the plain SearchAnchor constructor only. [web:6493][web:6495]
 
         const SizedBox(height: 8),
 
@@ -195,7 +200,7 @@ class _BookingSearchBarState extends State<BookingSearchBar> {
                 onPressed: !widget.enabled || widget.onPickDates == null
                     ? null
                     : () async {
-                        // Use showDateRangePicker inside onPickDates implementation to keep this widget stateless. [13]
+                        // Use showDateRangePicker inside onPickDates implementation to keep this widget stateless.
                         await widget.onPickDates!.call();
                       },
               ),
@@ -212,7 +217,7 @@ class _BookingSearchBarState extends State<BookingSearchBar> {
               ),
             ],
           ),
-        ), // Chips expose primary booking facets inline while heavier filters can live in a bottom sheet opened from the trailing icon. [1][21]
+        ),
       ],
     );
   }

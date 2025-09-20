@@ -152,9 +152,7 @@ class _VoiceInputSheetState extends State<VoiceInputSheet> {
         _initializing = false;
         _locales = locales;
         // Pick initial locale: provided, device default from plugin, else first available.
-        _localeId = widget.initialLocale ??
-            (sysLocale?.localeId ??
-                (locales.isNotEmpty ? locales.first.localeId : null));
+        _localeId = widget.initialLocale ?? (sysLocale?.localeId ?? (locales.isNotEmpty ? locales.first.localeId : null));
       });
     } catch (e) {
       setState(() {
@@ -180,12 +178,13 @@ class _VoiceInputSheetState extends State<VoiceInputSheet> {
     try {
       await _speech.listen(
         onResult: _onResult,
-        listenMode: stt.ListenMode.confirmation,
-        partialResults: true,
         localeId: _localeId,
-        onSoundLevelChange: (level) => setState(() => _level = level.clamp(
-            0, 60)), // UI meter from plugin sound level callback. [1]
-      ); // Call listen with onResult and optional localeId/partialResults for real-time transcription. [1]
+        onSoundLevelChange: (level) => setState(() => _level = level.clamp(0, 60)),
+        listenOptions: stt.SpeechListenOptions(
+          listenMode: stt.ListenMode.confirmation,
+          partialResults: true,
+        ),
+      );
       setState(() => _listening = true);
     } catch (e) {
       setState(() {
@@ -236,11 +235,7 @@ class _VoiceInputSheetState extends State<VoiceInputSheet> {
   @override
   Widget build(BuildContext context) {
     final canListen = _available && !_initializing;
-    final statusText = _initializing
-        ? 'Initializing…'
-        : (!_available
-            ? (_error ?? 'Speech unavailable')
-            : (_listening ? 'Listening…' : 'Ready'));
+    final statusText = _initializing ? 'Initializing…' : (!_available ? (_error ?? 'Speech unavailable') : (_listening ? 'Listening…' : 'Ready'));
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
@@ -251,21 +246,16 @@ class _VoiceInputSheetState extends State<VoiceInputSheet> {
           Row(
             children: [
               const Expanded(
-                child: Text('Voice input',
-                    style:
-                        TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+                child: Text('Voice input', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
               ),
-              IconButton(
-                  onPressed: () => Navigator.of(context).maybePop(),
-                  icon: const Icon(Icons.close)),
+              IconButton(onPressed: () => Navigator.of(context).maybePop(), icon: const Icon(Icons.close)),
             ],
           ),
 
           // Status and locale
           Row(
             children: [
-              Icon(_listening ? Icons.mic : Icons.mic_none,
-                  color: _listening ? Colors.red : Colors.black54),
+              Icon(_listening ? Icons.mic : Icons.mic_none, color: _listening ? Colors.red : Colors.black54),
               const SizedBox(width: 6),
               Text(statusText),
               const Spacer(),
@@ -320,8 +310,7 @@ class _VoiceInputSheetState extends State<VoiceInputSheet> {
             children: [
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed:
-                      !_listening ? (canListen ? _start : null) : _cancel,
+                  onPressed: !_listening ? (canListen ? _start : null) : _cancel,
                   icon: Icon(!_listening ? Icons.mic : Icons.close),
                   label: Text(!_listening ? 'Start' : 'Cancel'),
                 ),

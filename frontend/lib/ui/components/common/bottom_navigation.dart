@@ -61,14 +61,16 @@ class BottomNavigationShell extends ConsumerWidget {
 
   void _goToIndex(BuildContext context, int index) {
     final tab = _tabs[index];
-    final current = GoRouter.of(context).location;
+    // Use GoRouterState to read the current URL in a version-safe way.
+    final current = GoRouterState.of(context).uri.toString();
     if (current.startsWith(tab.path)) return;
     context.go(tab.path);
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final location = GoRouter.of(context).location;
+    // Use GoRouterState to read the current URL in a version-safe way.
+    final location = GoRouterState.of(context).uri.toString();
     final currentIndex = _indexFromLocation(location);
 
     return Scaffold(

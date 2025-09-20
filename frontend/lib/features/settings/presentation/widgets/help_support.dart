@@ -291,10 +291,10 @@ class _ContactSheetState extends State<_ContactSheet> {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () async {
+                      // Capture messenger before the await to avoid context after async gap.
+                      final messenger = ScaffoldMessenger.of(context);
                       await Clipboard.setData(ClipboardData(text: widget.supportEmail));
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Email copied')));
-                      }
+                      messenger.showSnackBar(const SnackBar(content: Text('Email copied')));
                     },
                     icon: const Icon(Icons.copy),
                     label: const Text('Copy email'),
@@ -317,7 +317,8 @@ class _ContactSheetState extends State<_ContactSheet> {
               child: FilledButton.icon(
                 onPressed: () async {
                   await widget.onEmail(_subject.text.trim(), _body.text.trim());
-                  if (mounted) Navigator.maybePop(context);
+                  if (!context.mounted) return; // Guard BuildContext per lint
+                  Navigator.maybePop(context);
                 },
                 icon: const Icon(Icons.send),
                 label: const Text('Send email'),
@@ -408,9 +409,10 @@ class _ReportSheetState extends State<_ReportSheet> {
                         setState(() => _busy = true);
                         try {
                           await widget.onSubmit(_title.text.trim(), _desc.text.trim(), _includeDiag);
-                          if (mounted) Navigator.maybePop(context);
+                          if (!context.mounted) return; // Guard BuildContext per lint
+                          Navigator.maybePop(context);
                         } finally {
-                          if (mounted) setState(() => _busy = false);
+                          if (mounted) setState(() => _busy = false); // Guard State.setState with State.mounted
                         }
                       },
                 icon: _busy

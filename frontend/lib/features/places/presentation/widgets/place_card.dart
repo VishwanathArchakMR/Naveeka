@@ -76,7 +76,7 @@ class PlaceCard extends StatelessWidget {
                           child: CachedNetworkImage(
                             imageUrl: image,
                             fit: BoxFit.cover,
-                            placeholder: (context, url) => Container(color: Colors.white.withOpacity(0.05)),
+                            placeholder: (context, url) => Container(color: Colors.white.withValues(alpha: 0.05)),
                             errorWidget: (context, url, error) => Container(
                               color: Colors.white12,
                               alignment: Alignment.center,
@@ -180,7 +180,7 @@ class PlaceCard extends StatelessWidget {
           ),
         ],
       ),
-    ); // Card-like presentation with rounded media, content, and actions follows Material Card patterns for compact, tappable summaries. [1]
+    ); // Card-like presentation with rounded media, content, and actions follows Material Card patterns for compact, tappable summaries. 
   }
 
   double? _toDouble(dynamic v) {
@@ -188,7 +188,8 @@ class PlaceCard extends StatelessWidget {
     if (v is int) return v.toDouble();
     if (v is String) return double.tryParse(v);
     return null;
-    }
+  }
+
   int? _toInt(dynamic v) {
     if (v is int) return v;
     if (v is String) return int.tryParse(v);
@@ -207,7 +208,7 @@ class _RatingPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: Colors.amber.withOpacity(0.18),
+        color: Colors.amber.withValues(alpha: 0.18),
         borderRadius: BorderRadius.circular(999),
       ),
       child: Row(
@@ -226,4 +227,3 @@ class _RatingPill extends StatelessWidget {
     );
   }
 }
-

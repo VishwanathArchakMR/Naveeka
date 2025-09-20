@@ -195,9 +195,7 @@ class _FollowingFeedState extends State<FollowingFeed> {
                     children: widget.types.map((t) {
                       final selected = _selTypes.contains(t);
                       final cs = Theme.of(context).colorScheme;
-                      final bg = selected
-                          ? cs.primary.withValues(alpha: 0.14)
-                          : cs.surfaceContainerHigh.withValues(alpha: 1.0);
+                      final bg = selected ? cs.primary.withValues(alpha: 0.14) : cs.surfaceContainerHigh.withValues(alpha: 1.0);
                       final fg = selected ? cs.primary : cs.onSurface;
                       return FilterChip(
                         label: Text(t, style: TextStyle(color: fg, fontWeight: FontWeight.w700)),
@@ -243,6 +241,7 @@ class _FollowingFeedState extends State<FollowingFeed> {
                             return _footer();
                           }
                           final it = items[i];
+                          final messenger = ScaffoldMessenger.maybeOf(context); // capture before await
                           return _FeedTile(
                             item: it,
                             onOpen: widget.onOpenItem,
@@ -250,7 +249,6 @@ class _FollowingFeedState extends State<FollowingFeed> {
                             onToggleLike: widget.onToggleLike == null
                                 ? null
                                 : (next) async {
-                                    // optimistic update
                                     final idx = _localItems.indexWhere((e) => e.id == it.id);
                                     if (idx != -1) {
                                       final cur = _localItems[idx];
@@ -259,14 +257,12 @@ class _FollowingFeedState extends State<FollowingFeed> {
                                       setState(() => _localItems[idx] = cur.copyWith(liked: liked, likeCount: count));
                                     }
                                     final ok = await widget.onToggleLike!(it, next);
-                                    if (!ok && mounted && idx != -1) {
+                                    if (!ok && idx != -1) {
                                       final cur = _localItems[idx];
                                       final liked = !next;
                                       final count = (cur.likeCount + (liked ? 1 : -1)).clamp(0, 1 << 31);
                                       setState(() => _localItems[idx] = cur.copyWith(liked: liked, likeCount: count));
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('Could not update like')),
-                                      );
+                                      messenger?.showSnackBar(const SnackBar(content: Text('Could not update like')));
                                     }
                                   },
                             onComment: widget.onComment,
@@ -357,8 +353,7 @@ class _FeedTile extends StatelessWidget {
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (item.title.trim().isNotEmpty)
-            Text(item.title, maxLines: 2, overflow: TextOverflow.ellipsis),
+          if (item.title.trim().isNotEmpty) Text(item.title, maxLines: 2, overflow: TextOverflow.ellipsis),
           if (item.subtitle.trim().isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 2),
@@ -456,8 +451,7 @@ class _ActionsBar extends StatelessWidget {
           icon: Icon(liked ? Icons.favorite : Icons.favorite_border),
           color: likeColor,
         ),
-        if (item.likeCount > 0)
-          Text('${item.likeCount}', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12, fontWeight: FontWeight.w700)),
+        if (item.likeCount > 0) Text('${item.likeCount}', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12, fontWeight: FontWeight.w700)),
         IconButton(
           tooltip: 'Comment',
           onPressed: onComment == null ? null : () => onComment!(item),

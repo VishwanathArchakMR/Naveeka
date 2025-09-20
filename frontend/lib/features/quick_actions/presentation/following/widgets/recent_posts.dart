@@ -149,8 +149,7 @@ class _RecentPostsState extends State<RecentPosts> {
               child: Row(
                 children: [
                   Expanded(child: Text(widget.sectionTitle, style: const TextStyle(fontWeight: FontWeight.w800))),
-                  if (widget.loading)
-                    const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+                  if (widget.loading) const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
                 ],
               ),
             ),
@@ -169,6 +168,7 @@ class _RecentPostsState extends State<RecentPosts> {
                         itemBuilder: (context, i) {
                           if (i == _local.length) return _tail();
                           final p = _local[i];
+                          final messenger = ScaffoldMessenger.maybeOf(context); // capture before await
                           return Padding(
                             padding: EdgeInsets.only(left: i == 0 ? 8 : 6, right: i == _local.length - 1 ? 8 : 6),
                             child: _PostCard(
@@ -188,14 +188,12 @@ class _RecentPostsState extends State<RecentPosts> {
                                         setState(() => _local[idx] = cur.copyWith(liked: liked, likeCount: count));
                                       }
                                       final ok = await widget.onToggleLike!(p, next);
-                                      if (!ok && mounted && idx != -1) {
+                                      if (!ok && idx != -1) {
                                         final cur = _local[idx];
                                         final liked = !next;
                                         final count = (cur.likeCount + (liked ? 1 : -1)).clamp(0, 1 << 31);
                                         setState(() => _local[idx] = cur.copyWith(liked: liked, likeCount: count));
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(content: Text('Could not update like')),
-                                        );
+                                        messenger?.showSnackBar(const SnackBar(content: Text('Could not update like')));
                                       }
                                     },
                               onComment: widget.onComment,
