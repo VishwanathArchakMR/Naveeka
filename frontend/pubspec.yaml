@@ -16,15 +16,17 @@ dependencies:
     sdk: flutter
 
   # State management
-  flutter_riverpod: ^2.5.1 # works with Flutter 3.16+; pin Flutter accordingly [7][13]
+  flutter_riverpod: ^2.5.1
 
   # HTTP & Networking
   dio: ^5.5.0
   pretty_dio_logger: ^1.4.0
   http: ^1.2.2
+  http_parser: ^4.0.2
+  web_socket_channel: ^3.0.3  # Updated version to fix conflict
 
   # Environment variables loader
-  flutter_dotenv: ^5.1.0 # remember: bundling .env exposes values on web builds [12][9]
+  flutter_dotenv: ^5.1.0
 
   # Local storage (secure & regular)
   flutter_secure_storage: ^9.2.2
@@ -50,7 +52,7 @@ dependencies:
   go_router: ^13.2.0
 
   # Utility packages
-  intl: ^0.20.2   # ✅ updated
+  intl: ^0.20.2
   collection: ^1.18.0
   meta: ^1.12.0
 
@@ -68,8 +70,8 @@ dependencies:
   geolocator: ^11.0.0
   geocoding: ^2.2.1
   url_launcher: ^6.3.0
-  flutter_map: ^8.2.1        # added
-  latlong2: ^0.9.1           # added
+  flutter_map: ^8.2.1
+  latlong2: ^0.9.1
 
   # Voice & AI
   speech_to_text: ^6.6.0
@@ -90,19 +92,12 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  # Keep lints updated as per flutter_lints release cadence
   flutter_lints: ^3.0.1
   build_runner: ^2.4.9
   hive_generator: ^2.0.1
 
 flutter:
   uses-material-design: true
-
-dependencies:
-  http_parser: ^4.0.2
-
-  # If using localization (ARB files), uncomment:
-  # generate: true
 
   assets:
     - assets/images/
@@ -121,7 +116,7 @@ dependencies:
     - assets/icons/lucide/
     - assets/animations/
     - assets/seed-data/
-    - .env # flutter_dotenv configuration asset (be careful with web bundling) [12][9]
+    - .env
 
   fonts:
     - family: Inter
