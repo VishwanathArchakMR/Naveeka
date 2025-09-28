@@ -1,40 +1,52 @@
 // lib/main.dart
 import 'dart:async';
 import 'dart:ui' show PlatformDispatcher;
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app/app.dart';
 import 'app/bootstrap.dart';
+import 'services/api_client.dart';
+
+// ----------------------
+// Providers (central)
+// ----------------------
+final apiBaseUrlProvider = Provider<String>((ref) {
+  // Allow override via --dart-define=API_BASE_URL=http://host:port
+  const envUrl = String.fromEnvironment('API_BASE_URL');
+  if (envUrl.isNotEmpty) return envUrl;
+  if (kIsWeb) return 'http://localhost:3000';
+  if (Platform.isAndroid) return 'http://10.0.2.2:3000'; // Android emulator -> host
+  return 'http://localhost:3000';
+});
+
+final apiClientProvider = Provider<ApiClient>((ref) {
+  final base = ref.watch(apiBaseUrlProvider);
+  return ApiClient(base);
+});
 
 Future<void> main() async {
-  // Guard the entire startup to capture uncaught async/platform errors.
   runZonedGuarded<Future<void>>(
     () async {
-      // Ensure binding is ready before any async/platform work.
       WidgetsFlutterBinding.ensureInitialized();
 
-      // Capture framework errors (build/layout/paint/callback).
       final prevFlutterOnError = FlutterError.onError;
       FlutterError.onError = (FlutterErrorDetails details) {
-        // Forward into the zone for unified handling/logging.
         Zone.current.handleUncaughtError(
           details.exception,
           details.stack ?? StackTrace.empty,
         );
-        // Preserve any previous behavior (e.g., IDE console output).
         prevFlutterOnError?.call(details);
       };
 
-      // Capture uncaught errors outside framework callbacks (async/platform).
       final prevPlatformOnError = PlatformDispatcher.instance.onError;
       PlatformDispatcher.instance.onError = (Object error, StackTrace stack) {
         Zone.current.handleUncaughtError(error, stack);
-        // Preserve previous decision or mark as handled.
         return prevPlatformOnError?.call(error, stack) ?? true;
       };
 
-      // Minimal fallback widget for build-time errors (debug friendly).
       ErrorWidget.builder = (FlutterErrorDetails details) {
         return Material(
           color: Colors.transparent,
@@ -59,11 +71,10 @@ Future<void> main() async {
         );
       };
 
-      // 1) Show an immediate full-screen loading UI
+      // 1) Splash immediately
       runApp(const _SplashApp());
 
-      // 2) Do app bootstrap in the background, then swap in the real app
-      //    (keeps UI responsive while heavy init runs).
+      // 2) Bootstrap, then run with DI providers available
       unawaited(
         Future<void>(() async {
           try {
@@ -80,14 +91,12 @@ Future<void> main() async {
       );
     },
     (Object error, StackTrace stack) {
-      // Replace with production logging (e.g., Crashlytics/Sentry) as needed.
       // ignore: avoid_print
       print('Uncaught zone error: $error\n$stack');
     },
   );
 }
 
-// A minimal full-screen splash/loading app shown immediately at startup.
 class _SplashApp extends StatelessWidget {
   const _SplashApp();
 
