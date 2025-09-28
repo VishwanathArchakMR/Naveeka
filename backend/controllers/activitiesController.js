@@ -6,14 +6,14 @@ const Review = require('../models/review');
 const { validationResult } = require('express-validator');
 const { StatusCodes } = require('http-status-codes');
 const geoService = require('../services/locationService');
-const bookingService = require('../services/bookingService');
+const bookingService = require('../services/bookingService'); // kept for future use
 const activityService = require('../services/activityService');
 const { cacheService } = require('../services/cacheService');
 const { ApiError } = require('../utils/ApiError');
 const ApiResponse = require('../utils/ApiResponse');
 
 // GET /api/v1/activities - List activities with advanced filtering
-const getActivities = async (req, res) => {
+async function getActivities(req, res) {
   const {
     page = 1,
     limit = 20,
@@ -38,7 +38,7 @@ const getActivities = async (req, res) => {
 
   // Build filter query
   const filter = {};
-  
+
   // Category filter
   if (category) {
     filter.category = { $in: category.split(',') };
@@ -53,7 +53,7 @@ const getActivities = async (req, res) => {
           type: 'Point',
           coordinates: coordinates
         },
-        $maxDistance: radius * 1000 // Convert km to meters
+        $maxDistance: Number(radius) * 1000 // km -> meters
       }
     };
   } else if (location) {
@@ -98,12 +98,8 @@ const getActivities = async (req, res) => {
   // Availability date filter
   if (dateFrom || dateTo) {
     filter['availability.dates'] = {};
-    if (dateFrom) {
-      filter['availability.dates'].$gte = new Date(dateFrom);
-    }
-    if (dateTo) {
-      filter['availability.dates'].$lte = new Date(dateTo);
-    }
+    if (dateFrom) filter['availability.dates'].$gte = new Date(dateFrom);
+    if (dateTo) filter['availability.dates'].$lte = new Date(dateTo);
   }
 
   // Text search
@@ -132,11 +128,7 @@ const getActivities = async (req, res) => {
       sortCriteria['duration.hours'] = sortOrder === 'asc' ? 1 : -1;
       break;
     case 'distance':
-      if (lat && lng) {
-        // Distance sorting handled by $near
-      } else {
-        sortCriteria.createdAt = -1;
-      }
+      if (!lat || !lng) sortCriteria.createdAt = -1;
       break;
     case 'popularity':
       sortCriteria.bookingCount = -1;
@@ -163,12 +155,12 @@ const getActivities = async (req, res) => {
       Activity.countDocuments(filter)
     ]);
 
-    // Add distance to each activity if coordinates provided
+    // Add distance and enrich per item
     const enrichedActivities = await Promise.all(
       activities.map(async (activity) => {
-        let enrichedActivity = { ...activity };
+        const enriched = { ...activity };
 
-        // Calculate distance if user coordinates provided
+        // Distance if coordinates provided
         if (lat && lng && activity.location?.coordinates) {
           const distance = geoService.calculateDistance(
             parseFloat(lat),
@@ -176,26 +168,26 @@ const getActivities = async (req, res) => {
             activity.location.coordinates[1],
             activity.location.coordinates[0]
           );
-          enrichedActivity.distance = Math.round(distance * 100) / 100; // Round to 2 decimals
-          enrichedActivity.distanceUnit = 'km';
+          enriched.distance = Math.round(distance * 100) / 100;
+          enriched.distanceUnit = 'km';
         }
 
-        // Add availability status
-        if (activityService && activityService.checkAvailability) {
-          enrichedActivity.availabilityStatus = await activityService.checkAvailability(
+        // Availability quick status (if service present)
+        if (activityService?.checkAvailability) {
+          enriched.availabilityStatus = await activityService.checkAvailability(
             activity._id,
             dateFrom || new Date().toISOString().split('T')[0],
             dateTo
           );
         }
 
-        // Add geo URI for deep linking
+        // geo: URI
         if (activity.location?.coordinates) {
-          const [lng, lat] = activity.location.coordinates;
-          enrichedActivity.geoUri = `geo:${lat},${lng}`;
+          const [lngV, latV] = activity.location.coordinates;
+          enriched.geoUri = `geo:${latV},${lngV}`;
         }
 
-        return enrichedActivity;
+        return enriched;
       })
     );
 
@@ -226,15 +218,16 @@ const getActivities = async (req, res) => {
       })
     );
   } catch (error) {
-    throw new ApiError(
-      'Error fetching activities',
-      { status: StatusCodes.INTERNAL_SERVER_ERROR, details: [error.message] }
-    );
+    throw new ApiError('Error fetching activities', {
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      code: 'ACTIVITIES_LIST_FAILED',
+      details: [error.message],
+    });
   }
-};
+}
 
-// GET /api/v1/activities/nearby - Get activities near user location
-const getNearbyActivities = async (req, res) => {
+// GET /api/v1/activities/nearby
+async function getNearbyActivities(req, res) {
   const { lat, lng, radius = 10, limit = 20, category } = req.query;
 
   if (!lat || !lng) {
@@ -243,15 +236,14 @@ const getNearbyActivities = async (req, res) => {
 
   try {
     const cacheKey = `nearby_activities:${lat}:${lng}:${radius}:${category || 'all'}:${limit}`;
-    const cachedResult = await cacheService.get(cacheKey);
-    
-    if (cachedResult) {
+    const cached = await cacheService.get(cacheKey);
+    if (cached) {
       return res.status(StatusCodes.OK).json(
-        ApiResponse.success(cachedResult, { source: 'cache' })
+        ApiResponse.success(cached, { source: 'cache' })
       );
     }
 
-    const nearbyActivities = await activityService?.findNearby?.({
+    const nearby = await activityService?.findNearby?.({
       latitude: parseFloat(lat),
       longitude: parseFloat(lng),
       radius: parseFloat(radius),
@@ -260,28 +252,26 @@ const getNearbyActivities = async (req, res) => {
     }) || [];
 
     const result = {
-      activities: nearbyActivities,
+      activities: nearby,
       center: { lat: parseFloat(lat), lng: parseFloat(lng) },
       radius: parseFloat(radius),
-      totalFound: nearbyActivities.length
+      totalFound: nearby.length
     };
 
-    // Cache for 10 minutes
-    await cacheService.set(cacheKey, result, 600);
+    await cacheService.set(cacheKey, result, 600); // 10 minutes
 
-    return res.status(StatusCodes.OK).json(
-      ApiResponse.success(result)
-    );
+    return res.status(StatusCodes.OK).json(ApiResponse.success(result));
   } catch (error) {
-    throw new ApiError(
-      'Error fetching nearby activities',
-      { status: StatusCodes.INTERNAL_SERVER_ERROR, details: [error.message] }
-    );
+    throw new ApiError('Error fetching nearby activities', {
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      code: 'NEARBY_FETCH_FAILED',
+      details: [error.message],
+    });
   }
-};
+}
 
-// GET /api/v1/activities/suggest - Autocomplete suggestions
-const suggestActivities = async (req, res) => {
+// GET /api/v1/activities/suggest
+async function suggestActivities(req, res) {
   const { q, limit = 10 } = req.query;
 
   if (!q || q.trim().length < 2) {
@@ -297,30 +287,30 @@ const suggestActivities = async (req, res) => {
       ],
       isActive: true
     })
-    .select('name category photos')
-    .limit(parseInt(limit))
-    .lean();
+      .select('name category photos')
+      .limit(parseInt(limit))
+      .lean();
 
     return res.json(ApiResponse.success({ suggestions }));
   } catch (error) {
-    throw new ApiError(
-      'Error fetching suggestions',
-      { status: StatusCodes.INTERNAL_SERVER_ERROR, details: [error.message] }
-    );
+    throw new ApiError('Error fetching suggestions', {
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      code: 'SUGGESTIONS_FAILED',
+      details: [error.message],
+    });
   }
-};
+}
 
-// GET /api/v1/activities/trending - Get trending activities
-const getTrending = async (req, res) => {
+// GET /api/v1/activities/trending
+async function getTrending(req, res) {
   const { limit = 10, location, category } = req.query;
 
   try {
     const cacheKey = `trending_activities:${location || 'global'}:${category || 'all'}:${limit}`;
-    const cachedResult = await cacheService.get(cacheKey);
-    
-    if (cachedResult) {
+    const cached = await cacheService.get(cacheKey);
+    if (cached) {
       return res.status(StatusCodes.OK).json(
-        ApiResponse.success(cachedResult, { source: 'cache' })
+        ApiResponse.success(cached, { source: 'cache' })
       );
     }
 
@@ -368,22 +358,20 @@ const getTrending = async (req, res) => {
       generatedAt: new Date().toISOString()
     };
 
-    // Cache for 30 minutes
-    await cacheService.set(cacheKey, result, 1800);
+    await cacheService.set(cacheKey, result, 1800); // 30 minutes
 
-    return res.status(StatusCodes.OK).json(
-      ApiResponse.success(result)
-    );
+    return res.status(StatusCodes.OK).json(ApiResponse.success(result));
   } catch (error) {
-    throw new ApiError(
-      'Error fetching trending activities',
-      { status: StatusCodes.INTERNAL_SERVER_ERROR, details: [error.message] }
-    );
+    throw new ApiError('Error fetching trending activities', {
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      code: 'TRENDING_FAILED',
+      details: [error.message],
+    });
   }
-};
+}
 
-// GET /api/v1/activities/facets - Get filter facets
-const getFacets = async (req, res) => {
+// GET /api/v1/activities/facets
+async function getFacets(req, res) {
   try {
     const facets = await Activity.aggregate([
       { $match: { isActive: true } },
@@ -412,22 +400,23 @@ const getFacets = async (req, res) => {
 
     return res.json(ApiResponse.success(result));
   } catch (error) {
-    throw new ApiError(
-      'Error fetching facets',
-      { status: StatusCodes.INTERNAL_SERVER_ERROR, details: [error.message] }
-    );
+    throw new ApiError('Error fetching facets', {
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      code: 'FACETS_FAILED',
+      details: [error.message],
+    });
   }
-};
+}
 
-// GET /api/v1/activities/geojson - Get activities as GeoJSON FeatureCollection
-const getActivitiesGeoJSON = async (req, res) => {
+// GET /api/v1/activities/geojson
+async function getActivitiesGeoJSON(req, res) {
   const { bbox, category, limit = 100 } = req.query;
 
   try {
     const filter = { isActive: true, 'location.coordinates': { $exists: true } };
-    
+
     if (category) filter.category = category;
-    
+
     if (bbox) {
       const [minLng, minLat, maxLng, maxLat] = bbox.split(',').map(parseFloat);
       filter.location = {
@@ -460,15 +449,16 @@ const getActivitiesGeoJSON = async (req, res) => {
 
     return res.json(ApiResponse.success(featureCollection));
   } catch (error) {
-    throw new ApiError(
-      'Error fetching GeoJSON',
-      { status: StatusCodes.INTERNAL_SERVER_ERROR, details: [error.message] }
-    );
+    throw new ApiError('Error fetching GeoJSON', {
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      code: 'GEOJSON_FAILED',
+      details: [error.message],
+    });
   }
-};
+}
 
-// GET /api/v1/activities/:id - Get activity details
-const getActivityById = async (req, res) => {
+// GET /api/v1/activities/:id
+async function getActivityById(req, res) {
   const { id } = req.params;
   const { includeReviews = 'true', userLat, userLng } = req.query;
 
@@ -481,7 +471,7 @@ const getActivityById = async (req, res) => {
       throw ApiError.notFound('Activity not found');
     }
 
-    // Add distance if user coordinates provided
+    // Distance
     if (userLat && userLng && activity.location?.coordinates) {
       const distance = geoService.calculateDistance(
         parseFloat(userLat),
@@ -493,13 +483,13 @@ const getActivityById = async (req, res) => {
       activity.distanceUnit = 'km';
     }
 
-    // Add geo URI for deep linking
+    // geo: URI
     if (activity.location?.coordinates) {
-      const [lng, lat] = activity.location.coordinates;
-      activity.geoUri = `geo:${lat},${lng}`;
+      const [lngV, latV] = activity.location.coordinates;
+      activity.geoUri = `geo:${latV},${lngV}`;
     }
 
-    // Get recent reviews if requested
+    // Recent reviews
     if (includeReviews === 'true') {
       const reviews = await Review.find({ activityId: id, isActive: true })
         .populate('userId', 'name avatar')
@@ -512,22 +502,21 @@ const getActivityById = async (req, res) => {
     // Track view
     await Activity.findByIdAndUpdate(id, { $inc: { viewCount: 1 } });
 
-    return res.status(StatusCodes.OK).json(
-      ApiResponse.success(activity)
-    );
+    return res.status(StatusCodes.OK).json(ApiResponse.success(activity));
   } catch (error) {
     if (error.name === 'CastError') {
       throw ApiError.badRequest('Invalid activity ID format');
     }
-    throw new ApiError(
-      'Error fetching activity details',
-      { status: StatusCodes.INTERNAL_SERVER_ERROR, details: [error.message] }
-    );
+    throw new ApiError('Error fetching activity details', {
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      code: 'ACTIVITY_FETCH_FAILED',
+      details: [error.message],
+    });
   }
-};
+}
 
-// GET /api/v1/activities/:id/availability - Get activity availability
-const getAvailability = async (req, res) => {
+// GET /api/v1/activities/:id/availability
+async function getAvailability(req, res) {
   const { id } = req.params;
   const { startDate, endDate, participants } = req.query;
 
@@ -540,7 +529,7 @@ const getAvailability = async (req, res) => {
     const start = startDate ? new Date(startDate) : new Date();
     const end = endDate ? new Date(endDate) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
-    // Mock availability for now
+    // Placeholder availability structure
     const availability = {
       available: true,
       timeSlots: ['09:00', '14:00', '16:00'],
@@ -560,15 +549,16 @@ const getAvailability = async (req, res) => {
       })
     );
   } catch (error) {
-    throw new ApiError(
-      'Error fetching availability',
-      { status: StatusCodes.INTERNAL_SERVER_ERROR, details: [error.message] }
-    );
+    throw new ApiError('Error fetching availability', {
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      code: 'AVAILABILITY_FAILED',
+      details: [error.message],
+    });
   }
-};
+}
 
-// POST /api/v1/activities/:id/book - Book an activity
-const bookActivity = async (req, res) => {
+// POST /api/v1/activities/:id/book
+async function bookActivity(req, res) {
   const { id } = req.params;
   const {
     date,
@@ -585,7 +575,6 @@ const bookActivity = async (req, res) => {
   }
 
   try {
-    // Check activity exists
     const activity = await Activity.findById(id);
     if (!activity) {
       throw ApiError.notFound('Activity not found');
@@ -595,10 +584,9 @@ const bookActivity = async (req, res) => {
       throw ApiError.badRequest('Activity is not available for booking');
     }
 
-    // Create booking reference
     const bookingReference = `ACT${Date.now()}${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
 
-    const bookingData = {
+    const booking = {
       userId: req.user?.id || 'guest',
       activityId: id,
       type: 'activity',
@@ -617,12 +605,7 @@ const bookActivity = async (req, res) => {
         activityName: activity.name,
         location: activity.location,
         category: activity.category
-      }
-    };
-
-    // For now, create a simple booking object
-    const booking = {
-      ...bookingData,
+      },
       _id: Date.now().toString(),
       createdAt: new Date()
     };
@@ -631,15 +614,16 @@ const bookActivity = async (req, res) => {
       ApiResponse.success(booking, { message: 'Activity booked successfully' })
     );
   } catch (error) {
-    throw new ApiError(
-      'Error booking activity',
-      { status: StatusCodes.INTERNAL_SERVER_ERROR, details: [error.message] }
-    );
+    throw new ApiError('Error booking activity', {
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      code: 'BOOKING_FAILED',
+      details: [error.message],
+    });
   }
-};
+}
 
-// POST /api/v1/activities/:id/reviews - Add review
-const addReview = async (req, res) => {
+// POST /api/v1/activities/:id/reviews
+async function addReview(req, res) {
   const { id } = req.params;
   const { rating, comment, photos } = req.body;
 
@@ -649,7 +633,6 @@ const addReview = async (req, res) => {
   }
 
   try {
-    // Check if activity exists
     const activity = await Activity.findById(id);
     if (!activity) {
       throw ApiError.notFound('Activity not found');
@@ -666,23 +649,24 @@ const addReview = async (req, res) => {
 
     await review.save();
 
-    const populatedReview = await Review.findById(review._id)
+    const populated = await Review.findById(review._id)
       .populate('userId', 'name avatar')
       .lean();
 
     return res.status(StatusCodes.CREATED).json(
-      ApiResponse.success(populatedReview, { message: 'Review added successfully' })
+      ApiResponse.success(populated, { message: 'Review added successfully' })
     );
   } catch (error) {
-    throw new ApiError(
-      'Error adding review',
-      { status: StatusCodes.INTERNAL_SERVER_ERROR, details: [error.message] }
-    );
+    throw new ApiError('Error adding review', {
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      code: 'REVIEW_ADD_FAILED',
+      details: [error.message],
+    });
   }
-};
+}
 
-// GET /api/v1/activities/:id/photos - Get activity photos
-const getPhotos = async (req, res) => {
+// GET /api/v1/activities/:id/photos
+async function getPhotos(req, res) {
   const { id } = req.params;
   const { limit = 20, offset = 0 } = req.query;
 
@@ -692,7 +676,6 @@ const getPhotos = async (req, res) => {
       throw ApiError.notFound('Activity not found');
     }
 
-    // Get user photos from reviews
     const reviewPhotos = await Review.find({
       activityId: id,
       photos: { $exists: true, $not: { $size: 0 } }
@@ -710,16 +693,15 @@ const getPhotos = async (req, res) => {
       total: (activity.photos?.length || 0) + (activity.gallery?.length || 0) + reviewPhotos.length
     };
 
-    return res.status(StatusCodes.OK).json(
-      ApiResponse.success(allPhotos)
-    );
+    return res.status(StatusCodes.OK).json(ApiResponse.success(allPhotos));
   } catch (error) {
-    throw new ApiError(
-      'Error fetching activity photos',
-      { status: StatusCodes.INTERNAL_SERVER_ERROR, details: [error.message] }
-    );
+    throw new ApiError('Error fetching activity photos', {
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      code: 'PHOTOS_FETCH_FAILED',
+      details: [error.message],
+    });
   }
-};
+}
 
 module.exports = {
   getActivities,

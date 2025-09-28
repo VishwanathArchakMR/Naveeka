@@ -1,9 +1,11 @@
-// C:\flutterapp\myapp\backend\server.js
+// C:\app\Naveeka\backend\server.js
 'use strict';
 
 require('dotenv').config();
 
+const path = require('path');
 const http = require('http');
+const fs = require('fs');
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
@@ -20,7 +22,7 @@ const connectDB = require('./config/database');
 // Global error handler
 const errorHandler = require('./middleware/errorHandler');
 
-// Existing core routes
+// Core routes (expected to exist)
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const placeRoutes = require('./routes/placeRoutes');
@@ -28,42 +30,29 @@ const wishlistRoutes = require('./routes/wishlistRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 const regionRoutes = require('./routes/regionRoutes');
 
-// New domain routes aligned with services
-const activityRoutes = require('./routes/activitiesRoutes');           // /api/activities
-const airportRoutes = require('./routes/airportRoutes');             // /api/airports
-const restaurantRoutes = require('./routes/restaurantRoutes');       // /api/restaurants
-const hotelRoutes = require('./routes/hotelRoutes');                 // /api/hotels
-const busStopRoutes = require('./routes/busStopRoutes');             // /api/bus-stops
-const busRoutes = require('./routes/busRoutes');                     // /api/buses
-const flightRoutes = require('./routes/flightRoutes');               // /api/flights
-const trainStationRoutes = require('./routes/trainStationRoutes');   // /api/train-stations
-const trainRoutes = require('./routes/trainRoutes');                 // /api/trains
-const trailRoutes = require('./routes/trailRoutes');                 // /api/trails
-const locationRoutes = require('./routes/locationRoutes');           // /api/locations
-const mapRoutes = require('./routes/mapRoutes');                     // /api/map
-const messageRoutes = require('./routes/messageRoutes');             // /api/messages
-const planningRoutes = require('./routes/planningRoutes');           // /api/planning
-const cabRoutes = require('./routes/cabRoutes');                     // /api/cabs
-
-// Phase 1 tabs and legacy bundles (kept)
-const discoveryRoutes = require('./routes/discoveryRoutes');         // /api/discovery
-const searchRoutes = require('./routes/searchRoutes');               // /api/search
-const atlasRoutes = require('./routes/atlasRoutes');                 // /api/atlas
-
-// Trail (social)
-const userSocialRoutes = require('./routes/social/userSocialRoutes');// /api/trail/profile
-const postRoutes = require('./routes/social/postRoutes');            // /api/trail/posts
-const feedRoutes = require('./routes/social/feedRoutes');            // /api/trail/feed
-
-// Journey (booking skeleton)
-const experienceRoutes = require('./routes/booking/experienceRoutes');// /api/journey/experiences
-const bookingRoutes = require('./routes/booking/bookingRoutes');      // /api/journey/bookings
-
-// Chat stub
-const aiRoutes = require('./routes/aiRoutes');                       // /api/traveos.ai
-
-// Optional legacy routes (lazy)
-let journeyRoutes;
+// Safe route mounting helper: only mount if the file exists and resolves cleanly
+function mountIfExists(app, urlPath, relModulePath) {
+  const resolvedPath = path.join(__dirname, relModulePath);
+  try {
+    // If module cannot be resolved, skip mounting
+    require.resolve(resolvedPath); // throws MODULE_NOT_FOUND if absent
+    // Require after resolve so nested errors surface properly
+    // eslint-disable-next-line global-require, import/no-dynamic-require
+    const router = require(resolvedPath);
+    if (router && typeof router === 'function') {
+      app.use(urlPath, router);
+      console.log(`✅ Mounted ${urlPath} -> ${relModulePath}`);
+    } else {
+      console.warn(`⚠️ Route module does not export a router function: ${relModulePath}`);
+    }
+  } catch (e) {
+    if (e && e.code === 'MODULE_NOT_FOUND') {
+      console.warn(`ℹ️ Skipping missing route: ${relModulePath}`);
+    } else {
+      console.error(`❌ Failed to load route ${relModulePath}:`, e);
+    }
+  }
+}
 
 // Validate required env
 const requiredKeys = ['PORT', 'MONGODB_URI', 'JWT_SECRET'];
@@ -91,9 +80,9 @@ const app = express();
 app.set('trust proxy', 1);
 
 // Security and hardening
-app.use(helmet()); // sensible defaults; adjust CSP per UI needs if required [ref: routes/assets] [1]
-app.use(mongoSanitize()); // prevent NoSQL injection keys in payloads [1]
-app.use(xss()); // basic XSS sanitization of user input [8]
+app.use(helmet());
+app.use(mongoSanitize());
+app.use(xss());
 
 // Compression and logging
 app.use(compression());
@@ -116,7 +105,7 @@ app.use(
       err.statusCode = 403;
       return callback(err);
     },
-    credentials: true
+    credentials: true,
   })
 );
 
@@ -127,7 +116,7 @@ app.use(
     max: parseInt(process.env.RATE_LIMIT_MAX || '200', 10),
     standardHeaders: true,
     legacyHeaders: false,
-    message: { success: false, message: 'Too many requests, please try again later.' }
+    message: { success: false, message: 'Too many requests, please try again later.' },
   })
 );
 
@@ -135,44 +124,12 @@ app.use(
 // Routes
 // ----------------------
 
-// Core
+// Core (expected to exist)
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/places', placeRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/regions', regionRoutes);
-
-// Domain (new)
-app.use('/api/activities', activityRoutes);
-app.use('/api/airports', airportRoutes);
-app.use('/api/restaurants', restaurantRoutes);
-app.use('/api/hotels', hotelRoutes);
-app.use('/api/bus-stops', busStopRoutes);
-app.use('/api/buses', busRoutes);
-app.use('/api/flights', flightRoutes);
-app.use('/api/train-stations', trainStationRoutes);
-app.use('/api/trains', trainRoutes);
-app.use('/api/trails', trailRoutes);
-app.use('/api/locations', locationRoutes);
-app.use('/api/map', mapRoutes);
-app.use('/api/messages', messageRoutes);
-app.use('/api/planning', planningRoutes);
-app.use('/api/cabs', cabRoutes);
-
-// Tabs/sections retained
-app.use('/api/discovery', discoveryRoutes);
-app.use('/api/search', searchRoutes);
-app.use('/api/atlas', atlasRoutes);
-
-// Social
-app.use('/api/trail/profile', userSocialRoutes);
-app.use('/api/trail/posts', postRoutes);
-app.use('/api/trail/feed', feedRoutes);
-
-// Booking skeleton and chat
-app.use('/api/journey/experiences', experienceRoutes);
-app.use('/api/journey/bookings', bookingRoutes);
-app.use('/api/traveos.ai', aiRoutes);
 
 // Uploads (optional)
 if (uploadsEnabled) {
@@ -181,16 +138,42 @@ if (uploadsEnabled) {
   console.log('📁 Upload routes disabled (ENABLE_UPLOADS=false)');
 }
 
-// Optional legacy journeys
-try {
-  // eslint-disable-next-line global-require
-  journeyRoutes = require('./routes/journeyRoutes');
-  app.use('/api/journeys', journeyRoutes);
-} catch (e) {
-  // ignore when absent
-}
+// Domain (conditionally mounted to avoid MODULE_NOT_FOUND)
+mountIfExists(app, '/api/activities', './routes/activitiesRoutes');
+mountIfExists(app, '/api/airports', './routes/airportRoutes');
+mountIfExists(app, '/api/restaurants', './routes/restaurantRoutes');
+mountIfExists(app, '/api/hotels', './routes/hotelRoutes');
+mountIfExists(app, '/api/bus-stops', './routes/busStopRoutes');
+mountIfExists(app, '/api/buses', './routes/busRoutes');
+mountIfExists(app, '/api/flights', './routes/flightRoutes');
+mountIfExists(app, '/api/train-stations', './routes/trainStationRoutes');
+mountIfExists(app, '/api/trains', './routes/trainRoutes');
+mountIfExists(app, '/api/trails', './routes/trailRoutes');
+mountIfExists(app, '/api/locations', './routes/locationRoutes');
+mountIfExists(app, '/api/map', './routes/mapRoutes');
+mountIfExists(app, '/api/messages', './routes/messageRoutes');
+mountIfExists(app, '/api/planning', './routes/planningRoutes');
+mountIfExists(app, '/api/cabs', './routes/cabRoutes');
 
-// Minimal SSE keep-alive channel (controllers can also implement SSE per route)
+// Tabs/sections retained
+mountIfExists(app, '/api/discovery', './routes/discoveryRoutes');
+mountIfExists(app, '/api/search', './routes/searchRoutes');
+mountIfExists(app, '/api/atlas', './routes/atlasRoutes');
+
+// Social
+mountIfExists(app, '/api/trail/profile', './routes/social/userSocialRoutes');
+mountIfExists(app, '/api/trail/posts', './routes/social/postRoutes');
+mountIfExists(app, '/api/trail/feed', './routes/social/feedRoutes');
+
+// Booking skeleton and chat
+mountIfExists(app, '/api/journey/experiences', './routes/booking/experienceRoutes');
+mountIfExists(app, '/api/journey/bookings', './routes/booking/bookingRoutes');
+mountIfExists(app, '/api/traveos.ai', './routes/aiRoutes');
+
+// Optional legacy journeys
+mountIfExists(app, '/api/journeys', './routes/journeyRoutes');
+
+// Minimal SSE keep-alive channel
 const sseClients = new Set();
 app.get('/api/stream', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
@@ -198,12 +181,12 @@ app.get('/api/stream', (req, res) => {
   res.setHeader('Connection', 'keep-alive');
   res.flushHeaders?.();
 
-  res.write(': ok\n\n'); // comment line as immediate keep-alive
+  res.write(': ok\n\n'); // immediate keep-alive
   sseClients.add(res);
 
   const ping = setInterval(() => {
     if (!res.writableEnded) res.write(': ping\n\n');
-  }, 25000); // 25s ping to keep connection open
+  }, 25000);
 
   req.on('close', () => {
     clearInterval(ping);
@@ -218,7 +201,7 @@ app.get('/health', (req, res) => {
     success: true,
     status: 'OK',
     dbState,
-    uptimeSec: Math.round(process.uptime())
+    uptimeSec: Math.round(process.uptime()),
   });
 });
 
@@ -270,7 +253,6 @@ async function startServerWithProbe() {
   const shutdown = async (signal) => {
     try {
       console.log(`\n🛑 Received ${signal}. Shutting down gracefully...`);
-      // Stop accepting new connections
       server.close(async () => {
         console.log('✅ HTTP server closed');
         try {
@@ -281,7 +263,6 @@ async function startServerWithProbe() {
         }
         process.exit(0);
       });
-      // Force exit if not closed in 10s
       setTimeout(() => {
         console.warn('⚠️ Force exiting after timeout');
         process.exit(1);

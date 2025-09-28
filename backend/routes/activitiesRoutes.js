@@ -22,8 +22,9 @@ const {
   getPhotos,
 } = require('../controllers/activitiesController');
 
-// Fail fast if any handler is missing/misnamed to avoid undefined callbacks.
-const handlers = {
+// Fail fast if any dependency is missing/misnamed to avoid undefined callbacks.
+const guards = {
+  requireAuth,
   getActivities,
   getNearbyActivities,
   suggestActivities,
@@ -37,9 +38,9 @@ const handlers = {
   getPhotos,
 };
 
-Object.entries(handlers).forEach(([name, fn]) => {
+Object.entries(guards).forEach(([name, fn]) => {
   if (typeof fn !== 'function') {
-    throw new Error(`activitiesController.${name} is undefined or not a function`);
+    throw new Error(`${name} is undefined or not a function`);
   }
 });
 

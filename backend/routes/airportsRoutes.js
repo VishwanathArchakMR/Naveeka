@@ -1,41 +1,73 @@
-﻿// C:\flutterapp\myapp\backend\routes\airportsRoutes.js
+﻿// C:\app\Naveeka\backend\routes\airportRoutes.js
 
 const express = require('express');
 const router = express.Router();
 
-// Controller (ensure controllers/airportsController.js implements these handlers)
-const airportsController = require('../controllers/airportsController');
+const asyncHandler = require('../utils/asyncHandler');
+
+// Import controller handlers as named exports.
+// Ensure these exact names are exported from ../controllers/airportsController.js
+const {
+  getAirports,
+  getNearbyAirports,
+  suggestAirports,
+  getTrending,
+  getFacets,
+  getAirportsGeoJSON,
+  getByBBox,
+  getAirportByIdOrCode,
+} = require('../controllers/airportsController');
+
+// Fail fast if any handler is missing/misnamed to avoid undefined callbacks.
+const guards = {
+  getAirports,
+  getNearbyAirports,
+  suggestAirports,
+  getTrending,
+  getFacets,
+  getAirportsGeoJSON,
+  getByBBox,
+  getAirportByIdOrCode,
+};
+
+Object.entries(guards).forEach(([name, fn]) => {
+  if (typeof fn !== 'function') {
+    throw new Error(`airportsController.${name} is undefined or not a function`);
+  }
+});
+
+// Routes
 
 // List with filters, pagination, sorting
-// GET /api/v1/airports
-router.get('/', airportsController.getAirports);
+// GET /api/airports
+router.get('/', asyncHandler(getAirports));
 
 // Nearby by lat/lng/radius
-// GET /api/v1/airports/nearby
-router.get('/nearby', airportsController.getNearbyAirports);
+// GET /api/airports/nearby
+router.get('/nearby', asyncHandler(getNearbyAirports));
 
 // Autocomplete suggestions by name/city/country/code
-// GET /api/v1/airports/suggest
-router.get('/suggest', airportsController.suggestAirports);
+// GET /api/airports/suggest
+router.get('/suggest', asyncHandler(suggestAirports));
 
 // Trending airports (engagement-based)
-// GET /api/v1/airports/trending
-router.get('/trending', airportsController.getTrending);
+// GET /api/airports/trending
+router.get('/trending', asyncHandler(getTrending));
 
 // Facets for filters (country, city, etc.)
-// GET /api/v1/airports/facets
-router.get('/facets', airportsController.getFacets);
+// GET /api/airports/facets
+router.get('/facets', asyncHandler(getFacets));
 
 // RFC 7946 FeatureCollection for map overlays
-// GET /api/v1/airports/geojson
-router.get('/geojson', airportsController.getAirportsGeoJSON);
+// GET /api/airports/geojson
+router.get('/geojson', asyncHandler(getAirportsGeoJSON));
 
 // BBox query for viewport loading
-// GET /api/v1/airports/bbox
-router.get('/bbox', airportsController.getByBBox);
+// GET /api/airports/bbox
+router.get('/bbox', asyncHandler(getByBBox));
 
 // Airport details by Mongo id or IATA/ICAO code
-// GET /api/v1/airports/:idOrCode
-router.get('/:idOrCode', airportsController.getAirportByIdOrCode);
+// GET /api/airports/:idOrCode
+router.get('/:idOrCode', asyncHandler(getAirportByIdOrCode));
 
 module.exports = router;
