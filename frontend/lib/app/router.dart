@@ -31,8 +31,9 @@ import '../features/quick_actions/presentation/messages/messages_screen.dart';
 // Screens - Places
 import '../features/places/presentation/place_detail_screen.dart';
 
-// Screens - Trails
-import '../features/trails/presentation/trails_screen.dart';
+// Screens - Trails (new shell + tabs)
+import '../features/trails/presentation/trails_shell.dart';
+import '../features/trails/presentation/trail_tabs.dart';
 
 // Screens - Atlas
 import '../features/atlas/presentation/atlas_screen.dart';
@@ -70,12 +71,17 @@ import '../features/auth/providers/auth_providers.dart';
 // Navee AI providers
 import '../features/navee_ai/providers/navee_ai_providers.dart';
 
+// NEW: navigator keys
+final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
+final _trailsNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'trails');
+
 final routerProvider = Provider<GoRouter>((ref) {
   final auth = ref.watch(authSimpleProvider);
 
   return GoRouter(
     initialLocation: '/splash',
     debugLogDiagnostics: false,
+    navigatorKey: _rootNavigatorKey, // important for parentNavigatorKey patterns
     refreshListenable: GoRouterRefreshStream(ref.read(authStreamProvider)),
     routes: [
       // SPLASH
@@ -97,7 +103,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => _fade(const RegisterScreen()),
       ),
 
-      // MAIN SHELL
+      // MAIN SHELL (global bottom navigation)
       ShellRoute(
         builder: (context, state, child) => BottomNavigationShell(child: child),
         routes: [
@@ -111,7 +117,6 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: 'booking',
                 name: 'booking',
-                // If BookingScreen exists, use it; otherwise switch to BookingPage wrapper.
                 pageBuilder: (context, state) => _slideUp(const BookingScreen()),
               ),
               GoRoute(
@@ -122,25 +127,30 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: 'favorites',
                 name: 'favorites',
-                pageBuilder: (context, state) => _slideUp(const FavoritesScreen()),
+                pageBuilder: (context, state) =>
+                    _slideUp(const FavoritesScreen()),
               ),
               GoRoute(
                 path: 'following',
                 name: 'following',
-                pageBuilder: (context, state) => _slideUp(const FollowingScreen()),
+                pageBuilder: (context, state) =>
+                    _slideUp(const FollowingScreen()),
               ),
               GoRoute(
                 path: 'planning',
                 name: 'planning',
-                pageBuilder: (context, state) => _slideUp(const PlanningScreen()),
+                pageBuilder: (context, state) =>
+                    _slideUp(const PlanningScreen()),
                 routes: [
                   GoRoute(
                     path: 'trip/:id',
                     name: 'trip_group',
                     pageBuilder: (context, state) {
                       final id = state.pathParameters['id']!;
-                      final title = state.uri.queryParameters['title'] ?? 'Trip Group';
-                      return _slideUp(TripGroupScreen(groupId: id, groupTitle: title));
+                      final title =
+                          state.uri.queryParameters['title'] ?? 'Trip Group';
+                      return _slideUp(
+                          TripGroupScreen(groupId: id, groupTitle: title));
                     },
                   ),
                 ],
@@ -148,17 +158,13 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: 'messages',
                 name: 'messages',
-                pageBuilder: (context, state) => _slideUp(const MessagesScreen()),
+                pageBuilder: (context, state) =>
+                    _slideUp(const MessagesScreen()),
               ),
             ],
           ),
 
-          // TRAILS TAB
-          GoRoute(
-            path: '/trails',
-            name: 'trails',
-            pageBuilder: (context, state) => _noTransition(const TrailsScreen()),
-          ),
+          // NOTE: old Trails tab removed from the main shell to hide global bottom bar on Trails.
 
           // ATLAS TAB
           GoRoute(
@@ -171,12 +177,14 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/journey',
             name: 'journey',
-            pageBuilder: (context, state) => _noTransition(const JourneyScreen()),
+            pageBuilder: (context, state) =>
+                _noTransition(const JourneyScreen()),
             routes: [
               GoRoute(
                 path: 'flights',
                 name: 'flight_search',
-                pageBuilder: (context, state) => _slideRight(const FlightSearchScreen()),
+                pageBuilder: (context, state) =>
+                    _slideRight(const FlightSearchScreen()),
                 routes: [
                   GoRoute(
                     path: 'results',
@@ -185,8 +193,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                       final qp = state.uri.queryParameters;
                       final from = qp['from'] ?? '';
                       final to = qp['to'] ?? '';
-                      final date = qp['date'] ?? DateTime.now().toIso8601String();
-                      return _slideRight(FlightResultsScreen(fromCode: from, toCode: to, date: date));
+                      final date =
+                          qp['date'] ?? DateTime.now().toIso8601String();
+                      return _slideRight(FlightResultsScreen(
+                          fromCode: from, toCode: to, date: date));
                     },
                     routes: [
                       GoRoute(
@@ -196,8 +206,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                           final id = state.pathParameters['id']!;
                           final qp = state.uri.queryParameters;
                           final title = qp['title'] ?? 'Flight Booking';
-                          final date = qp['date'] ?? DateTime.now().toIso8601String();
-                          return _slideUp(FlightBookingScreen(flightId: id, title: title, date: date));
+                          final date = qp['date'] ??
+                              DateTime.now().toIso8601String();
+                          return _slideUp(FlightBookingScreen(
+                              flightId: id, title: title, date: date));
                         },
                       ),
                     ],
@@ -207,7 +219,8 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: 'trains',
                 name: 'train_search',
-                pageBuilder: (context, state) => _slideRight(const TrainSearchScreen()),
+                pageBuilder: (context, state) =>
+                    _slideRight(const TrainSearchScreen()),
                 routes: [
                   GoRoute(
                     path: 'results',
@@ -216,8 +229,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                       final qp = state.uri.queryParameters;
                       final from = qp['from'] ?? '';
                       final to = qp['to'] ?? '';
-                      final dateIso = qp['date'] ?? DateTime.now().toIso8601String();
-                      return _slideRight(TrainResultsScreen(fromCode: from, toCode: to, dateIso: dateIso));
+                      final dateIso =
+                          qp['date'] ?? DateTime.now().toIso8601String();
+                      return _slideRight(TrainResultsScreen(
+                          fromCode: from, toCode: to, dateIso: dateIso));
                     },
                   ),
                 ],
@@ -225,7 +240,8 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: 'hotels',
                 name: 'hotel_search',
-                pageBuilder: (context, state) => _slideRight(const HotelSearchScreen()),
+                pageBuilder: (context, state) =>
+                    _slideRight(const HotelSearchScreen()),
                 routes: [
                   GoRoute(
                     path: 'results',
@@ -233,9 +249,16 @@ final routerProvider = Provider<GoRouter>((ref) {
                     pageBuilder: (context, state) {
                       final qp = state.uri.queryParameters;
                       final destination = qp['destination'] ?? '';
-                      final checkInIso = qp['checkIn'] ?? DateTime.now().toIso8601String();
-                      final checkOutIso = qp['checkOut'] ?? DateTime.now().add(const Duration(days: 1)).toIso8601String();
-                      return _slideRight(HotelResultsScreen(destination: destination, checkInIso: checkInIso, checkOutIso: checkOutIso));
+                      final checkInIso =
+                          qp['checkIn'] ?? DateTime.now().toIso8601String();
+                      final checkOutIso = qp['checkOut'] ??
+                          DateTime.now()
+                              .add(const Duration(days: 1))
+                              .toIso8601String();
+                      return _slideRight(HotelResultsScreen(
+                          destination: destination,
+                          checkInIso: checkInIso,
+                          checkOutIso: checkOutIso));
                     },
                   ),
                 ],
@@ -243,7 +266,8 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: 'restaurants',
                 name: 'restaurant_search',
-                pageBuilder: (context, state) => _slideRight(const RestaurantSearchScreen()),
+                pageBuilder: (context, state) =>
+                    _slideRight(const RestaurantSearchScreen()),
                 routes: [
                   GoRoute(
                     path: 'results',
@@ -251,7 +275,8 @@ final routerProvider = Provider<GoRouter>((ref) {
                     pageBuilder: (context, state) {
                       final qp = state.uri.queryParameters;
                       final destination = qp['destination'] ?? '';
-                      return _slideRight(RestaurantResultsScreen(destination: destination));
+                      return _slideRight(
+                          RestaurantResultsScreen(destination: destination));
                     },
                   ),
                 ],
@@ -259,19 +284,22 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: 'activities',
                 name: 'activity_search',
-                pageBuilder: (context, state) => _slideRight(const ActivitySearchScreen()),
+                pageBuilder: (context, state) =>
+                    _slideRight(const ActivitySearchScreen()),
                 routes: [
                   GoRoute(
                     path: 'results',
                     name: 'activity_results',
-                    pageBuilder: (context, state) => _slideRight(const ActivityResultsScreen()),
+                    pageBuilder: (context, state) =>
+                        _slideRight(const ActivityResultsScreen()),
                   ),
                 ],
               ),
               GoRoute(
                 path: 'my-bookings',
                 name: 'my_bookings',
-                pageBuilder: (context, state) => _slideRight(const MyBookingsScreen()),
+                pageBuilder: (context, state) =>
+                    _slideRight(const MyBookingsScreen()),
               ),
             ],
           ),
@@ -281,7 +309,8 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: '/navee-ai',
             name: 'navee_ai',
             pageBuilder: (context, state) {
-              return _noTransition(NaveeAiScreen(api: ref.read(naveeAiApiProvider)));
+              return _noTransition(
+                  NaveeAiScreen(api: ref.read(naveeAiApiProvider)));
             },
           ),
         ],
@@ -329,6 +358,47 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: 'api_test',
         pageBuilder: (context, state) => _slideRight(const ApiTestScreen()),
       ),
+
+      // TRAILS ENTRY (redirect to home tab)
+      GoRoute(
+        path: '/trails',
+        parentNavigatorKey: _rootNavigatorKey, // render above main shell
+        redirect: (ctx, st) => '/trails/home',
+      ),
+
+      // TRAILS SHELL (Instagram-style section)
+      ShellRoute(
+        parentNavigatorKey: _rootNavigatorKey, // hides global bottom nav
+        navigatorKey: _trailsNavigatorKey,
+        builder: (context, state, child) => TrailsShell(child: child),
+        routes: [
+          GoRoute(
+            path: '/trails/home',
+            pageBuilder: (ctx, st) =>
+                _noTransition(const TrailsHomeTab()),
+          ),
+          GoRoute(
+            path: '/trails/search',
+            pageBuilder: (ctx, st) =>
+                _noTransition(const TrailsSearchTab()),
+          ),
+          GoRoute(
+            path: '/trails/create',
+            pageBuilder: (ctx, st) =>
+                _noTransition(const TrailsCreateTab()),
+          ),
+          GoRoute(
+            path: '/trails/reels',
+            pageBuilder: (ctx, st) =>
+                _noTransition(const TrailsReelsTab()),
+          ),
+          GoRoute(
+            path: '/trails/profile',
+            pageBuilder: (ctx, st) =>
+                _noTransition(const TrailsProfileTab()),
+          ),
+        ],
+      ),
     ],
 
     redirect: (context, state) {
@@ -336,7 +406,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isLoggedIn = auth.isLoggedIn;
 
       final isSplash = state.matchedLocation == '/splash';
-      final isAuth = state.matchedLocation == '/login' || state.matchedLocation == '/register';
+      final isAuth = state.matchedLocation == '/login' ||
+          state.matchedLocation == '/register';
 
       if (isSplash) return null;
       if (isLoading) return '/splash';
