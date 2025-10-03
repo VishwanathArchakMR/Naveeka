@@ -1,14 +1,14 @@
 // lib/main.dart
 import 'dart:async';
 import 'dart:ui' show PlatformDispatcher;
-import 'dart:io' show Platform;
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app/app.dart';
 import 'app/bootstrap.dart';
 import 'services/api_client.dart';
+import 'core/storage/seed_data_loader.dart';
 
 // ----------------------
 // Providers (central)
@@ -17,8 +17,12 @@ final apiBaseUrlProvider = Provider<String>((ref) {
   // Allow override via --dart-define=API_BASE_URL=http://host:port
   const envUrl = String.fromEnvironment('API_BASE_URL');
   if (envUrl.isNotEmpty) return envUrl;
+
   if (kIsWeb) return 'http://localhost:3000';
-  if (Platform.isAndroid) return 'http://10.0.2.2:3000'; // Android emulator -> host
+  if (defaultTargetPlatform == TargetPlatform.android) {
+    // Android emulator -> host
+    return 'http://10.0.2.2:3000';
+  }
   return 'http://localhost:3000';
 });
 
@@ -74,11 +78,13 @@ Future<void> main() async {
       // 1) Splash immediately
       runApp(const _SplashApp());
 
-      // 2) Bootstrap, then run with DI providers available
+      // 2) Bootstrap, preload seed data, then run with DI providers available
       unawaited(
         Future<void>(() async {
           try {
-            await bootstrap();
+            await bootstrap(); // keep existing bootstrap work
+            // Ensure all seed JSON is loaded before App renders any feature screen
+            await SeedDataLoader.instance.loadAllSeedData();
             runApp(
               const ProviderScope(
                 child: App(),
