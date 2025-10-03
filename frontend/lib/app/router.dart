@@ -61,6 +61,9 @@ import '../features/settings/presentation/settings_screen.dart';
 // Screens - Checkout
 import '../features/checkout/presentation/checkout_screen.dart';
 
+// Screens - Test
+import '../features/test/api_test_screen.dart';
+
 // Auth state
 import '../features/auth/providers/auth_providers.dart';
 
@@ -318,6 +321,13 @@ final routerProvider = Provider<GoRouter>((ref) {
           final extra = state.extra as Map<String, dynamic>?;
           return _slideUp(CheckoutScreen(bookingData: extra));
         },
+      ),
+
+      // API TEST (for development)
+      GoRoute(
+        path: '/api-test',
+        name: 'api_test',
+        pageBuilder: (context, state) => _slideRight(const ApiTestScreen()),
       ),
     ],
 

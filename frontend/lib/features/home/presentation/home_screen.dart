@@ -181,6 +181,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => context.goNamed('api_test'),
+        tooltip: 'API Test',
+        child: const Icon(Icons.api),
+      ),
     );
   }
 
