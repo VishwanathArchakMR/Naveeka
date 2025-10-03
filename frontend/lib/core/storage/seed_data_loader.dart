@@ -1,11 +1,14 @@
 // lib/core/storage/seed_data_loader.dart
 
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart' show compute, kIsWeb;
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'local_storage.dart';
+
+// Top-level parser for compute()
+dynamic _parseJson(String source) => json.decode(source);
 
 class SeedDataLoader {
   static final SeedDataLoader _instance = SeedDataLoader._internal();
@@ -13,6 +16,7 @@ class SeedDataLoader {
   SeedDataLoader._internal();
 
   bool _isLoaded = false;
+  Future<void>? _loadingFuture;
 
   // Cache for loaded data
   Map<String, dynamic>? _homeData;
@@ -45,12 +49,16 @@ class SeedDataLoader {
   }
 
   /// Load all seed data from assets (initial bootstrap + offline cache)
-  Future<void> loadAllSeedData() async {
-    if (_isLoaded) return;
+  Future<void> loadAllSeedData() {
+    if (_isLoaded) return Future.value();
+    if (_loadingFuture != null) return _loadingFuture!;
+    _loadingFuture = _loadAll();
+    return _loadingFuture!;
+  }
 
+  Future<void> _loadAll() async {
     try {
-      // Load all seed files concurrently and type the result explicitly
-      final List<Map<String, dynamic>> results = await Future.wait<Map<String, dynamic>>([
+      final results = await Future.wait<Map<String, dynamic>>([
         _loadSeedFile('assets/seed-data/home_seed.json'),
         _loadSeedFile('assets/seed-data/trail_seed.json'),
         _loadSeedFile('assets/seed-data/atlas_seed.json'),
@@ -70,9 +78,8 @@ class SeedDataLoader {
         _loadSeedFile('assets/seed-data/trains_seed.json'),
         _loadSeedFile('assets/seed-data/buses_seed.json'),
         _loadSeedFile('assets/seed-data/activities_seed.json'),
-      ]); // Future.wait collects each future’s result into a List in the same order they were provided [web:5851][web:5844].
+      ]);
 
-      // Assign results to cache by index in the same order as requested above
       _homeData = results[0];
       _trailsData = results[1];
       _atlasData = results[2];
@@ -93,14 +100,17 @@ class SeedDataLoader {
       _busesData = results[17];
       _activitiesData = results[18];
 
-      // Cache to local storage for offline access
       await _cacheToLocalStorage();
 
       _isLoaded = true;
-    } catch (e) {
-      // Try loading from local storage as fallback
+    } catch (e, st) {
+      // Log once for visibility; continue with storage fallback
+      // ignore: avoid_print
+      print('Seed bootstrap failed, trying local storage fallback: $e\n$st');
       await _loadFromLocalStorage();
       _isLoaded = true;
+    } finally {
+      _loadingFuture = null;
     }
   }
 
@@ -109,12 +119,10 @@ class SeedDataLoader {
   /// - Supports optional remote override for production
   /// - Falls back to seeded asset when remote fails or not set
   Future<Map<String, dynamic>> loadAtlasData({bool forceRefresh = false}) async {
-    // Return cached when allowed
     if (!forceRefresh && _atlasData != null && _atlasData!.isNotEmpty) {
       return _atlasData!;
     }
 
-    // Ensure bootstrap seed load at least once (loads all datasets)
     if (!_isLoaded) {
       await loadAllSeedData();
       if (!forceRefresh && _atlasData != null && _atlasData!.isNotEmpty) {
@@ -122,23 +130,23 @@ class SeedDataLoader {
       }
     }
 
-    // Try remote first if provided
     if (_atlasRemoteFetcher != null) {
       try {
         final remote = await _atlasRemoteFetcher!.call();
         _atlasData = remote;
-        // Cache only this map to local storage slot for atlas
-        await LocalStorage.instance.setString('seed_atlas', json.encode(_atlasData));
+        await LocalStorage.instance
+            .setString('seed_atlas', json.encode(_atlasData));
         return _atlasData!;
       } catch (e, st) {
-        debugPrint('Atlas remote fetch failed, falling back to seed: $e\n$st');
+        // ignore: avoid_print
+        print('Atlas remote fetch failed, falling back to seed: $e\n$st');
       }
     }
 
-    // Fallback to bundled seed asset
     final local = await _loadSeedFile('assets/seed-data/atlas_seed.json');
     _atlasData = local;
-    await LocalStorage.instance.setString('seed_atlas', json.encode(_atlasData));
+    await LocalStorage.instance
+        .setString('seed_atlas', json.encode(_atlasData));
     return _atlasData!;
   }
 
@@ -146,14 +154,18 @@ class SeedDataLoader {
   Future<Map<String, dynamic>> _loadSeedFile(String assetPath) async {
     try {
       final jsonString = await rootBundle.loadString(assetPath);
-      final decoded = json.decode(jsonString);
+      final decoded = kIsWeb
+          ? json.decode(jsonString)
+          : await compute(_parseJson, jsonString);
+
       if (decoded is Map<String, dynamic>) {
         return decoded;
       }
       // Normalize non-map roots (arrays) to a map under 'data'
       return <String, dynamic>{'data': decoded};
     } catch (e) {
-      // Return empty map if file doesn't exist or parse fails
+      // ignore: avoid_print
+      print('Failed to load or parse asset: $assetPath -> $e');
       return <String, dynamic>{};
     }
   }
@@ -162,25 +174,63 @@ class SeedDataLoader {
   Future<void> _cacheToLocalStorage() async {
     final storage = LocalStorage.instance;
 
-    if (_homeData != null) await storage.setString('seed_home', json.encode(_homeData));
-    if (_trailsData != null) await storage.setString('seed_trails', json.encode(_trailsData));
-    if (_atlasData != null) await storage.setString('seed_atlas', json.encode(_atlasData));
-    if (_journeyData != null) await storage.setString('seed_journey', json.encode(_journeyData));
-    if (_naveeAIData != null) await storage.setString('seed_navee_ai', json.encode(_naveeAIData));
-    if (_settingsData != null) await storage.setString('seed_settings', json.encode(_settingsData));
-    if (_placesData != null) await storage.setString('seed_places', json.encode(_placesData));
-    if (_bookingData != null) await storage.setString('seed_booking', json.encode(_bookingData));
-    if (_historyData != null) await storage.setString('seed_history', json.encode(_historyData));
-    if (_favoritesData != null) await storage.setString('seed_favorites', json.encode(_favoritesData));
-    if (_followingData != null) await storage.setString('seed_following', json.encode(_followingData));
-    if (_planningData != null) await storage.setString('seed_planning', json.encode(_planningData));
-    if (_messagesData != null) await storage.setString('seed_messages', json.encode(_messagesData));
-    if (_hotelsData != null) await storage.setString('seed_hotels', json.encode(_hotelsData));
-    if (_restaurantsData != null) await storage.setString('seed_restaurants', json.encode(_restaurantsData));
-    if (_flightsData != null) await storage.setString('seed_flights', json.encode(_flightsData));
-    if (_trainsData != null) await storage.setString('seed_trains', json.encode(_trainsData));
-    if (_busesData != null) await storage.setString('seed_buses', json.encode(_busesData));
-    if (_activitiesData != null) await storage.setString('seed_activities', json.encode(_activitiesData));
+    if (_homeData != null) {
+      await storage.setString('seed_home', json.encode(_homeData));
+    }
+    if (_trailsData != null) {
+      await storage.setString('seed_trails', json.encode(_trailsData));
+    }
+    if (_atlasData != null) {
+      await storage.setString('seed_atlas', json.encode(_atlasData));
+    }
+    if (_journeyData != null) {
+      await storage.setString('seed_journey', json.encode(_journeyData));
+    }
+    if (_naveeAIData != null) {
+      await storage.setString('seed_navee_ai', json.encode(_naveeAIData));
+    }
+    if (_settingsData != null) {
+      await storage.setString('seed_settings', json.encode(_settingsData));
+    }
+    if (_placesData != null) {
+      await storage.setString('seed_places', json.encode(_placesData));
+    }
+    if (_bookingData != null) {
+      await storage.setString('seed_booking', json.encode(_bookingData));
+    }
+    if (_historyData != null) {
+      await storage.setString('seed_history', json.encode(_historyData));
+    }
+    if (_favoritesData != null) {
+      await storage.setString('seed_favorites', json.encode(_favoritesData));
+    }
+    if (_followingData != null) {
+      await storage.setString('seed_following', json.encode(_followingData));
+    }
+    if (_planningData != null) {
+      await storage.setString('seed_planning', json.encode(_planningData));
+    }
+    if (_messagesData != null) {
+      await storage.setString('seed_messages', json.encode(_messagesData));
+    }
+    if (_hotelsData != null) {
+      await storage.setString('seed_hotels', json.encode(_hotelsData));
+    }
+    if (_restaurantsData != null) {
+      await storage.setString('seed_restaurants', json.encode(_restaurantsData));
+    }
+    if (_flightsData != null) {
+      await storage.setString('seed_flights', json.encode(_flightsData));
+    }
+    if (_trainsData != null) {
+      await storage.setString('seed_trains', json.encode(_trainsData));
+    }
+    if (_busesData != null) {
+      await storage.setString('seed_buses', json.encode(_busesData));
+    }
+    if (_activitiesData != null) {
+      await storage.setString('seed_activities', json.encode(_activitiesData));
+    }
   }
 
   /// Load data from local storage (offline fallback)
@@ -189,63 +239,87 @@ class SeedDataLoader {
 
     try {
       final homeJson = await storage.getString('seed_home');
-      _homeData = homeJson != null ? json.decode(homeJson) : <String, dynamic>{};
+      _homeData =
+          homeJson != null ? json.decode(homeJson) : <String, dynamic>{};
 
       final trailsJson = await storage.getString('seed_trails');
-      _trailsData = trailsJson != null ? json.decode(trailsJson) : <String, dynamic>{};
+      _trailsData =
+          trailsJson != null ? json.decode(trailsJson) : <String, dynamic>{};
 
       final atlasJson = await storage.getString('seed_atlas');
-      _atlasData = atlasJson != null ? json.decode(atlasJson) : <String, dynamic>{};
+      _atlasData =
+          atlasJson != null ? json.decode(atlasJson) : <String, dynamic>{};
 
       final journeyJson = await storage.getString('seed_journey');
-      _journeyData = journeyJson != null ? json.decode(journeyJson) : <String, dynamic>{};
+      _journeyData =
+          journeyJson != null ? json.decode(journeyJson) : <String, dynamic>{};
 
       final naveeAIJson = await storage.getString('seed_navee_ai');
-      _naveeAIData = naveeAIJson != null ? json.decode(naveeAIJson) : <String, dynamic>{};
+      _naveeAIData =
+          naveeAIJson != null ? json.decode(naveeAIJson) : <String, dynamic>{};
 
       final settingsJson = await storage.getString('seed_settings');
-      _settingsData = settingsJson != null ? json.decode(settingsJson) : <String, dynamic>{};
+      _settingsData =
+          settingsJson != null ? json.decode(settingsJson) : <String, dynamic>{};
 
       final placesJson = await storage.getString('seed_places');
-      _placesData = placesJson != null ? json.decode(placesJson) : <String, dynamic>{};
+      _placesData =
+          placesJson != null ? json.decode(placesJson) : <String, dynamic>{};
 
       final bookingJson = await storage.getString('seed_booking');
-      _bookingData = bookingJson != null ? json.decode(bookingJson) : <String, dynamic>{};
+      _bookingData =
+          bookingJson != null ? json.decode(bookingJson) : <String, dynamic>{};
 
       final historyJson = await storage.getString('seed_history');
-      _historyData = historyJson != null ? json.decode(historyJson) : <String, dynamic>{};
+      _historyData =
+          historyJson != null ? json.decode(historyJson) : <String, dynamic>{};
 
       final favoritesJson = await storage.getString('seed_favorites');
-      _favoritesData = favoritesJson != null ? json.decode(favoritesJson) : <String, dynamic>{};
+      _favoritesData = favoritesJson != null
+          ? json.decode(favoritesJson)
+          : <String, dynamic>{};
 
       final followingJson = await storage.getString('seed_following');
-      _followingData = followingJson != null ? json.decode(followingJson) : <String, dynamic>{};
+      _followingData = followingJson != null
+          ? json.decode(followingJson)
+          : <String, dynamic>{};
 
       final planningJson = await storage.getString('seed_planning');
-      _planningData = planningJson != null ? json.decode(planningJson) : <String, dynamic>{};
+      _planningData = planningJson != null
+          ? json.decode(planningJson)
+          : <String, dynamic>{};
 
       final messagesJson = await storage.getString('seed_messages');
-      _messagesData = messagesJson != null ? json.decode(messagesJson) : <String, dynamic>{};
+      _messagesData = messagesJson != null
+          ? json.decode(messagesJson)
+          : <String, dynamic>{};
 
       final hotelsJson = await storage.getString('seed_hotels');
-      _hotelsData = hotelsJson != null ? json.decode(hotelsJson) : <String, dynamic>{};
+      _hotelsData =
+          hotelsJson != null ? json.decode(hotelsJson) : <String, dynamic>{};
 
       final restaurantsJson = await storage.getString('seed_restaurants');
-      _restaurantsData = restaurantsJson != null ? json.decode(restaurantsJson) : <String, dynamic>{};
+      _restaurantsData = restaurantsJson != null
+          ? json.decode(restaurantsJson)
+          : <String, dynamic>{};
 
       final flightsJson = await storage.getString('seed_flights');
-      _flightsData = flightsJson != null ? json.decode(flightsJson) : <String, dynamic>{};
+      _flightsData =
+          flightsJson != null ? json.decode(flightsJson) : <String, dynamic>{};
 
       final trainsJson = await storage.getString('seed_trains');
-      _trainsData = trainsJson != null ? json.decode(trainsJson) : <String, dynamic>{};
+      _trainsData =
+          trainsJson != null ? json.decode(trainsJson) : <String, dynamic>{};
 
       final busesJson = await storage.getString('seed_buses');
-      _busesData = busesJson != null ? json.decode(busesJson) : <String, dynamic>{};
+      _busesData =
+          busesJson != null ? json.decode(busesJson) : <String, dynamic>{};
 
       final activitiesJson = await storage.getString('seed_activities');
-      _activitiesData = activitiesJson != null ? json.decode(activitiesJson) : <String, dynamic>{};
-    } catch (e) {
-      // Initialize with empty data if local storage fails
+      _activitiesData = activitiesJson != null
+          ? json.decode(activitiesJson)
+          : <String, dynamic>{};
+    } catch (_) {
       _initializeEmptyData();
     }
   }
@@ -283,22 +357,27 @@ class SeedDataLoader {
   Map<String, dynamic> get placesData => _placesData ?? <String, dynamic>{};
   Map<String, dynamic> get bookingData => _bookingData ?? <String, dynamic>{};
   Map<String, dynamic> get historyData => _historyData ?? <String, dynamic>{};
-  Map<String, dynamic> get favoritesData => _favoritesData ?? <String, dynamic>{};
-  Map<String, dynamic> get followingData => _followingData ?? <String, dynamic>{};
+  Map<String, dynamic> get favoritesData =>
+      _favoritesData ?? <String, dynamic>{};
+  Map<String, dynamic> get followingData =>
+      _followingData ?? <String, dynamic>{};
   Map<String, dynamic> get planningData => _planningData ?? <String, dynamic>{};
   Map<String, dynamic> get messagesData => _messagesData ?? <String, dynamic>{};
   Map<String, dynamic> get hotelsData => _hotelsData ?? <String, dynamic>{};
-  Map<String, dynamic> get restaurantsData => _restaurantsData ?? <String, dynamic>{};
+  Map<String, dynamic> get restaurantsData =>
+      _restaurantsData ?? <String, dynamic>{};
   Map<String, dynamic> get flightsData => _flightsData ?? <String, dynamic>{};
   Map<String, dynamic> get trainsData => _trainsData ?? <String, dynamic>{};
   Map<String, dynamic> get busesData => _busesData ?? <String, dynamic>{};
-  Map<String, dynamic> get activitiesData => _activitiesData ?? <String, dynamic>{};
+  Map<String, dynamic> get activitiesData =>
+      _activitiesData ?? <String, dynamic>{};
 
   bool get isLoaded => _isLoaded;
 
   /// Reload data from assets (useful for refreshing)
   Future<void> reload() async {
     _isLoaded = false;
+    _loadingFuture = null;
     await loadAllSeedData();
   }
 }
@@ -326,7 +405,6 @@ final trailsDataProvider = FutureProvider<Map<String, dynamic>>((ref) async {
 
 final atlasDataProvider = FutureProvider<Map<String, dynamic>>((ref) async {
   final loader = ref.watch(seedDataLoaderProvider);
-  // Prefer the new direct loader to enable remote override when configured
   return await loader.loadAtlasData();
 });
 
