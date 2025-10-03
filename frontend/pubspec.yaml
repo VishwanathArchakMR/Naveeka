@@ -115,6 +115,7 @@ flutter:
     - assets/icons/feather/
     - assets/icons/lucide/
     - assets/animations/
+    - assets/audio/
     - assets/seed-data/
     - .env
 
