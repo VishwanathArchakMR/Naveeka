@@ -24,12 +24,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     with TickerProviderStateMixin {
   bool _isLogin = true;
 
-  late final AnimationController _animationController =
-      AnimationController(vsync: this, duration: const Duration(milliseconds: 700));
+  late final AnimationController _animationController = AnimationController(
+      vsync: this, duration: const Duration(milliseconds: 700));
   late final Animation<double> _fade =
       CurvedAnimation(curve: Curves.easeInOut, parent: _animationController);
   late final Animation<Offset> _slide =
-      Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(_fade);
+      Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero)
+          .animate(_fade);
 
   @override
   void initState() {
@@ -93,7 +94,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                               ),
                             ],
                           ),
-                          child: const Icon(Icons.explore, color: Colors.white, size: 44),
+                          child: const Icon(Icons.explore,
+                              color: Colors.white, size: 44),
                         ),
                         const SizedBox(height: 20),
                         Text(
@@ -107,7 +109,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                         const SizedBox(height: 6),
                         Text(
                           subtitle,
-                          style: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+                          style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.7)),
                           textAlign: TextAlign.center,
                         ),
                       ],
@@ -131,7 +134,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                               onPressed: () {
                                 Navigator.of(context).push(
                                   MaterialPageRoute<void>(
-                                    builder: (_) => const ForgotPasswordScreen(),
+                                    builder: (_) =>
+                                        const ForgotPasswordScreen(),
                                   ),
                                 );
                               },

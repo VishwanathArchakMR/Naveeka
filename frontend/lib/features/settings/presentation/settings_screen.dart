@@ -107,7 +107,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Card(
                 elevation: 0,
                 color: cs.surfaceContainerHighest,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
                 child: Column(
                   children: [
                     _SectionTile(
@@ -119,7 +120,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         title: 'Language & theme',
                         builder: (_) => LanguageThemeSettings(
                           currentThemeMode: _themeMode,
-                          onThemeModeChanged: (m) => setState(() => _themeMode = m),
+                          onThemeModeChanged: (m) =>
+                              setState(() => _themeMode = m),
                           supportedLocales: _locales,
                           currentLocale: _locale,
                           onLocaleChanged: (l) => setState(() => _locale = l),
@@ -143,13 +145,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           soundsEnabled: _notifSounds,
                           badgesEnabled: _notifBadges,
                           previewsEnabled: _notifPreviews,
-                          onMessagesChanged: (v) => setState(() => _notifMessages = v),
-                          onPlanningChanged: (v) => setState(() => _notifPlanning = v),
-                          onRecommendationsChanged: (v) => setState(() => _notifRecs = v),
-                          onGroupActivityChanged: (v) => setState(() => _notifGroup = v),
-                          onSoundsChanged: (v) => setState(() => _notifSounds = v),
-                          onBadgesChanged: (v) => setState(() => _notifBadges = v),
-                          onPreviewsChanged: (v) => setState(() => _notifPreviews = v),
+                          onMessagesChanged: (v) =>
+                              setState(() => _notifMessages = v),
+                          onPlanningChanged: (v) =>
+                              setState(() => _notifPlanning = v),
+                          onRecommendationsChanged: (v) =>
+                              setState(() => _notifRecs = v),
+                          onGroupActivityChanged: (v) =>
+                              setState(() => _notifGroup = v),
+                          onSoundsChanged: (v) =>
+                              setState(() => _notifSounds = v),
+                          onBadgesChanged: (v) =>
+                              setState(() => _notifBadges = v),
+                          onPreviewsChanged: (v) =>
+                              setState(() => _notifPreviews = v),
                           onRequestPermission: () async {
                             // Wire to FirebaseMessaging.instance.requestPermission or permission_handler.
                             return true;
@@ -183,11 +192,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         builder: (_) => PrivacySecurity(
                           appLockEnabled: _appLockEnabled,
                           requireOnLaunch: _appLockRequireOnLaunch,
-                          onAppLockChanged: (v) => setState(() => _appLockEnabled = v),
-                          onRequireOnLaunchChanged: (v) => setState(() => _appLockRequireOnLaunch = v),
+                          onAppLockChanged: (v) =>
+                              setState(() => _appLockEnabled = v),
+                          onRequireOnLaunchChanged: (v) =>
+                              setState(() => _appLockRequireOnLaunch = v),
                           onAppUnlockTest: () async => true,
                           screenSecurityEnabled: _screenSecure,
-                          onScreenSecurityChanged: (v) => setState(() => _screenSecure = v),
+                          onScreenSecurityChanged: (v) =>
+                              setState(() => _screenSecure = v),
                           onExportData: () async {},
                           onClearSearchHistory: () async {},
                           onClearLocationHistory: () async {},
@@ -210,8 +222,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           wifiOnly: _wifiOnly,
                           autoUpdate: _autoUpdate,
                           items: const <OfflineItem>[],
-                          onToggleWifiOnly: (v) => setState(() => _wifiOnly = v),
-                          onToggleAutoUpdate: (v) => setState(() => _autoUpdate = v),
+                          onToggleWifiOnly: (v) =>
+                              setState(() => _wifiOnly = v),
+                          onToggleAutoUpdate: (v) =>
+                              setState(() => _autoUpdate = v),
                           onAddNew: () {},
                           onRemoveAll: () async {
                             setState(() => _bytesUsed = 0);
@@ -232,8 +246,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           supportEmail: 'support@navee.app',
                           supportPhone: '+1 555 0100',
                           faqs: const [
-                            (q: 'How to plan a trip?', a: 'Use Plan with Navee AI or Planning search.'),
-                            (q: 'How to invite friends?', a: 'Open a trip group and tap Invite.'),
+                            (
+                              q: 'How to plan a trip?',
+                              a: 'Use Plan with Navee AI or Planning search.'
+                            ),
+                            (
+                              q: 'How to invite friends?',
+                              a: 'Open a trip group and tap Invite.'
+                            ),
                           ],
                           privacyUrl: Uri.parse('https://example.com/privacy'),
                           termsUrl: Uri.parse('https://example.com/terms'),
@@ -251,9 +271,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Card(
                 elevation: 0,
                 color: cs.surfaceContainerHighest,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
                 child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   leading: Container(
                     width: 40,
                     height: 40,
@@ -265,7 +287,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     child: Icon(Icons.info_outline, color: cs.primary),
                   ),
                   title: const Text('About'),
-                  subtitle: Text('Version 1.0.0 (100)', style: TextStyle(color: cs.onSurfaceVariant)),
+                  subtitle: Text('Version 1.0.0 (100)',
+                      style: TextStyle(color: cs.onSurfaceVariant)),
                 ),
               ),
             ],

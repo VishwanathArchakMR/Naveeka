@@ -15,8 +15,8 @@ class RegisterScreen extends ConsumerStatefulWidget {
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen>
     with TickerProviderStateMixin {
-  late final AnimationController _animController =
-      AnimationController(vsync: this, duration: const Duration(milliseconds: 700));
+  late final AnimationController _animController = AnimationController(
+      vsync: this, duration: const Duration(milliseconds: 700));
   late final Animation<double> _fade =
       CurvedAnimation(parent: _animController, curve: Curves.easeInOut);
   late final Animation<Offset> _slide = Tween<Offset>(
@@ -72,7 +72,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                               ),
                             ],
                           ),
-                          child: const Icon(Icons.person_add, color: Colors.white, size: 44),
+                          child: const Icon(Icons.person_add,
+                              color: Colors.white, size: 44),
                         ),
                         const SizedBox(height: 20),
                         const Text(
@@ -86,7 +87,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                         const SizedBox(height: 6),
                         Text(
                           'Join Naveeka and start exploring soulful journeys',
-                          style: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+                          style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.7)),
                           textAlign: TextAlign.center,
                         ),
                       ],

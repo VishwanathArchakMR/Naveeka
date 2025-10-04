@@ -7,9 +7,9 @@ class ApiClient {
   const ApiClient(this.baseUrl);
 
   Map<String, String> get _jsonHeaders => const {
-    'Accept': 'application/json',
-    'Content-Type': 'application/json',
-  };
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      };
 
   Future<Map<String, dynamic>> getHealth() async {
     final res = await http.get(Uri.parse('$baseUrl/health'), headers: _jsonHeaders);
@@ -19,7 +19,7 @@ class ApiClient {
     throw Exception('Health failed: ${res.statusCode} ${res.body}');
   }
 
-  // Activities API
+  // Example: seeded activities
   Future<List<dynamic>> getActivities({Map<String, String>? query}) async {
     final uri = Uri.parse('$baseUrl/api/activities').replace(queryParameters: query);
     final res = await http.get(uri, headers: _jsonHeaders);
@@ -31,45 +31,43 @@ class ApiClient {
     throw Exception('Activities failed: ${res.statusCode} ${res.body}');
   }
 
-  Future<Map<String, dynamic>> getActivityById(String id) async {
-    final res = await http.get(Uri.parse('$baseUrl/api/activities/$id'), headers: _jsonHeaders);
-    if (res.statusCode >= 200 && res.statusCode < 300) {
-      final body = json.decode(res.body) as Map<String, dynamic>;
-      return body['data'] as Map<String, dynamic>;
-    }
-    throw Exception('Activity failed: ${res.statusCode} ${res.body}');
-  }
-
-  // Places API
-  Future<List<dynamic>> getPlaces({Map<String, String>? query}) async {
+  // Places list (supports optional filters via query params)
+  Future<List<Map<String, dynamic>>> getPlaces({Map<String, String>? query}) async {
     final uri = Uri.parse('$baseUrl/api/places').replace(queryParameters: query);
     final res = await http.get(uri, headers: _jsonHeaders);
     if (res.statusCode >= 200 && res.statusCode < 300) {
-      final body = json.decode(res.body) as Map<String, dynamic>;
+      final decoded = json.decode(res.body);
+      if (decoded is List) {
+        // API returns array at top-level
+        return decoded.cast<Map<String, dynamic>>();
+      }
+      // API returns { data: { places: [...] } }
+      final body = decoded as Map<String, dynamic>;
       final data = body['data'] as Map<String, dynamic>? ?? {};
-      return (data['places'] as List<dynamic>? ?? []);
+      final list = data['places'] as List<dynamic>? ?? [];
+      return list.cast<Map<String, dynamic>>();
     }
     throw Exception('Places failed: ${res.statusCode} ${res.body}');
   }
 
-  Future<Map<String, dynamic>> getPlaceById(String id) async {
-    final res = await http.get(Uri.parse('$baseUrl/api/places/$id'), headers: _jsonHeaders);
-    if (res.statusCode >= 200 && res.statusCode < 300) {
-      final body = json.decode(res.body) as Map<String, dynamic>;
-      return body['data'] as Map<String, dynamic>;
-    }
-    throw Exception('Place failed: ${res.statusCode} ${res.body}');
-  }
-
-  // Regions API
-  Future<List<dynamic>> getRegions({Map<String, String>? query}) async {
+  // Regions list (supports optional filters via query params)
+  Future<List<Map<String, dynamic>>> getRegions({Map<String, String>? query}) async {
     final uri = Uri.parse('$baseUrl/api/regions').replace(queryParameters: query);
     final res = await http.get(uri, headers: _jsonHeaders);
     if (res.statusCode >= 200 && res.statusCode < 300) {
-      final body = json.decode(res.body) as Map<String, dynamic>;
+      final decoded = json.decode(res.body);
+      if (decoded is List) {
+        return decoded.cast<Map<String, dynamic>>();
+      }
+      final body = decoded as Map<String, dynamic>;
       final data = body['data'] as Map<String, dynamic>? ?? {};
-      return (data['regions'] as List<dynamic>? ?? []);
+      final list = data['regions'] as List<dynamic>? ?? [];
+      return list.cast<Map<String, dynamic>>();
     }
     throw Exception('Regions failed: ${res.statusCode} ${res.body}');
   }
+
+  // Add other seeded lists similarly:
+  // Future<List<Map<String, dynamic>>> getAirports({Map<String, String>? query}) async { ... }
+  // Future<List<Map<String, dynamic>>> getHotels({Map<String, String>? query}) async { ... }
 }

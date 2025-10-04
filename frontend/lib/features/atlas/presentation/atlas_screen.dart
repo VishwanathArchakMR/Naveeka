@@ -60,19 +60,22 @@ class _AtlasScreenState extends ConsumerState<AtlasScreen> {
       List<Place> places = [];
 
       if (widget.nearby == true) {
-        final nearbyPlacesData = atlasData['nearbyPlaces'] as List<dynamic>? ?? [];
+        final nearbyPlacesData =
+            atlasData['nearbyPlaces'] as List<dynamic>? ?? [];
         places = nearbyPlacesData
             .cast<Map<String, dynamic>>()
             .map((data) => Place.fromJson(data))
             .toList();
       } else if (widget.trending == true) {
-        final trendingPlacesData = atlasData['trendingPlaces'] as List<dynamic>? ?? [];
+        final trendingPlacesData =
+            atlasData['trendingPlaces'] as List<dynamic>? ?? [];
         places = trendingPlacesData
             .cast<Map<String, dynamic>>()
             .map((data) => Place.fromJson(data))
             .toList();
       } else if (widget.region != null) {
-        final regionPlacesData = atlasData['regionPlaces']?[widget.region] as List<dynamic>? ?? [];
+        final regionPlacesData =
+            atlasData['regionPlaces']?[widget.region] as List<dynamic>? ?? [];
         places = regionPlacesData
             .cast<Map<String, dynamic>>()
             .map((data) => Place.fromJson(data))
@@ -99,19 +102,23 @@ class _AtlasScreenState extends ConsumerState<AtlasScreen> {
       if (_searchQuery.isNotEmpty) {
         final query = _searchQuery.toLowerCase();
         final matchesName = place.name.toLowerCase().contains(query);
-        final matchesDescription = place.description?.toLowerCase().contains(query) ?? false;
-        final matchesTags = place.tags.any((tag) => tag.toLowerCase().contains(query));
+        final matchesDescription =
+            place.description?.toLowerCase().contains(query) ?? false;
+        final matchesTags =
+            place.tags.any((tag) => tag.toLowerCase().contains(query));
         if (!matchesName && !matchesDescription && !matchesTags) {
           return false;
         }
       }
 
-      if (_selectedCategory != 'all' && place.category.name != _selectedCategory) {
+      if (_selectedCategory != 'all' &&
+          place.category.name != _selectedCategory) {
         return false;
       }
 
       if (_selectedEmotion != 'all') {
-        final hasEmotion = place.emotions.any((emotion) => emotion.name == _selectedEmotion);
+        final hasEmotion =
+            place.emotions.any((emotion) => emotion.name == _selectedEmotion);
         if (!hasEmotion) return false;
       }
 
@@ -187,7 +194,6 @@ class _AtlasScreenState extends ConsumerState<AtlasScreen> {
                 onSearch: _onSearchChanged,
               ),
             ),
-
             AtlasFilterChips(
               selectedCategory: _selectedCategory,
               selectedEmotion: _selectedEmotion,
@@ -205,16 +211,12 @@ class _AtlasScreenState extends ConsumerState<AtlasScreen> {
                 _onFilterChanged();
               },
             ),
-
             const SizedBox(height: 8),
-
             MapListToggle(
               currentView: _currentView,
               onViewChanged: _onViewToggle,
             ),
-
             const SizedBox(height: 8),
-
             if (!_isLoading)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -223,11 +225,16 @@ class _AtlasScreenState extends ConsumerState<AtlasScreen> {
                     Text(
                       '${_filteredPlaces.length} places found',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                      ),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withValues(alpha: 0.7),
+                          ),
                     ),
                     const Spacer(),
-                    if (_searchQuery.isNotEmpty || _selectedCategory != 'all' || _selectedEmotion != 'all')
+                    if (_searchQuery.isNotEmpty ||
+                        _selectedCategory != 'all' ||
+                        _selectedEmotion != 'all')
                       TextButton(
                         onPressed: () {
                           setState(() {
@@ -243,9 +250,7 @@ class _AtlasScreenState extends ConsumerState<AtlasScreen> {
                   ],
                 ),
               ),
-
             const SizedBox(height: 8),
-
             Expanded(
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
@@ -295,7 +300,10 @@ class _AtlasScreenState extends ConsumerState<AtlasScreen> {
             Icon(
               Icons.search_off_outlined,
               size: 64,
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.4),
             ),
             const SizedBox(height: 16),
             Text(
@@ -308,8 +316,11 @@ class _AtlasScreenState extends ConsumerState<AtlasScreen> {
                   ? 'Try adjusting your search or filters'
                   : 'Try searching for places or changing filters',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-              ),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.7),
+                  ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),

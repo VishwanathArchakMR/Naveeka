@@ -94,19 +94,23 @@ class AuthApi {
 
     if (response['data'] is Map) {
       final data = Map<String, dynamic>.from(response['data'] as Map);
-      access = _asString(access) ?? _asString(data['accessToken']) ?? _asString(data['token']);
+      access = _asString(access) ??
+          _asString(data['accessToken']) ??
+          _asString(data['token']);
       refresh = _asString(refresh) ?? _asString(data['refreshToken']);
       final expRaw = data['expiresAt'];
       if (expRaw is String) {
         expiresAt = DateTime.tryParse(expRaw);
       } else if (expRaw is int) {
         // seconds since epoch
-        expiresAt = DateTime.fromMillisecondsSinceEpoch(expRaw * 1000, isUtc: true);
+        expiresAt =
+            DateTime.fromMillisecondsSinceEpoch(expRaw * 1000, isUtc: true);
       }
     }
 
     if (access != null && access.isNotEmpty) {
-      await TokenStorage.save(access, expiresAt: expiresAt); // secure on device, prefs on web [21][22]
+      await TokenStorage.save(access,
+          expiresAt: expiresAt); // secure on device, prefs on web [21][22]
       if (refresh != null && refresh.isNotEmpty) {
         await TokenStorage.instance.saveTokens(
           accessToken: access,

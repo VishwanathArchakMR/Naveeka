@@ -1,7 +1,8 @@
 // lib/core/errors/error_mapper.dart
 
 import 'dart:async' show TimeoutException;
-import 'dart:io' show SocketException, HttpException, HandshakeException, TlsException;
+import 'dart:io'
+    show SocketException, HttpException, HandshakeException, TlsException;
 import 'package:dio/dio.dart';
 
 import 'app_exception.dart';
@@ -24,7 +25,8 @@ class ErrorMapper {
     // Network connectivity & HTTP client layer
     if (error is SocketException || error is HttpException) {
       // FIX: use positional args (message, cause, stackTrace)
-      return AppException.network('Network connection error', error, stackTrace);
+      return AppException.network(
+          'Network connection error', error, stackTrace);
     }
     if (error is TimeoutException) {
       // FIX: use positional args (message, cause, stackTrace)
@@ -65,5 +67,6 @@ class ErrorMapper {
   }
 
   /// Convenience wrapper to map an exception within a catch block.
-  static AppException mapCurrent(Object error) => map(error, StackTrace.current);
+  static AppException mapCurrent(Object error) =>
+      map(error, StackTrace.current);
 }

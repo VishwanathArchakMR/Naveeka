@@ -48,8 +48,9 @@ class ApiResult<T> {
   }
 
   @override
-  String toString() =>
-      success ? 'ApiResult.ok($data)' : 'ApiResult.fail(${error?.safeMessage})'; // [2]
+  String toString() => success
+      ? 'ApiResult.ok($data)'
+      : 'ApiResult.fail(${error?.safeMessage})'; // [2]
 
   /// Execute an async function and wrap its outcome as ApiResult, mapping errors consistently. [2]
   static Future<ApiResult<R>> guardFuture<R>(Future<R> Function() func) async {
@@ -82,4 +83,3 @@ class ApiResult<T> {
     }
   }
 }
-

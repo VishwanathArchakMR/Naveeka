@@ -53,7 +53,6 @@ class ChatArgs {
     this.maxTokens,
     this.extra,
   });
-
   final List<Map<String, String>> messages;
   final double? temperature;
   final int? maxTokens;
@@ -69,8 +68,8 @@ class ChatArgs {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(temperature, maxTokens, _deepHash(messages), _deepHash(extra));
+  int get hashCode => Object.hash(
+      temperature, maxTokens, _deepHash(messages), _deepHash(extra));
 
   static bool _listEquals(List a, List b) {
     if (identical(a, b)) return true;
@@ -94,13 +93,17 @@ class ChatArgs {
   static int _deepHash(Object? v) {
     if (v == null) return 0;
     if (v is List) return Object.hashAll(v.map(_deepHash));
-    if (v is Map) return Object.hashAll(v.entries.map((e) => Object.hash(e.key, _deepHash(e.value))));
+    if (v is Map) {
+      return Object.hashAll(
+          v.entries.map((e) => Object.hash(e.key, _deepHash(e.value))));
+    }
     return v.hashCode;
   }
 }
 
 /// Auto‑dispose family for calling chat; throws ApiError on failure.
-final chatProvider = FutureProvider.autoDispose.family<Map<String, dynamic>, ChatArgs>((ref, args) async {
+final chatProvider = FutureProvider.autoDispose
+    .family<Map<String, dynamic>, ChatArgs>((ref, args) async {
   final api = ref.watch(naveeAiApiProvider);
   final s = ref.read(aiSettingsProvider);
   final res = await api.chat(
@@ -116,10 +119,11 @@ final chatProvider = FutureProvider.autoDispose.family<Map<String, dynamic>, Cha
 }); // FutureProvider.family performs and caches async operations parameterized by arguments; autoDispose frees memory when unused. [15][12][17]
 
 /// Suggestion family (destination -> list of suggestions)
-final suggestItinerariesProvider =
-    FutureProvider.autoDispose.family<List<Map<String, dynamic>>, String>((ref, destination) async {
+final suggestItinerariesProvider = FutureProvider.autoDispose
+    .family<List<Map<String, dynamic>>, String>((ref, destination) async {
   final api = ref.watch(naveeAiApiProvider);
-  final res = await api.suggestItineraries(destination: destination, maxSuggestions: 6);
+  final res =
+      await api.suggestItineraries(destination: destination, maxSuggestions: 6);
   return res.fold(
     onSuccess: (list) => list,
     onError: (e) => throw e,
@@ -191,8 +195,8 @@ class PlanTripArgs {
   }
 }
 
-final planTripProvider =
-    FutureProvider.autoDispose.family<Map<String, dynamic>, PlanTripArgs>((ref, args) async {
+final planTripProvider = FutureProvider.autoDispose
+    .family<Map<String, dynamic>, PlanTripArgs>((ref, args) async {
   final api = ref.watch(naveeAiApiProvider);
   final s = ref.read(aiSettingsProvider);
   final res = await api.planTrip(
@@ -215,8 +219,8 @@ final planTripProvider =
 }); // FutureProvider.family gives a clean async API surface for planning requests while letting the UI consume AsyncValue via ref.watch. [15][12]
 
 /// Example: moderation wrapper (string input)
-final moderationProvider =
-    FutureProvider.autoDispose.family<Map<String, dynamic>, String>((ref, input) async {
+final moderationProvider = FutureProvider.autoDispose
+    .family<Map<String, dynamic>, String>((ref, input) async {
   final api = ref.watch(naveeAiApiProvider);
   final s = ref.read(aiSettingsProvider);
   if (!s.useModeration) return <String, dynamic>{'skipped': true};

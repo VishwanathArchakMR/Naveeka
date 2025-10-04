@@ -43,7 +43,8 @@ class NaveeAiScreen extends StatefulWidget {
   State<NaveeAiScreen> createState() => _NaveeAiScreenState();
 }
 
-class _NaveeAiScreenState extends State<NaveeAiScreen> with SingleTickerProviderStateMixin {
+class _NaveeAiScreenState extends State<NaveeAiScreen>
+    with SingleTickerProviderStateMixin {
   late final TabController _tabs;
   late AiSettings _settings;
 
@@ -53,7 +54,10 @@ class _NaveeAiScreenState extends State<NaveeAiScreen> with SingleTickerProvider
   @override
   void initState() {
     super.initState();
-    _tabs = TabController(length: 4, vsync: this, initialIndex: widget.initialTabIndex.clamp(0, 3));
+    _tabs = TabController(
+        length: 4,
+        vsync: this,
+        initialIndex: widget.initialTabIndex.clamp(0, 3));
     _settings = widget.settings ??
         const AiSettings(
           baseUrl: 'https://api.openai.com/v1',
@@ -78,8 +82,10 @@ class _NaveeAiScreenState extends State<NaveeAiScreen> with SingleTickerProvider
     }
   } // Settings are presented via a shaped modal bottom sheet and return updated values using Navigator.pop for clean state handoff. [10]
 
-  NaveeAiApi get _api =>
-      NaveeAiApi(baseUrl: _settings.baseUrl, apiKey: _settings.apiKey, defaultModel: _settings.model);
+  NaveeAiApi get _api => NaveeAiApi(
+      baseUrl: _settings.baseUrl,
+      apiKey: _settings.apiKey,
+      defaultModel: _settings.model);
 
   void _addThreadFromPrompt(String prompt) {
     setState(() {
@@ -147,17 +153,20 @@ class _NaveeAiScreenState extends State<NaveeAiScreen> with SingleTickerProvider
               _tabs.index = 0;
             });
           },
-          onDelete: (t) => setState(() => _threads.removeWhere((x) => x.id == t.id)),
+          onDelete: (t) =>
+              setState(() => _threads.removeWhere((x) => x.id == t.id)),
           onRename: (t, name) {
             final i = _threads.indexWhere((x) => x.id == t.id);
             if (i != -1) {
-              setState(() => _threads[i] = _threads[i].copyWith(title: name, updatedAt: DateTime.now()));
+              setState(() => _threads[i] =
+                  _threads[i].copyWith(title: name, updatedAt: DateTime.now()));
             }
           },
           onTogglePin: (t, pinned) {
             final i = _threads.indexWhere((x) => x.id == t.id);
             if (i != -1) {
-              setState(() => _threads[i] = _threads[i].copyWith(pinned: pinned, updatedAt: DateTime.now()));
+              setState(() => _threads[i] = _threads[i]
+                  .copyWith(pinned: pinned, updatedAt: DateTime.now()));
             }
           },
           onReorder: (oldIndex, newIndex) {
@@ -206,7 +215,8 @@ class _NaveeAiScreenState extends State<NaveeAiScreen> with SingleTickerProvider
             onFinal: (text) {
               // Default behavior: switch to Chat and prefill a new thread
               _addThreadFromPrompt(text);
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Voice captured')));
+              ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Voice captured')));
             },
           ),
         ],

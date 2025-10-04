@@ -66,11 +66,13 @@ class OfflineManager {
     _offlineMode = await LocalStorage.instance.getBool(_kOfflineMode) ?? false;
 
     // Determine initial connectivity (now returns a List<ConnectivityResult>)
-    final List<ConnectivityResult> results = await _connectivity.checkConnectivity();
+    final List<ConnectivityResult> results =
+        await _connectivity.checkConnectivity();
     _updateStatusFromResults(results);
 
     // Listen for changes (now emits List<ConnectivityResult>)
-    _connSub = _connectivity.onConnectivityChanged.listen((List<ConnectivityResult> results) {
+    _connSub = _connectivity.onConnectivityChanged
+        .listen((List<ConnectivityResult> results) {
       _updateStatusFromResults(results);
     });
   }
@@ -109,7 +111,8 @@ class OfflineManager {
 
   /// Add a task to the retry queue. The task will be executed when `canGoOnline` is true.
   /// Returns the queued task ID for tracking.
-  String enqueue(Future<void> Function() task, {String? id, int maxAttempts = 3}) {
+  String enqueue(Future<void> Function() task,
+      {String? id, int maxAttempts = 3}) {
     final taskId = id ?? DateTime.now().microsecondsSinceEpoch.toString();
     _queue.add(QueuedTask(id: taskId, run: task, maxAttempts: maxAttempts));
     _scheduleQueueDrain(immediate: canGoOnline);
@@ -121,7 +124,9 @@ class OfflineManager {
     _drainTimer?.cancel();
     if (!canGoOnline) return;
 
-    _drainTimer = Timer(immediate ? Duration.zero : const Duration(milliseconds: 250), () async {
+    _drainTimer =
+        Timer(immediate ? Duration.zero : const Duration(milliseconds: 250),
+            () async {
       // Drain tasks sequentially to avoid stampede on reconnect
       var backoffMs = 200;
       while (_queue.isNotEmpty && canGoOnline) {
@@ -136,12 +141,14 @@ class OfflineManager {
             // Drop task after max attempts
             _queue.removeAt(0);
             if (kDebugMode) {
-              debugPrint('[offline] Dropped task ${task.id} after ${task.attempts} attempts: $e');
+              debugPrint(
+                  '[offline] Dropped task ${task.id} after ${task.attempts} attempts: $e');
             }
           } else {
             // Exponential backoff before retrying queue
             if (kDebugMode) {
-              debugPrint('[offline] Retry task ${task.id} attempt ${task.attempts}: $e');
+              debugPrint(
+                  '[offline] Retry task ${task.id} attempt ${task.attempts}: $e');
             }
             await Future<void>.delayed(Duration(milliseconds: backoffMs));
             backoffMs = (backoffMs * 2).clamp(200, 4000);
@@ -156,7 +163,8 @@ class OfflineManager {
   /// Persist last online timestamp (called automatically on online transitions).
   Future<void> _setLastOnlineNow() async {
     _lastOnlineAt = DateTime.now();
-    await LocalStorage.instance.setCacheTimestamp(_kLastOnlineTs, _lastOnlineAt!);
+    await LocalStorage.instance
+        .setCacheTimestamp(_kLastOnlineTs, _lastOnlineAt!);
   }
 
   /// For stale-data logic: returns whether the last known online time exceeds maxAge.
@@ -176,7 +184,8 @@ class OfflineManager {
     // If empty, keep unknown to be conservative.
     if (results.isEmpty) {
       _status = NetworkStatus.unknown;
-    } else if (results.contains(ConnectivityResult.none) && results.length == 1) {
+    } else if (results.contains(ConnectivityResult.none) &&
+        results.length == 1) {
       _status = NetworkStatus.offline;
     } else {
       _status = NetworkStatus.online;

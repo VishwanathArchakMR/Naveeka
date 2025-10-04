@@ -19,10 +19,14 @@ abstract class AnalyticsBackend {
   Future<void> init() async {}
   Future<void> setUserId(String? userId) async {}
   Future<void> setUserProperty(String key, String value) async {}
-  Future<void> logEvent(String name, {Map<String, Object?> params = const {}}) async {}
-  Future<void> logScreen(String screenName, {Map<String, Object?> params = const {}}) async {}
-  Future<void> timeEventStart(String name, {Map<String, Object?> params = const {}}) async {}
-  Future<void> timeEventEnd(String name, {Map<String, Object?> params = const {}}) async {}
+  Future<void> logEvent(String name,
+      {Map<String, Object?> params = const {}}) async {}
+  Future<void> logScreen(String screenName,
+      {Map<String, Object?> params = const {}}) async {}
+  Future<void> timeEventStart(String name,
+      {Map<String, Object?> params = const {}}) async {}
+  Future<void> timeEventEnd(String name,
+      {Map<String, Object?> params = const {}}) async {}
   Future<void> flush() async {}
   Future<void> dispose() async {}
 }
@@ -50,25 +54,30 @@ class ConsoleAnalyticsBackend implements AnalyticsBackend {
   }
 
   @override
-  Future<void> logEvent(String name, {Map<String, Object?> params = const {}}) async {
+  Future<void> logEvent(String name,
+      {Map<String, Object?> params = const {}}) async {
     if (!enabled) return;
     debugPrint('[analytics:event] $name ${params.isEmpty ? '' : params}');
   }
 
   @override
-  Future<void> logScreen(String screenName, {Map<String, Object?> params = const {}}) async {
+  Future<void> logScreen(String screenName,
+      {Map<String, Object?> params = const {}}) async {
     if (!enabled) return;
-    debugPrint('[analytics:screen] $screenName ${params.isEmpty ? '' : params}');
+    debugPrint(
+        '[analytics:screen] $screenName ${params.isEmpty ? '' : params}');
   }
 
   @override
-  Future<void> timeEventStart(String name, {Map<String, Object?> params = const {}}) async {
+  Future<void> timeEventStart(String name,
+      {Map<String, Object?> params = const {}}) async {
     if (!enabled) return;
     debugPrint('[analytics:time:start] $name ${params.isEmpty ? '' : params}');
   }
 
   @override
-  Future<void> timeEventEnd(String name, {Map<String, Object?> params = const {}}) async {
+  Future<void> timeEventEnd(String name,
+      {Map<String, Object?> params = const {}}) async {
     if (!enabled) return;
     debugPrint('[analytics:time:end] $name ${params.isEmpty ? '' : params}');
   }
@@ -111,28 +120,32 @@ class MultiAnalyticsBackend implements AnalyticsBackend {
   }
 
   @override
-  Future<void> logEvent(String name, {Map<String, Object?> params = const {}}) async {
+  Future<void> logEvent(String name,
+      {Map<String, Object?> params = const {}}) async {
     for (final b in children) {
       await b.logEvent(name, params: params);
     }
   }
 
   @override
-  Future<void> logScreen(String screenName, {Map<String, Object?> params = const {}}) async {
+  Future<void> logScreen(String screenName,
+      {Map<String, Object?> params = const {}}) async {
     for (final b in children) {
       await b.logScreen(screenName, params: params);
     }
   }
 
   @override
-  Future<void> timeEventStart(String name, {Map<String, Object?> params = const {}}) async {
+  Future<void> timeEventStart(String name,
+      {Map<String, Object?> params = const {}}) async {
     for (final b in children) {
       await b.timeEventStart(name, params: params);
     }
   }
 
   @override
-  Future<void> timeEventEnd(String name, {Map<String, Object?> params = const {}}) async {
+  Future<void> timeEventEnd(String name,
+      {Map<String, Object?> params = const {}}) async {
     for (final b in children) {
       await b.timeEventEnd(name, params: params);
     }
@@ -159,7 +172,8 @@ class Analytics {
   static final Analytics _instance = Analytics._internal();
   static Analytics get instance => _instance;
 
-  AnalyticsBackend _backend = const ConsoleAnalyticsBackend(enabled: kDebugMode);
+  AnalyticsBackend _backend =
+      const ConsoleAnalyticsBackend(enabled: kDebugMode);
   bool _enabled = true;
   bool _consentGranted = true;
 
@@ -193,29 +207,34 @@ class Analytics {
     await _backend.setUserProperty(key, value);
   }
 
-  Future<void> log(String name, {Map<String, Object?> params = const {}}) async {
+  Future<void> log(String name,
+      {Map<String, Object?> params = const {}}) async {
     if (!isEnabled) return;
     await _backend.logEvent(name, params: params);
   }
 
   /// Screen tracking helper; integrate with your Navigator/GoRouter observer callback.
-  Future<void> screen(String screenName, {Map<String, Object?> params = const {}}) async {
+  Future<void> screen(String screenName,
+      {Map<String, Object?> params = const {}}) async {
     if (!isEnabled) return;
     await _backend.logScreen(screenName, params: params);
   }
 
   /// Start timing an event; pairs with end(name).
-  Future<void> timeStart(String name, {Map<String, Object?> params = const {}}) async {
+  Future<void> timeStart(String name,
+      {Map<String, Object?> params = const {}}) async {
     if (!isEnabled) return;
     _timers[name] = DateTime.now();
     await _backend.timeEventStart(name, params: params);
   }
 
   /// End timing; durationMs is attached to params automatically.
-  Future<void> timeEnd(String name, {Map<String, Object?> params = const {}}) async {
+  Future<void> timeEnd(String name,
+      {Map<String, Object?> params = const {}}) async {
     if (!isEnabled) return;
     final start = _timers.remove(name);
-    final durationMs = start == null ? null : DateTime.now().difference(start).inMilliseconds;
+    final durationMs =
+        start == null ? null : DateTime.now().difference(start).inMilliseconds;
     final merged = {
       ...params,
       if (durationMs != null) 'durationMs': durationMs,
