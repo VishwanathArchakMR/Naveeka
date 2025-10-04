@@ -1,5 +1,6 @@
 // lib/features/trails/presentation/widgets/feed_card.dart
 
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -77,7 +78,10 @@ class FeedCard extends StatelessWidget {
                       errorWidget: (context, url, error) => Container(
                         color: cs.surfaceContainerHigh.withValues(alpha: 1.0),
                         alignment: Alignment.center,
-                        child: Icon(Icons.broken_image_outlined, color: cs.onSurfaceVariant),
+                        child: Icon(
+                          Icons.broken_image_outlined,
+                          color: cs.onSurfaceVariant,
+                        ),
                       ),
                     ),
                   ),
@@ -96,6 +100,13 @@ class FeedCard extends StatelessWidget {
                           ],
                         ),
                       ),
+                    ),
+                  ),
+                  // Subtle glass layer for polish
+                  Positioned.fill(
+                    child: BackdropFilter(
+                      filter: ui.ImageFilter.blur(sigmaX: 1.5, sigmaY: 1.5),
+                      child: const SizedBox.expand(),
                     ),
                   ),
                   // Top-right actions
@@ -203,7 +214,10 @@ class _TitleAndStats extends StatelessWidget {
               const SizedBox(width: 4),
               Text(
                 rating!.toStringAsFixed(1),
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
               const SizedBox(width: 10),
             ],
@@ -234,7 +248,11 @@ class _TitleAndStats extends StatelessWidget {
                 ),
                 child: Text(
                   difficulty!.toUpperCase(),
-                  style: TextStyle(color: cs.primary, fontWeight: FontWeight.w800, fontSize: 11),
+                  style: TextStyle(
+                    color: cs.primary,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 11,
+                  ),
                 ),
               ),
           ],
@@ -265,7 +283,11 @@ class _TagsRow extends StatelessWidget {
           ),
           child: Text(
             t,
-            style: TextStyle(color: cs.onSurfaceVariant, fontWeight: FontWeight.w700, fontSize: 12),
+            style: TextStyle(
+              color: cs.onSurfaceVariant,
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
+            ),
           ),
         );
       }).toList(growable: false),
@@ -287,15 +309,24 @@ class _GlassIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return Material(
-      color: Colors.black.withValues(alpha: 0.28),
-      shape: const CircleBorder(),
-      child: InkWell(
-        customBorder: const CircleBorder(),
-        onTap: onPressed,
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Icon(icon, color: onPressed == null ? cs.onSurfaceVariant : color, size: 20),
+    return ClipOval(
+      child: BackdropFilter(
+        filter: ui.ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+        child: Material(
+          color: cs.surface.withValues(alpha: 0.28),
+          shape: const CircleBorder(),
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: onPressed,
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Icon(
+                icon,
+                color: onPressed == null ? cs.onSurfaceVariant : color,
+                size: 20,
+              ),
+            ),
+          ),
         ),
       ),
     );

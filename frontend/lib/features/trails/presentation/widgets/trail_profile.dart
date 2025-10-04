@@ -1,5 +1,6 @@
 // lib/features/trails/presentation/widgets/trail_profile.dart
 
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -63,6 +64,7 @@ class _TrailProfileState extends State<TrailProfile> with TickerProviderStateMix
   @override
   Widget build(BuildContext context) {
     final summary = widget.detail.summary;
+    final cs = Theme.of(context).colorScheme;
 
     return DefaultTabController(
       length: 4,
@@ -104,12 +106,13 @@ class _TrailProfileState extends State<TrailProfile> with TickerProviderStateMix
                   fit: StackFit.expand,
                   children: [
                     // Cover image with optional Hero
-                    widget.heroTag != null
-                        ? Hero(
-                            tag: widget.heroTag!,
-                            child: _CoverImage(url: summary.thumbnailUrl),
-                          )
-                        : _CoverImage(url: summary.thumbnailUrl),
+                    if (widget.heroTag != null)
+                      Hero(
+                        tag: widget.heroTag!,
+                        child: _CoverImage(url: summary.thumbnailUrl),
+                      )
+                    else
+                      _CoverImage(url: summary.thumbnailUrl),
 
                     // Legibility gradient
                     Positioned.fill(
@@ -128,7 +131,13 @@ class _TrailProfileState extends State<TrailProfile> with TickerProviderStateMix
                         ),
                       ),
                     ),
-
+                    // Mild frosted overlay for polish
+                    Positioned.fill(
+                      child: BackdropFilter(
+                        filter: ui.ImageFilter.blur(sigmaX: 1.2, sigmaY: 1.2),
+                        child: const SizedBox.expand(),
+                      ),
+                    ),
                     // Bottom-left title block
                     Positioned(
                       left: 16,
@@ -144,6 +153,7 @@ class _TrailProfileState extends State<TrailProfile> with TickerProviderStateMix
                   ],
                 ),
               ),
+              backgroundColor: cs.surface,
             ),
 
             // Pinned TabBar
@@ -407,6 +417,7 @@ class _StatTile extends StatelessWidget {
           Icon(icon, size: 18, color: cs.primary),
           const SizedBox(width: 6),
           Text('$label: ', style: TextStyle(color: cs.onSurfaceVariant, fontWeight: FontWeight.w700)),
+          const SizedBox(width: 2),
           Text(value, style: const TextStyle(fontWeight: FontWeight.w900)),
         ],
       ),

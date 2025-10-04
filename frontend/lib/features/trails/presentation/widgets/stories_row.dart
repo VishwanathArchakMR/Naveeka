@@ -1,8 +1,10 @@
 // lib/features/trails/presentation/widgets/stories_row.dart
 
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
+@immutable
 class StoryItem {
   const StoryItem({
     required this.id,
@@ -10,6 +12,7 @@ class StoryItem {
     required this.imageUrl,
     this.unread = false,
     this.heroTag,
+    this.progress = 0.0, // 0.0..1.0 for optional seen progress ring
   });
 
   final String id;
@@ -17,6 +20,7 @@ class StoryItem {
   final String imageUrl;
   final bool unread;
   final Object? heroTag;
+  final double progress;
 }
 
 class StoriesRow extends StatelessWidget {
@@ -24,11 +28,12 @@ class StoriesRow extends StatelessWidget {
     super.key,
     required this.items,
     this.onOpenStory, // void Function(StoryItem item)
-    this.onAddStory,  // VoidCallback
+    this.onAddStory, // VoidCallback
     this.padding = const EdgeInsets.fromLTRB(12, 8, 12, 8),
     this.itemExtent = 76,
     this.spacing = 12,
     this.showTitles = true,
+    this.enableProgress = true,
   });
 
   final List<StoryItem> items;
@@ -39,16 +44,18 @@ class StoriesRow extends StatelessWidget {
   final double itemExtent;
   final double spacing;
   final bool showTitles;
+  final bool enableProgress;
 
   @override
   Widget build(BuildContext context) {
+    final total = (onAddStory != null ? 1 : 0) + items.length;
     return SizedBox(
       height: showTitles ? (itemExtent + 34) : itemExtent,
       child: ListView.separated(
         padding: padding,
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
-        itemCount: (onAddStory != null ? 1 : 0) + items.length,
+        itemCount: total,
         separatorBuilder: (_, __) => SizedBox(width: spacing),
         itemBuilder: (context, index) {
           if (onAddStory != null && index == 0) {
@@ -63,6 +70,7 @@ class StoriesRow extends StatelessWidget {
             item: item,
             size: itemExtent,
             showTitle: showTitles,
+            enableProgress: enableProgress,
             onTap: onOpenStory == null ? null : () => onOpenStory!(item),
           );
         },
@@ -71,45 +79,58 @@ class StoriesRow extends StatelessWidget {
   }
 }
 
-class _StoryTile extends StatelessWidget {
+class _StoryTile extends StatefulWidget {
   const _StoryTile({
     required this.item,
     required this.size,
     required this.showTitle,
+    required this.enableProgress,
     this.onTap,
   });
 
   final StoryItem item;
   final double size;
   final bool showTitle;
+  final bool enableProgress;
   final VoidCallback? onTap;
+
+  @override
+  State<_StoryTile> createState() => _StoryTileState();
+}
+
+class _StoryTileState extends State<_StoryTile> {
+  bool _pressed = false;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    final ring = item.unread
-        ? const [Color(0xFFff7e5f), Color(0xFFfeb47b)] // warm gradient ring for unread
-        : [cs.outlineVariant, cs.outlineVariant];
+    final ringColors = widget.item.unread
+        ? <Color>[const Color(0xFFff7e5f), const Color(0xFFfeb47b)]
+        : <Color>[cs.outlineVariant, cs.outlineVariant];
 
     final avatar = ClipOval(
       child: Hero(
-        tag: item.heroTag ?? 'story-${item.id}',
+        tag: widget.item.heroTag ?? 'story-${widget.item.id}',
         child: CachedNetworkImage(
-          imageUrl: item.imageUrl,
-          width: size - 6,
-          height: size - 6,
+          imageUrl: widget.item.imageUrl,
+          width: widget.size - 8,
+          height: widget.size - 8,
           fit: BoxFit.cover,
           placeholder: (context, url) => Container(
-            width: size - 6,
-            height: size - 6,
+            width: widget.size - 8,
+            height: widget.size - 8,
             color: cs.surfaceContainerHigh.withValues(alpha: 1.0),
             alignment: Alignment.center,
-            child: const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)),
+            child: const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
           ),
           errorWidget: (context, url, error) => Container(
-            width: size - 6,
-            height: size - 6,
+            width: widget.size - 8,
+            height: widget.size - 8,
             color: cs.surfaceContainerHigh.withValues(alpha: 1.0),
             alignment: Alignment.center,
             child: Icon(Icons.broken_image_outlined, color: cs.onSurfaceVariant),
@@ -119,40 +140,86 @@ class _StoryTile extends StatelessWidget {
     );
 
     return SizedBox(
-      width: size,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(size),
-        onTap: onTap,
+      width: widget.size,
+      child: GestureDetector(
+        onTapDown: (_) => setState(() => _pressed = true),
+        onTapCancel: () => setState(() => _pressed = false),
+        onTapUp: (_) => setState(() => _pressed = false),
+        onTap: widget.onTap,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Gradient ring (unread) -> inner avatar
-            Container(
-              width: size,
-              height: size,
-              padding: const EdgeInsets.all(3),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(colors: ring),
-              ),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.04),
-                  shape: BoxShape.circle,
-                ),
-                child: avatar,
+            AnimatedScale(
+              duration: const Duration(milliseconds: 120),
+              scale: _pressed ? 0.96 : 1.0,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Unread gradient ring or outline
+                  Container(
+                    width: widget.size,
+                    height: widget.size,
+                    padding: const EdgeInsets.all(3),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(colors: ringColors),
+                    ),
+                  ),
+                  // Frosted inner mask for depth
+                  ClipOval(
+                    child: BackdropFilter(
+                      filter: ui.ImageFilter.blur(sigmaX: 3, sigmaY: 3),
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: cs.surface.withValues(alpha: 0.06),
+                          shape: BoxShape.circle,
+                        ),
+                        child: SizedBox(
+                          width: widget.size - 6,
+                          height: widget.size - 6,
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Avatar image
+                  avatar,
+                  // Optional progress ring (seen progress)
+                  if (widget.enableProgress && widget.item.progress > 0)
+                    SizedBox(
+                      width: widget.size + 2,
+                      height: widget.size + 2,
+                      child: TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0, end: widget.item.progress.clamp(0.0, 1.0)),
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOutCubic,
+                        builder: (context, value, _) {
+                          return CircularProgressIndicator(
+                            strokeWidth: 3,
+                            value: value == 0 ? null : value,
+                            // Use a soft on-surface color for subtle overlay
+                            color: cs.onSurfaceVariant,
+                            backgroundColor: Colors.transparent,
+                          );
+                        },
+                      ),
+                    ),
+                ],
               ),
             ),
-            if (showTitle) ...[
+            if (widget.showTitle) ...[
               const SizedBox(height: 6),
               SizedBox(
-                width: size + 12,
+                width: widget.size + 12,
                 child: Text(
-                  item.title,
+                  widget.item.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: cs.onSurface, fontWeight: FontWeight.w700, fontSize: 12),
+                  style: TextStyle(
+                    color: cs.onSurface,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12,
+                  ),
                 ),
               ),
             ],
@@ -194,7 +261,11 @@ class _AddTile extends StatelessWidget {
                     border: Border.all(color: cs.outlineVariant),
                   ),
                   alignment: Alignment.center,
-                  child: Icon(Icons.person_outline, color: cs.onSurfaceVariant, size: size * 0.46),
+                  child: Icon(
+                    Icons.person_outline,
+                    color: cs.onSurfaceVariant,
+                    size: size * 0.46,
+                  ),
                 ),
                 Positioned(
                   right: 4,
@@ -219,7 +290,11 @@ class _AddTile extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: cs.onSurface, fontWeight: FontWeight.w700, fontSize: 12),
+                  style: TextStyle(
+                    color: cs.onSurface,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12,
+                  ),
                 ),
               ),
             ],

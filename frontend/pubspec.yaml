@@ -89,6 +89,9 @@ dependencies:
   # Offline & Caching
   connectivity_plus: ^6.0.5
 
+  # 👇 Added missing dependency
+  visibility_detector: ^0.4.0+2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

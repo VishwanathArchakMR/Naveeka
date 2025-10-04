@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../ui/theme/app_themes.dart';
-import 'router.dart';
+import '../navigation/app_router.dart'
+    as app_router; // alias to reference appRouter unambiguously
 import '../features/auth/providers/auth_providers.dart';
 import '../core/network/dio_client.dart';
 import '../core/storage/seed_data_loader.dart';
@@ -32,22 +33,22 @@ class _AppState extends ConsumerState<App> {
   Future<void> _bootstrap() async {
     try {
       setState(() => _initStatus = 'Setting up local storage...');
-      await LocalStorage.instance.init(); // safe; idempotent [21]
+      await LocalStorage.instance.init(); // safe; idempotent
 
       setState(() => _initStatus = 'Connecting to services...');
-      await DioClient.instance.init(); // baseUrl + interceptors [22]
+      await DioClient.instance.init(); // baseUrl + interceptors
 
       setState(() => _initStatus = 'Loading travel data...');
-      await SeedDataLoader.instance.loadAllSeedData(); // offline-first [23]
+      await SeedDataLoader.instance.loadAllSeedData(); // offline-first
 
       setState(() => _initStatus = 'Setting up location services...');
-      await LocationService.instance.init(); // current fix + cache [24]
+      await LocationService.instance.init(); // current fix + cache
 
       setState(() => _initStatus = 'Setting up notifications...');
-      await NotificationService.instance.init(); // no-op if not wired yet [19]
+      await NotificationService.instance.init(); // no-op if not wired yet
 
       setState(() => _initStatus = 'Checking authentication...');
-      await ref.read(authStateProvider.notifier).loadMe(); // restore JWT [25]
+      await ref.read(authStateProvider.notifier).loadMe(); // restore JWT
 
       setState(() {
         _initialized = true;
@@ -68,7 +69,8 @@ class _AppState extends ConsumerState<App> {
       return _buildSplash();
     }
 
-    final router = ref.watch(routerProvider); // MaterialApp.router expects routerConfig [15]
+    // Read the GoRouter via the aliased import to resolve appRouter reliably
+    final router = app_router.appRouter;
 
     return MaterialApp.router(
       title: 'Naveeka - All-in-One Travel',
@@ -112,7 +114,8 @@ class _AppState extends ConsumerState<App> {
                     width: 120,
                     height: 120,
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.15), // replace withOpacity [8][2]
+                      color:
+                          Colors.white.withValues(alpha: 0.15), // precise alpha
                       borderRadius: BorderRadius.circular(24),
                     ),
                     child: const Icon(

@@ -10,7 +10,8 @@ import '../presentation/widgets/trail_map_view.dart';
 
 // Alias the APIs and models to avoid type collisions.
 import '../../trails/data/trails_api.dart' as api show TrailsApi;
-import '../../trails/data/trail_location_api.dart' as loc show TrailSummary, GeoPoint;
+import '../../trails/data/trail_location_api.dart' as loc
+    show TrailSummary, GeoPoint;
 import '../../../models/geo_point.dart' as model show GeoPoint;
 
 /// DI injection point for the Trails domain API (override in app bootstrap).
@@ -59,26 +60,39 @@ final trailsFiltersProvider =
 /// Simple paged state holder.
 @immutable
 class PagedState<T> {
-  const PagedState(
-      {required this.items,
-      required this.cursor,
-      required this.loading,
-      this.error});
+  const PagedState({
+    required this.items,
+    required this.cursor,
+    required this.loading,
+    this.error,
+  });
+
   final List<T> items;
   final String? cursor;
   final bool loading;
   final Object? error;
 
-  PagedState<T> copy(
-          {List<T>? items, String? cursor, bool? loading, Object? error}) =>
-      PagedState<T>(
-          items: items ?? this.items,
-          cursor: cursor ?? this.cursor,
-          loading: loading ?? this.loading,
-          error: error);
+  PagedState<T> copy({
+    List<T>? items,
+    String? cursor,
+    bool? loading,
+    Object? error,
+  }) {
+    return PagedState<T>(
+      items: items ?? this.items,
+      cursor: cursor ?? this.cursor,
+      loading: loading ?? this.loading,
+      error: error ?? this.error,
+    );
+  }
 
+  // Generic-safe empty factory: no const generic list literal.
   static PagedState<T> empty<T>() => PagedState<T>(
-      items: const <dynamic>[] as List<T>, cursor: null, loading: false);
+        items: const [],
+        cursor: null,
+        loading: false,
+        error: null,
+      );
 }
 
 /// Controller that fetches and paginates Trails via TrailsApi using current filters.
@@ -108,8 +122,13 @@ class TrailsListController extends AsyncNotifier<PagedState<loc.TrailSummary>> {
     // Coerce API items to location-domain summaries to avoid cross-library list type mismatch.
     final List<loc.TrailSummary> items =
         (page.items as List).cast<loc.TrailSummary>().toList(growable: false);
-    state = AsyncData(PagedState<loc.TrailSummary>(
-        items: items, cursor: page.nextCursor, loading: false));
+    state = AsyncData(
+      PagedState<loc.TrailSummary>(
+        items: items,
+        cursor: page.nextCursor,
+        loading: false,
+      ),
+    );
   }
 
   Future<void> loadMore() async {
@@ -130,10 +149,13 @@ class TrailsListController extends AsyncNotifier<PagedState<loc.TrailSummary>> {
       );
       final List<loc.TrailSummary> next =
           (page.items as List).cast<loc.TrailSummary>().toList(growable: false);
-      state = AsyncData(current.copy(
+      state = AsyncData(
+        current.copy(
           items: [...current.items, ...next],
           cursor: page.nextCursor,
-          loading: false));
+          loading: false,
+        ),
+      );
     } catch (e, st) {
       state = AsyncError(e, st);
       state = AsyncData(current.copy(loading: false, error: e));
@@ -151,13 +173,14 @@ class TrailsScreen extends ConsumerStatefulWidget {
   const TrailsScreen({
     super.key,
     this.title = 'Trails',
-    this.suggestions = const <String>[],
+    this.suggestions = const <String>[], // const default literal for immutable
     this.onOpenTrail, // void Function(BuildContext context, TrailSummary trail)
   });
 
   final String title;
   final List<String> suggestions;
-  final void Function(BuildContext context, loc.TrailSummary trail)? onOpenTrail;
+  final void Function(BuildContext context, loc.TrailSummary trail)?
+      onOpenTrail;
 
   @override
   ConsumerState<TrailsScreen> createState() => _TrailsScreenState();
