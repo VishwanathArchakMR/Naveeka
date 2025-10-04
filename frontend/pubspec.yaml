@@ -11,7 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # Localization (optional scaffold; can enable later with ARB files)
+  # Localization (optional)
   flutter_localizations:
     sdk: flutter
 
@@ -23,35 +23,35 @@ dependencies:
   pretty_dio_logger: ^1.4.0
   http: ^1.2.2
   http_parser: ^4.0.2
-  web_socket_channel: ^3.0.3  # Updated version to fix conflict
+  web_socket_channel: ^3.0.3
 
-  # Environment variables loader
+  # Environment variables
   flutter_dotenv: ^5.1.0
 
-  # Local storage (secure & regular)
+  # Local storage
   flutter_secure_storage: ^9.2.2
   shared_preferences: ^2.3.2
   hive: ^2.2.3
   hive_flutter: ^1.1.0
 
-  # Caching network images
+  # Images
   cached_network_image: ^3.3.1
 
-  # Async animations & effects
+  # Animations
   flutter_animate: ^4.5.0
   shimmer: ^3.0.0
 
-  # Media playback & recording
+  # Media
   just_audio: ^0.9.39
   audio_waveforms: ^1.0.6
 
-  # Lottie animations
+  # Lottie
   lottie: ^3.1.2
 
   # Routing
   go_router: ^13.2.0
 
-  # Utility packages
+  # Utils
   intl: ^0.20.2
   collection: ^1.18.0
   meta: ^1.12.0
@@ -62,7 +62,7 @@ dependencies:
   # Charts
   fl_chart: ^0.68.0
 
-  # Markdown rendering for AI responses
+  # Markdown
   flutter_markdown: ^0.7.3+1
 
   # Maps & Location
@@ -82,14 +82,14 @@ dependencies:
   image_picker: ^1.1.2
   photo_view: ^0.15.0
 
-  # Social features
+  # Social
   share_plus: ^10.0.2
   video_player: ^2.9.2
 
-  # Offline & Caching
+  # Offline & connectivity
   connectivity_plus: ^6.0.5
 
-  # 👇 Added missing dependency
+  # Reels/visibility
   visibility_detector: ^0.4.0+2
 
 dev_dependencies:
@@ -102,6 +102,7 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
+  # Ensure these folders exist and contain the referenced files.
   assets:
     - assets/images/
     - assets/images/logos/
@@ -119,12 +120,15 @@ flutter:
     - assets/icons/lucide/
     - assets/animations/
     - assets/seed-data/
+    - assets/fonts/        # added so fonts are bundled on web
     - .env
 
+  # Custom fonts (files must exist under assets/fonts/)
   fonts:
     - family: Inter
       fonts:
         - asset: assets/fonts/Inter-Regular.ttf
+          weight: 400
         - asset: assets/fonts/Inter-Medium.ttf
           weight: 500
         - asset: assets/fonts/Inter-SemiBold.ttf
@@ -134,6 +138,7 @@ flutter:
     - family: Poppins
       fonts:
         - asset: assets/fonts/Poppins-Regular.ttf
+          weight: 400
         - asset: assets/fonts/Poppins-Medium.ttf
           weight: 500
         - asset: assets/fonts/Poppins-SemiBold.ttf

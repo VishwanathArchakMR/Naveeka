@@ -1,69 +1,75 @@
+// lib/ui/theme/app_themes.dart
 import 'package:flutter/material.dart';
 
 class AppThemes {
-  /// Font families
+  // Font families
   static const String primaryFont = 'Inter';
   static const String secondaryFont = 'Poppins';
 
-  /// Naveeka Brand Colors (Blue → Green → Purple gradient)
+  // Naveeka Brand Colors (Blue → Green → Purple)
   static const Color naveekaBlue = Color(0xFF2fb5ff);
   static const Color naveekaGreen = Color(0xFF2bd18b);
   static const Color naveekaPurple = Color(0xFF7a5cf0);
-  
-  /// Emotion Colors
-  static const Color peacefulColor = Color(0xFF4CAF50); // Green for peace
-  static const Color spiritualColor = Color(0xFFFF9800); // Orange for spiritual
-  static const Color adventureColor = Color(0xFFf44336); // Red for adventure
-  static const Color heritageColor = Color(0xFF795548); // Brown for heritage
 
-  /// Light Theme
+  // Emotion Colors
+  static const Color peacefulColor = Color(0xFF4CAF50);
+  static const Color spiritualColor = Color(0xFFFF9800);
+  static const Color adventureColor = Color(0xFFF44336);
+  static const Color heritageColor = Color(0xFF795548);
+
+  // Light Theme
   static ThemeData get lightTheme {
+    final scheme = ColorScheme.fromSeed(
+      seedColor: naveekaBlue,
+      brightness: Brightness.light,
+      primary: naveekaBlue,
+      secondary: naveekaGreen,
+      tertiary: naveekaPurple,
+    );
+
     return ThemeData(
       useMaterial3: true,
       fontFamily: primaryFont,
-      
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: naveekaBlue,
-        brightness: Brightness.light,
-        primary: naveekaBlue,
-        secondary: naveekaGreen,
-        tertiary: naveekaPurple,
-      ),
-      
+      colorScheme: scheme,
       scaffoldBackgroundColor: const Color(0xFFFAFBFC),
-      
-      appBarTheme: const AppBarTheme(
+
+      appBarTheme: AppBarTheme(
         elevation: 0,
         scrolledUnderElevation: 1,
         backgroundColor: Colors.transparent,
-        foregroundColor: Color(0xFF1A1A1A),
-        titleTextStyle: TextStyle(
+        foregroundColor: const Color(0xFF1A1A1A),
+        titleTextStyle: const TextStyle(
           fontFamily: primaryFont,
           fontWeight: FontWeight.w600,
           fontSize: 18,
           color: Color(0xFF1A1A1A),
         ),
+        toolbarTextStyle: const TextStyle(fontFamily: primaryFont),
+        iconTheme: IconThemeData(color: scheme.onSurface),
       ),
-      
-      // Bottom Navigation
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
-        selectedItemColor: naveekaBlue,
-        unselectedItemColor: Color(0xFF9E9E9E),
-        elevation: 8,
-        selectedLabelStyle: TextStyle(
-          fontFamily: primaryFont,
-          fontWeight: FontWeight.w600,
-          fontSize: 12,
-        ),
-        unselectedLabelStyle: TextStyle(
-          fontFamily: primaryFont,
-          fontWeight: FontWeight.w500,
-          fontSize: 12,
-        ),
+
+      // Material 3 NavigationBar (bottom)
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: scheme.surface.withValues(alpha: 1.0),
+        indicatorColor: scheme.primary.withValues(alpha: 0.18),
+        elevation: 1,
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          final selected = states.contains(WidgetState.selected);
+          return TextStyle(
+            fontFamily: primaryFont,
+            fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+            fontSize: 12,
+          );
+        }),
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          final selected = states.contains(WidgetState.selected);
+          return IconThemeData(
+            color: selected ? scheme.primary : scheme.onSurfaceVariant,
+            size: 22,
+          );
+        }),
       ),
-      
+
       inputDecorationTheme: _inputTheme(brightness: Brightness.light),
       elevatedButtonTheme: _elevatedButtonTheme(brightness: Brightness.light),
       filledButtonTheme: _filledButtonTheme(brightness: Brightness.light),
@@ -71,60 +77,63 @@ class AppThemes {
       outlinedButtonTheme: _outlinedButtonTheme(brightness: Brightness.light),
       cardTheme: _cardTheme(brightness: Brightness.light),
       chipTheme: _chipTheme(brightness: Brightness.light),
-      
-      // Text Theme with Inter + Poppins
+
       textTheme: _textTheme(brightness: Brightness.light),
     );
   }
 
-  /// Dark Theme
+  // Dark Theme
   static ThemeData get darkTheme {
+    final scheme = ColorScheme.fromSeed(
+      seedColor: naveekaBlue,
+      brightness: Brightness.dark,
+      primary: naveekaBlue,
+      secondary: naveekaGreen,
+      tertiary: naveekaPurple,
+    );
+
     return ThemeData(
       useMaterial3: true,
       fontFamily: primaryFont,
-      
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: naveekaBlue,
-        brightness: Brightness.dark,
-        primary: naveekaBlue,
-        secondary: naveekaGreen,
-        tertiary: naveekaPurple,
-      ),
-      
+      colorScheme: scheme,
       scaffoldBackgroundColor: const Color(0xFF0A0A0B),
-      
-      appBarTheme: const AppBarTheme(
+
+      appBarTheme: AppBarTheme(
         elevation: 0,
         scrolledUnderElevation: 1,
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
-        titleTextStyle: TextStyle(
+        titleTextStyle: const TextStyle(
           fontFamily: primaryFont,
           fontWeight: FontWeight.w600,
           fontSize: 18,
           color: Colors.white,
         ),
+        toolbarTextStyle: const TextStyle(fontFamily: primaryFont),
+        iconTheme: IconThemeData(color: scheme.onSurface),
       ),
-      
-      // Bottom Navigation Dark
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Color(0xFF1A1A1A),
-        selectedItemColor: naveekaBlue,
-        unselectedItemColor: Color(0xFF6B6B6B),
-        elevation: 8,
-        selectedLabelStyle: TextStyle(
-          fontFamily: primaryFont,
-          fontWeight: FontWeight.w600,
-          fontSize: 12,
-        ),
-        unselectedLabelStyle: TextStyle(
-          fontFamily: primaryFont,
-          fontWeight: FontWeight.w500,
-          fontSize: 12,
-        ),
+
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: const Color(0xFF1A1A1A),
+        indicatorColor: scheme.primary.withValues(alpha: 0.20),
+        elevation: 1,
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          final selected = states.contains(WidgetState.selected);
+          return TextStyle(
+            fontFamily: primaryFont,
+            fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+            fontSize: 12,
+          );
+        }),
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          final selected = states.contains(WidgetState.selected);
+          return IconThemeData(
+            color: selected ? scheme.primary : scheme.onSurfaceVariant,
+            size: 22,
+          );
+        }),
       ),
-      
+
       inputDecorationTheme: _inputTheme(brightness: Brightness.dark),
       elevatedButtonTheme: _elevatedButtonTheme(brightness: Brightness.dark),
       filledButtonTheme: _filledButtonTheme(brightness: Brightness.dark),
@@ -132,36 +141,38 @@ class AppThemes {
       outlinedButtonTheme: _outlinedButtonTheme(brightness: Brightness.dark),
       cardTheme: _cardTheme(brightness: Brightness.dark),
       chipTheme: _chipTheme(brightness: Brightness.dark),
-      
+
       textTheme: _textTheme(brightness: Brightness.dark),
     );
   }
 
-  /// Gradient Decorations for Naveeka Branding
+  // Brand gradients
   static BoxDecoration get naveekaGradient => const BoxDecoration(
-    gradient: LinearGradient(
-      colors: [naveekaBlue, naveekaGreen, naveekaPurple],
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    ),
-  );
+        gradient: LinearGradient(
+          colors: [naveekaBlue, naveekaGreen, naveekaPurple],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      );
 
   static BoxDecoration get naveekaGradientCard => BoxDecoration(
-    gradient: const LinearGradient(
-      colors: [naveekaBlue, naveekaGreen, naveekaPurple],
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    ),
-    borderRadius: BorderRadius.circular(16),
-  );
+        gradient: const LinearGradient(
+          colors: [naveekaBlue, naveekaGreen, naveekaPurple],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+      );
 
-  /// Text Theme (Inter + Poppins)
+  // Typography
   static TextTheme _textTheme({required Brightness brightness}) {
-    final baseColor = brightness == Brightness.dark ? Colors.white : const Color(0xFF1A1A1A);
-    final subtitleColor = brightness == Brightness.dark ? Colors.white70 : const Color(0xFF6B6B6B);
-    
+    final baseColor =
+        brightness == Brightness.dark ? Colors.white : const Color(0xFF1A1A1A);
+    final subtitleColor =
+        brightness == Brightness.dark ? Colors.white70 : const Color(0xFF6B6B6B);
+
     return TextTheme(
-      // Display styles (Poppins for headers)
+      // Display (Poppins)
       displayLarge: TextStyle(
         fontFamily: secondaryFont,
         fontSize: 36,
@@ -180,8 +191,8 @@ class AppThemes {
         fontWeight: FontWeight.w600,
         color: baseColor,
       ),
-      
-      // Headline styles (Poppins)
+
+      // Headlines (Poppins)
       headlineLarge: TextStyle(
         fontFamily: secondaryFont,
         fontSize: 22,
@@ -200,8 +211,8 @@ class AppThemes {
         fontWeight: FontWeight.w600,
         color: baseColor,
       ),
-      
-      // Title styles (Inter)
+
+      // Titles (Inter)
       titleLarge: TextStyle(
         fontFamily: primaryFont,
         fontSize: 16,
@@ -220,8 +231,8 @@ class AppThemes {
         fontWeight: FontWeight.w600,
         color: baseColor,
       ),
-      
-      // Body styles (Inter)
+
+      // Body (Inter)
       bodyLarge: TextStyle(
         fontFamily: primaryFont,
         fontSize: 16,
@@ -240,8 +251,8 @@ class AppThemes {
         fontWeight: FontWeight.normal,
         color: subtitleColor,
       ),
-      
-      // Label styles (Inter)
+
+      // Labels (Inter)
       labelLarge: TextStyle(
         fontFamily: primaryFont,
         fontSize: 14,
@@ -263,7 +274,7 @@ class AppThemes {
     );
   }
 
-  /// Input Decoration Theme
+  // Inputs
   static InputDecorationTheme _inputTheme({required Brightness brightness}) {
     final isDark = brightness == Brightness.dark;
     return InputDecorationTheme(
@@ -300,7 +311,7 @@ class AppThemes {
     );
   }
 
-  /// Elevated Button Theme
+  // Buttons
   static ElevatedButtonThemeData _elevatedButtonTheme({required Brightness brightness}) {
     return ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
@@ -318,7 +329,6 @@ class AppThemes {
     );
   }
 
-  /// Filled Button Theme (for gradient buttons)
   static FilledButtonThemeData _filledButtonTheme({required Brightness brightness}) {
     return FilledButtonThemeData(
       style: FilledButton.styleFrom(
@@ -335,7 +345,6 @@ class AppThemes {
     );
   }
 
-  /// Text Button Theme
   static TextButtonThemeData _textButtonTheme({required Brightness brightness}) {
     return TextButtonThemeData(
       style: TextButton.styleFrom(
@@ -350,7 +359,6 @@ class AppThemes {
     );
   }
 
-  /// Outlined Button Theme
   static OutlinedButtonThemeData _outlinedButtonTheme({required Brightness brightness}) {
     return OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
@@ -367,7 +375,7 @@ class AppThemes {
     );
   }
 
-  /// Card Theme
+  // Cards
   static CardThemeData _cardTheme({required Brightness brightness}) {
     final isDark = brightness == Brightness.dark;
     return CardThemeData(
@@ -380,7 +388,7 @@ class AppThemes {
     );
   }
 
-  /// Chip Theme (for category chips)
+  // Chips
   static ChipThemeData _chipTheme({required Brightness brightness}) {
     final isDark = brightness == Brightness.dark;
     return ChipThemeData(
@@ -406,4 +414,3 @@ class AppThemes {
     );
   }
 }
-
