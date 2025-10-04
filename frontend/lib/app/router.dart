@@ -1,248 +1,403 @@
-// lib/features/trails/presentation/widgets/activity_list.dart
+// lib/app/router.dart
 
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
-@immutable
-class ActivityItem {
-  const ActivityItem({
-    required this.id,
-    required this.type, // like | comment | follow | mention | achievement
-    required this.userName,
-    required this.timestamp, // DateTime
-    this.message,
-    this.previewUrl, // image of the trail post
-    this.userAvatarUrl,
-  });
+// Screens - Auth
+import '../features/auth/presentation/login_screen.dart';
+import '../features/auth/presentation/register_screen.dart';
 
-  final String id;
-  final String type;
-  final String userName;
-  final DateTime timestamp;
-  final String? message;
-  final String? previewUrl;
-  final String? userAvatarUrl;
-}
+// Screens - Profile
+import '../features/profile/presentation/profile_screen.dart';
 
-class ActivityList extends StatelessWidget {
-  const ActivityList({
-    super.key,
-    required this.items,
-    this.onOpenUser, // void Function(String userName)
-    this.onOpenPreview, // void Function(String itemId)
-    this.onLoadMore, // Future<void> Function()
-    this.hasMore = false,
-    this.padding = const EdgeInsets.fromLTRB(12, 12, 12, 90),
-  });
+// Screens - Main App
+import '../features/splash/presentation/splash_screen.dart';
+import '../ui/components/common/bottom_navigation.dart';
 
-  final List<ActivityItem> items;
-  final ValueChanged<String>? onOpenUser;
-  final ValueChanged<String>? onOpenPreview;
-  final Future<void> Function()? onLoadMore;
-  final bool hasMore;
-  final EdgeInsets padding;
+// Screens - Home & Quick Actions
+import '../features/home/presentation/home_screen.dart';
 
-  @override
-  Widget build(BuildContext context) {
-    return NotificationListener<ScrollNotification>(
-      onNotification: (n) {
-        if (onLoadMore == null || !hasMore) return false;
-        if (n.metrics.pixels >= n.metrics.maxScrollExtent - 240) {
-          onLoadMore!.call();
-        }
-        return false;
-      },
-      child: ListView.separated(
-        padding: padding,
-        itemCount: items.length + (hasMore ? 1 : 0),
-        separatorBuilder: (_, __) => const SizedBox(height: 8),
-        itemBuilder: (context, i) {
-          if (i >= items.length) {
-            return const Center(
-              child: SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(strokeWidth: 2),
+// Update these imports to match actual files/classes if different.
+import '../features/quick_actions/presentation/booking/booking_screen.dart'; // class BookingPage or BookingScreen
+import '../features/quick_actions/presentation/history/history_screen.dart';
+import '../features/quick_actions/presentation/favorites/favorites_screen.dart';
+import '../features/quick_actions/presentation/following/following_screen.dart';
+import '../features/quick_actions/presentation/planning/planning_screen.dart';
+import '../features/quick_actions/presentation/planning/trip_group_screen.dart';
+import '../features/quick_actions/presentation/messages/messages_screen.dart';
+
+// Screens - Places
+import '../features/places/presentation/place_detail_screen.dart';
+
+// Screens - Trails
+import '../features/trails/presentation/trails_screen.dart';
+
+// Screens - Atlas
+import '../features/atlas/presentation/atlas_screen.dart';
+
+// Screens - Journey
+import '../features/journey/presentation/journey_screen.dart';
+import '../features/journey/presentation/flights/flight_search_screen.dart';
+import '../features/journey/presentation/flights/flight_results_screen.dart';
+import '../features/journey/presentation/flights/flight_booking_screen.dart';
+import '../features/journey/presentation/trains/train_search_screen.dart';
+import '../features/journey/presentation/trains/train_results_screen.dart';
+import '../features/journey/presentation/hotels/hotel_search_screen.dart';
+import '../features/journey/presentation/hotels/hotel_results_screen.dart';
+import '../features/journey/presentation/restaurants/restaurant_search_screen.dart';
+import '../features/journey/presentation/restaurants/restaurant_results_screen.dart';
+import '../features/journey/presentation/activities/activity_search_screen.dart';
+import '../features/journey/presentation/activities/activity_results_screen.dart';
+import '../features/journey/presentation/bookings/my_bookings_screen.dart';
+
+// Screens - Navee AI
+import '../features/navee_ai/presentation/navee_ai_screen.dart';
+
+// Screens - Settings
+import '../features/settings/presentation/settings_screen.dart';
+
+// Screens - Checkout
+import '../features/checkout/presentation/checkout_screen.dart';
+
+// Screens - Test
+import '../features/test/api_test_screen.dart';
+
+// Auth state
+import '../features/auth/providers/auth_providers.dart';
+
+// Navee AI providers
+import '../features/navee_ai/providers/navee_ai_providers.dart';
+
+final routerProvider = Provider<GoRouter>((ref) {
+  final auth = ref.watch(authSimpleProvider);
+
+  return GoRouter(
+    initialLocation: '/splash',
+    debugLogDiagnostics: false,
+    refreshListenable: GoRouterRefreshStream(ref.read(authStreamProvider)),
+    routes: [
+      // SPLASH
+      GoRoute(
+        path: '/splash',
+        name: 'splash',
+        pageBuilder: (context, state) => _fade(const SplashScreen()),
+      ),
+
+      // AUTH
+      GoRoute(
+        path: '/login',
+        name: 'login',
+        pageBuilder: (context, state) => _fade(const LoginScreen()),
+      ),
+      GoRoute(
+        path: '/register',
+        name: 'register',
+        pageBuilder: (context, state) => _fade(const RegisterScreen()),
+      ),
+
+      // MAIN SHELL
+      ShellRoute(
+        builder: (context, state, child) => BottomNavigationShell(child: child),
+        routes: [
+          // HOME TAB
+          GoRoute(
+            path: '/home',
+            name: 'home',
+            pageBuilder: (context, state) => _noTransition(const HomeScreen()),
+            routes: [
+              // Quick Actions
+              GoRoute(
+                path: 'booking',
+                name: 'booking',
+                // If BookingScreen exists, use it; otherwise switch to BookingPage wrapper.
+                pageBuilder: (context, state) => _slideUp(const BookingScreen()),
               ),
-            );
-          }
-          final it = items[i];
-          return _ActivityCard(
-            item: it,
-            onOpenUser: onOpenUser,
-            onOpenPreview: onOpenPreview,
-          );
+              GoRoute(
+                path: 'history',
+                name: 'history',
+                pageBuilder: (context, state) => _slideUp(const HistoryScreen()),
+              ),
+              GoRoute(
+                path: 'favorites',
+                name: 'favorites',
+                pageBuilder: (context, state) => _slideUp(const FavoritesScreen()),
+              ),
+              GoRoute(
+                path: 'following',
+                name: 'following',
+                pageBuilder: (context, state) => _slideUp(const FollowingScreen()),
+              ),
+              GoRoute(
+                path: 'planning',
+                name: 'planning',
+                pageBuilder: (context, state) => _slideUp(const PlanningScreen()),
+                routes: [
+                  GoRoute(
+                    path: 'trip/:id',
+                    name: 'trip_group',
+                    pageBuilder: (context, state) {
+                      final id = state.pathParameters['id']!;
+                      final title = state.uri.queryParameters['title'] ?? 'Trip Group';
+                      return _slideUp(TripGroupScreen(groupId: id, groupTitle: title));
+                    },
+                  ),
+                ],
+              ),
+              GoRoute(
+                path: 'messages',
+                name: 'messages',
+                pageBuilder: (context, state) => _slideUp(const MessagesScreen()),
+              ),
+            ],
+          ),
+
+          // TRAILS TAB
+          GoRoute(
+            path: '/trails',
+            name: 'trails',
+            pageBuilder: (context, state) => _noTransition(const TrailsScreen()),
+          ),
+
+          // ATLAS TAB
+          GoRoute(
+            path: '/atlas',
+            name: 'atlas',
+            pageBuilder: (context, state) => _noTransition(const AtlasScreen()),
+          ),
+
+          // JOURNEY TAB
+          GoRoute(
+            path: '/journey',
+            name: 'journey',
+            pageBuilder: (context, state) => _noTransition(const JourneyScreen()),
+            routes: [
+              GoRoute(
+                path: 'flights',
+                name: 'flight_search',
+                pageBuilder: (context, state) => _slideRight(const FlightSearchScreen()),
+                routes: [
+                  GoRoute(
+                    path: 'results',
+                    name: 'flight_results',
+                    pageBuilder: (context, state) {
+                      final qp = state.uri.queryParameters;
+                      final from = qp['from'] ?? '';
+                      final to = qp['to'] ?? '';
+                      final date = qp['date'] ?? DateTime.now().toIso8601String();
+                      return _slideRight(FlightResultsScreen(fromCode: from, toCode: to, date: date));
+                    },
+                    routes: [
+                      GoRoute(
+                        path: 'book/:id',
+                        name: 'flight_booking',
+                        pageBuilder: (context, state) {
+                          final id = state.pathParameters['id']!;
+                          final qp = state.uri.queryParameters;
+                          final title = qp['title'] ?? 'Flight Booking';
+                          final date = qp['date'] ?? DateTime.now().toIso8601String();
+                          return _slideUp(FlightBookingScreen(flightId: id, title: title, date: date));
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              GoRoute(
+                path: 'trains',
+                name: 'train_search',
+                pageBuilder: (context, state) => _slideRight(const TrainSearchScreen()),
+                routes: [
+                  GoRoute(
+                    path: 'results',
+                    name: 'train_results',
+                    pageBuilder: (context, state) {
+                      final qp = state.uri.queryParameters;
+                      final from = qp['from'] ?? '';
+                      final to = qp['to'] ?? '';
+                      final dateIso = qp['date'] ?? DateTime.now().toIso8601String();
+                      return _slideRight(TrainResultsScreen(fromCode: from, toCode: to, dateIso: dateIso));
+                    },
+                  ),
+                ],
+              ),
+              GoRoute(
+                path: 'hotels',
+                name: 'hotel_search',
+                pageBuilder: (context, state) => _slideRight(const HotelSearchScreen()),
+                routes: [
+                  GoRoute(
+                    path: 'results',
+                    name: 'hotel_results',
+                    pageBuilder: (context, state) {
+                      final qp = state.uri.queryParameters;
+                      final destination = qp['destination'] ?? '';
+                      final checkInIso = qp['checkIn'] ?? DateTime.now().toIso8601String();
+                      final checkOutIso = qp['checkOut'] ?? DateTime.now().add(const Duration(days: 1)).toIso8601String();
+                      return _slideRight(HotelResultsScreen(destination: destination, checkInIso: checkInIso, checkOutIso: checkOutIso));
+                    },
+                  ),
+                ],
+              ),
+              GoRoute(
+                path: 'restaurants',
+                name: 'restaurant_search',
+                pageBuilder: (context, state) => _slideRight(const RestaurantSearchScreen()),
+                routes: [
+                  GoRoute(
+                    path: 'results',
+                    name: 'restaurant_results',
+                    pageBuilder: (context, state) {
+                      final qp = state.uri.queryParameters;
+                      final destination = qp['destination'] ?? '';
+                      return _slideRight(RestaurantResultsScreen(destination: destination));
+                    },
+                  ),
+                ],
+              ),
+              GoRoute(
+                path: 'activities',
+                name: 'activity_search',
+                pageBuilder: (context, state) => _slideRight(const ActivitySearchScreen()),
+                routes: [
+                  GoRoute(
+                    path: 'results',
+                    name: 'activity_results',
+                    pageBuilder: (context, state) => _slideRight(const ActivityResultsScreen()),
+                  ),
+                ],
+              ),
+              GoRoute(
+                path: 'my-bookings',
+                name: 'my_bookings',
+                pageBuilder: (context, state) => _slideRight(const MyBookingsScreen()),
+              ),
+            ],
+          ),
+
+          // NAVEE.AI TAB
+          GoRoute(
+            path: '/navee-ai',
+            name: 'navee_ai',
+            pageBuilder: (context, state) {
+              return _noTransition(NaveeAiScreen(api: ref.read(naveeAiApiProvider)));
+            },
+          ),
+        ],
+      ),
+
+      // UNIVERSAL PLACE DETAIL
+      GoRoute(
+        path: '/place/:id',
+        name: 'place_detail',
+        pageBuilder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return _slideUp(PlaceDetailScreen(placeId: id));
         },
       ),
-    );
+
+      // SETTINGS & PROFILE
+      GoRoute(
+        path: '/settings',
+        name: 'settings',
+        pageBuilder: (context, state) => _slideRight(const SettingsScreen()),
+      ),
+      GoRoute(
+        path: '/profile',
+        name: 'profile',
+        pageBuilder: (context, state) {
+          final qp = state.uri.queryParameters;
+          final name = qp['name'] ?? 'Profile';
+          return _slideRight(ProfileScreen(name: name));
+        },
+      ),
+
+      // CHECKOUT
+      GoRoute(
+        path: '/checkout',
+        name: 'checkout',
+        pageBuilder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          return _slideUp(CheckoutScreen(bookingData: extra));
+        },
+      ),
+
+      // API TEST (for development)
+      GoRoute(
+        path: '/api-test',
+        name: 'api_test',
+        pageBuilder: (context, state) => _slideRight(const ApiTestScreen()),
+      ),
+    ],
+
+    redirect: (context, state) {
+      final isLoading = auth.isLoading;
+      final isLoggedIn = auth.isLoggedIn;
+
+      final isSplash = state.matchedLocation == '/splash';
+      final isAuth = state.matchedLocation == '/login' || state.matchedLocation == '/register';
+
+      if (isSplash) return null;
+      if (isLoading) return '/splash';
+      if (!isLoggedIn) return isAuth ? null : '/login';
+      if (isLoggedIn && isAuth) return '/home';
+      return null;
+    },
+  );
+});
+
+class GoRouterRefreshStream extends ChangeNotifier {
+  GoRouterRefreshStream(Stream<dynamic> stream) {
+    _sub = stream.asBroadcastStream().listen((_) => notifyListeners());
   }
-}
-
-class _ActivityCard extends StatefulWidget {
-  const _ActivityCard({
-    required this.item,
-    this.onOpenUser,
-    this.onOpenPreview,
-  });
-
-  final ActivityItem item;
-  final ValueChanged<String>? onOpenUser;
-  final ValueChanged<String>? onOpenPreview;
-
-  @override
-  State<_ActivityCard> createState() => _ActivityCardState();
-}
-
-class _ActivityCardState extends State<_ActivityCard> with SingleTickerProviderStateMixin {
-  late final AnimationController _anim;
-  late final Animation<double> _scale;
-
-  @override
-  void initState() {
-    super.initState();
-    _anim = AnimationController(vsync: this, duration: const Duration(milliseconds: 220));
-    _scale = CurvedAnimation(parent: _anim, curve: Curves.easeOutBack);
-    _anim.forward();
-  }
+  late final StreamSubscription<dynamic> _sub;
 
   @override
   void dispose() {
-    _anim.dispose();
+    _sub.cancel();
     super.dispose();
   }
-
-  String _verb(String type) {
-    switch (type) {
-      case 'like':
-        return 'liked your trail';
-      case 'comment':
-        return 'commented on your trail';
-      case 'follow':
-        return 'started following you';
-      case 'mention':
-        return 'mentioned you';
-      case 'achievement':
-        return 'achievement unlocked';
-      default:
-        return 'activity';
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final it = widget.item;
-
-    return ScaleTransition(
-      scale: _scale,
-      child: Container(
-        decoration: BoxDecoration(
-          color: cs.surfaceContainerHigh.withValues(alpha: 1.0),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: cs.outlineVariant),
-          boxShadow: [
-            BoxShadow(
-              color: cs.shadow.withValues(alpha: 0.08),
-              blurRadius: 12,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
-        child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          leading: _Avatar(url: it.userAvatarUrl),
-          title: RichText(
-            text: TextSpan(
-              style: DefaultTextStyle.of(context).style,
-              children: [
-                WidgetSpan(
-                  alignment: PlaceholderAlignment.middle,
-                  child: GestureDetector(
-                    onTap: () => widget.onOpenUser?.call(it.userName),
-                    child: Text(
-                      it.userName,
-                      style: TextStyle(
-                        color: cs.onSurface,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
-                ),
-                TextSpan(
-                  text: ' ${_verb(it.type)}',
-                  style: TextStyle(color: cs.onSurface),
-                ),
-                if ((it.message ?? '').isNotEmpty)
-                  TextSpan(
-                    text: ' — ${it.message}',
-                    style: TextStyle(color: cs.onSurfaceVariant),
-                  ),
-              ],
-            ),
-          ),
-          subtitle: Text(
-            _timeAgo(it.timestamp),
-            style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12),
-          ),
-          trailing: _PreviewThumb(
-            url: it.previewUrl,
-            onTap: () => widget.onOpenPreview?.call(it.id),
-          ),
-          onTap: () => widget.onOpenPreview?.call(it.id),
-        ),
-      ),
-    );
-  }
-
-  String _timeAgo(DateTime time) {
-    final now = DateTime.now();
-    final diff = now.difference(time);
-    if (diff.inMinutes < 1) return 'Just now';
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-    if (diff.inHours < 24) return '${diff.inHours}h ago';
-    if (diff.inDays < 7) return '${diff.inDays}d ago';
-    final weeks = diff.inDays ~/ 7;
-    return '${weeks}w ago';
-  }
 }
 
-class _Avatar extends StatelessWidget {
-  const _Avatar({this.url});
-  final String? url;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return CircleAvatar(
-      backgroundColor: cs.secondaryContainer,
-      child: (url == null || url!.isEmpty)
-          ? Icon(Icons.person, color: cs.onSecondaryContainer)
-          : null,
-    );
-  }
+CustomTransitionPage _noTransition(Widget child) {
+  return CustomTransitionPage(
+    transitionDuration: Duration.zero,
+    child: child,
+    transitionsBuilder: (context, animation, secondary, widget) => widget,
+  );
 }
 
-class _PreviewThumb extends StatelessWidget {
-  const _PreviewThumb({this.url, this.onTap});
-  final String? url;
-  final VoidCallback? onTap;
+CustomTransitionPage _fade(Widget child) {
+  return CustomTransitionPage(
+    transitionDuration: const Duration(milliseconds: 300),
+    child: child,
+    transitionsBuilder: (context, animation, secondary, widget) {
+      return FadeTransition(opacity: animation, child: widget);
+    },
+  );
+}
 
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        width: 48,
-        height: 48,
-        decoration: BoxDecoration(
-          color: cs.surfaceTint.withValues(alpha: 0.18),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: cs.outlineVariant),
-        ),
-        alignment: Alignment.center,
-        child: Icon(Icons.landscape_outlined, color: cs.onSurfaceVariant, size: 22),
-      ),
-    );
-  }
+CustomTransitionPage _slideUp(Widget child) {
+  return CustomTransitionPage(
+    transitionDuration: const Duration(milliseconds: 380),
+    child: child,
+    transitionsBuilder: (context, animation, secondary, widget) {
+      final tween = Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero)
+          .chain(CurveTween(curve: Curves.easeOutCubic));
+      return SlideTransition(position: animation.drive(tween), child: widget);
+    },
+  );
+}
+
+CustomTransitionPage _slideRight(Widget child) {
+  return CustomTransitionPage(
+    transitionDuration: const Duration(milliseconds: 350),
+    child: child,
+    transitionsBuilder: (context, animation, secondary, widget) {
+      final tween = Tween<Offset>(begin: const Offset(0.05, 0), end: Offset.zero)
+          .chain(CurveTween(curve: Curves.easeOutCubic));
+      return SlideTransition(position: animation.drive(tween), child: widget);
+    },
+  );
 }
